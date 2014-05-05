@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<resources>
+	<models>
+		<fileprefix>Assets/Models/</fileprefix>
+		<model id="human">
+			<filename>human.obj</filename>
+		</model>
+		<model id="tree">
+			<filename>tree.obj</filename>
+		</model>
+		<model id="cursor">
+			<filename>arrow.obj</filename>
+		</model>
+		<model id="chicken">
+			<filename>chicken.obj</filename>
+		</model>
+	</models>
+	<animations>
+		<fileprefix>Assets/Animations/</fileprefix>
+		<model id="chicken">
+			<filename>chickenAnim.dae</filename>
+		</model>		
+	</animations>
+	<textures>
+		<fileprefix>Assets/Textures/</fileprefix>
+		<texture id="human">
+			<filename>human.png</filename>
+		</texture>
+		<texture id="tree">
+			<filename>treeModel.png</filename>
+		</texture>
+		<texture id="grass">
+			<filename>grass.png</filename>
+		</texture>
+		<texture id="grassblades">
+			<filename>grassBlades.png</filename>
+		</texture>
+		<texture id="chicken">
+			<filename>chickenModel.png</filename>
+		</texture>
+		<texture id="cursor">
+			<filename>arrow.png</filename>
+		</texture>
+		<texture id="selectionbox">
+			<filename>selectionBox.png</filename>
+		</texture>
+		<texture id="menu_button">
+			<filename>Menu/EditorHUD_Button.png</filename>
+		</texture>
+		<texture id="menu_ribbon">
+			<filename>Menu/EditorHUD_Ribbon.png</filename>
+		</texture>
+		<texture id="menu_bar">
+			<filename>Menu/EditorHUD_Bar.png</filename>
+		</texture>
+		<texture id="menu_windowFG">
+			<filename>Menu/EditorHUD_WindowFG.png</filename>
+		</texture>
+		<texture id="menu_windowBG">
+			<filename>Menu/EditorHUD_WindowBG.png</filename>
+		</texture>		
+	</textures>
+</resources>

@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<editor>
+	<window id="HeadRibbon">
+		<foregroundtexture>menu_ribbon</foregroundtexture>
+		<backgroundtexture>menu_ribbon</backgroundtexture>
+		<position x="0" y="0" z="0"></position>
+		<scale x="1" y="0.1"></scale>
+		<canmove>false</canmove>
+		
+		<button id="OpenPrefabWindow">
+			<maintexture>menu_windowFG</maintexture>
+			<bgtexture>menu_windowBG</bgtexture>
+			<position x="0.02" y="0.01" z="0"></position>
+			<scale x="0.05" y="0.05"></scale>
+		</button>
+	</window>
+	<window id="PrefabWindow">
+		<foregroundtexture>menu_windowFG</foregroundtexture>
+		<backgroundtexture>menu_windowBG</backgroundtexture>
+		<position x="0.5" y="0.35" z="0"></position>
+		<scale x="0.35" y="0.5"></scale>
+		<canmove>true</canmove>
+		
+		<button id="CreateHuman">
+			<maintexture>human</maintexture>
+			<bgtexture>menu_button</bgtexture>
+			<scale x="0.1" y="0.1"></scale>
+		</button>
+		<button id="CreateTree">
+			<maintexture>tree</maintexture>
+			<bgtexture>menu_button</bgtexture>
+			<scale x="0.1" y="0.1"></scale>
+		</button>
+		<button id="CreateCursor">
+			<maintexture>cursor</maintexture>
+			<bgtexture>menu_button</bgtexture>
+			<scale x="0.1" y="0.1"></scale>
+		</button>
+		<button id="CreateChicken">
+			<maintexture>chicken</maintexture>
+			<bgtexture>menu_button</bgtexture>
+			<scale x="0.1" y="0.1"></scale>
+		</button>
+		<button id="Close">
+			<maintexture>menu_button</maintexture>
+			<bgtexture>menu_button</bgtexture>
+			<position x="0.89" y="0.01" z="0"></position>
+			<scale x="0.1" y="0.1"></scale>
+		</button>
+	</window>
+</resources>
