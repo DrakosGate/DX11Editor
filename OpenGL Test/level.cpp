@@ -104,11 +104,6 @@ CLevel::~CLevel()
 {
 	//Cleanup singletons
 	CAudioPlayer::GetInstance().DestroyInstance();
-	if(m_pResourceManager)
-	{
-		delete m_pResourceManager;
-		m_pResourceManager = 0;
-	}
 	//if(m_pPlayer)
 	//{
 	//	delete m_pPlayer;
@@ -141,21 +136,36 @@ CLevel::~CLevel()
 		delete m_pHivemind;
 		m_pHivemind = 0;
 	}
-	//if(m_pTrees)
-	//{
-	//	delete[] m_pTrees;
-	//	m_pTrees = 0;
-	//}
-	//if(m_pCreatures)
-	//{
-	//	delete[] m_pCreatures;
-	//	m_pCreatures = 0;
-	//}
-	//if(m_pHuman)
-	//{
-	//	delete[] m_pHuman;
-	//	m_pHuman = 0;
-	//}
+	if(m_pTrees)
+	{
+		for (int iTree = 0; iTree < m_iNumTrees; ++iTree)
+		{
+			delete m_pTrees[iTree];
+			m_pTrees[iTree] = 0;
+		}
+		delete[] m_pTrees;
+		m_pTrees = 0;
+	}
+	if(m_pCreatures)
+	{
+		for (int iCreature = 0; iCreature < m_iNumCreatures; ++iCreature)
+		{
+			delete m_pCreatures[iCreature];
+			m_pCreatures[iCreature] = 0;
+		}
+		delete[] m_pCreatures;
+		m_pCreatures = 0;
+	}
+	if(m_pHuman)
+	{
+		for (int iHuman = 0; iHuman < m_iNumHumans; ++iHuman)
+		{
+			delete m_pHuman[iHuman];
+			m_pHuman[iHuman] = 0;
+		}
+		delete[] m_pHuman;
+		m_pHuman = 0;
+	}
 	if(m_pTerrain)
 	{
 		delete m_pTerrain;
@@ -166,11 +176,6 @@ CLevel::~CLevel()
 	//	delete m_pGrass;
 	//	m_pGrass = 0;
 	//}
-	if(m_pEntityManager)
-	{
-		delete m_pEntityManager;
-		m_pEntityManager = 0;
-	}
 	if(m_pCamera)
 	{
 		delete m_pCamera;
@@ -215,6 +220,16 @@ CLevel::~CLevel()
 	{
 		delete m_pRenderTarget;
 		m_pRenderTarget = 0;
+	}
+	if (m_pEntityManager)
+	{
+		delete m_pEntityManager;
+		m_pEntityManager = 0;
+	}
+	if (m_pResourceManager)
+	{
+		delete m_pResourceManager;
+		m_pResourceManager = 0;
 	}
 
 	//Clear shaders
@@ -392,7 +407,7 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 																"human",
 																&m_pShaderCollection[SHADER_MRT],
 																SCENE_3DSCENE,
-																D3DXVECTOR3(D3DXVECTOR3(0.0f, 0.25f, 0.0f)),
+																D3DXVECTOR3(D3DXVECTOR3(0.0f, 0.5f, 0.0f)),
 																D3DXVECTOR3(1.0f, 1.0f, 1.0f),
 																D3DXVECTOR3(0.0f, static_cast<float>(rand() % 360), 0.0f),
 																D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
@@ -453,7 +468,7 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	//m_pEntityManager->AddEntity(m_pSelectionCursor, SCENE_3DSCENE);
 
 	m_pEditor = new CEditorInterface();
-	m_pEditor->Initialise(m_pEntityManager);
+	m_pEditor->Initialise();
 	m_pEditor->LoadFromXML(_pDevice, m_pResourceManager, "Data/EditorLayout.xml");
 	m_pEditor->SetObjectShader(&m_pShaderCollection[SHADER_POINTSPRITE]);
 	m_pEditor->SetDiffuseMap(m_pResourceManager->GetTexture("menu_button"));

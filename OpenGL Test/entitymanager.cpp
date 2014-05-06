@@ -67,8 +67,8 @@ CEntityManager::~CEntityManager()
 		{
 			for (unsigned int iObject = 0; iObject < m_pRenderEntities[iScene].size(); ++iObject)
 			{
-				delete m_pRenderEntities[iScene][iObject];
-				m_pRenderEntities[iScene][iObject] = 0;
+				//delete m_pRenderEntities[iScene][iObject];
+				//m_pRenderEntities[iScene][iObject] = 0;
 			}
 			m_pRenderEntities[iScene].clear();
 		}
@@ -81,8 +81,8 @@ CEntityManager::~CEntityManager()
 		{
 			for (unsigned int iObject = 0; iObject < m_pTransparentEntities[iScene].size(); ++iObject)
 			{
-				delete m_pTransparentEntities[iScene][iObject];
-				m_pTransparentEntities[iScene][iObject] = 0;
+				//delete m_pTransparentEntities[iScene][iObject];
+				//m_pTransparentEntities[iScene][iObject] = 0;
 			}
 			m_pTransparentEntities[iScene].clear();
 		}

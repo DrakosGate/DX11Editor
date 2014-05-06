@@ -21,22 +21,26 @@
 		<scale x="0.35" y="0.5"></scale>
 		<canmove>true</canmove>
 		
-		<button id="CreateHuman">
+		<button id="Create">
+			<options>human</options>
 			<maintexture>human</maintexture>
 			<bgtexture>menu_button</bgtexture>
 			<scale x="0.1" y="0.1"></scale>
 		</button>
-		<button id="CreateTree">
+		<button id="Create">
+			<options>tree</options>
 			<maintexture>tree</maintexture>
 			<bgtexture>menu_button</bgtexture>
 			<scale x="0.1" y="0.1"></scale>
 		</button>
-		<button id="CreateCursor">
+		<button id="Create">
+			<options>cursor</options>
 			<maintexture>cursor</maintexture>
 			<bgtexture>menu_button</bgtexture>
 			<scale x="0.1" y="0.1"></scale>
 		</button>
-		<button id="CreateChicken">
+		<button id="Create">
+			<options>chicken</options>
 			<maintexture>chicken</maintexture>
 			<bgtexture>menu_button</bgtexture>
 			<scale x="0.1" y="0.1"></scale>
