@@ -355,6 +355,7 @@ CEntityManager::AddEntity(CRenderEntity* _pNewEntity, EGameScene _eScene)
 void 
 CEntityManager::AddPrefab(TPrefabOptions* _pPrefab)
 {
+	m_mapPrefabIndex[_pPrefab->pcPrefabName] = m_vecPrefabTypes.size();
 	m_vecPrefabTypes.push_back(_pPrefab);
 }
 /**
@@ -369,7 +370,7 @@ CEntityManager::AddPrefab(TPrefabOptions* _pPrefab)
 TPrefabOptions*
 CEntityManager::GetPrefabOptions(char* _pcPrefabName)
 {
-	return m_vecPrefabTypes[0];
+	return m_vecPrefabTypes[m_mapPrefabIndex[_pcPrefabName]];
 }
 /**
 *

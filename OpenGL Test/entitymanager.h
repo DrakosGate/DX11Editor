@@ -12,6 +12,7 @@
 
 // Library Includes
 #include <vector>
+#include <map>
 
 // Local Includes
 #include "defines.h"
@@ -66,8 +67,10 @@ private:
 protected:
 	std::vector<CRenderEntity*>* m_pRenderEntities;
 	std::vector<CRenderEntity*>* m_pTransparentEntities;
-
 	std::vector<TPrefabOptions*> m_vecPrefabTypes;
+
+	std::map<char*, unsigned int> m_mapPrefabIndex;
+
 
 	float* m_pCameraDepths;
 	int m_iTotalTransparentCount;

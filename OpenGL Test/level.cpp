@@ -141,11 +141,21 @@ CLevel::~CLevel()
 		delete m_pHivemind;
 		m_pHivemind = 0;
 	}
-	if(m_pTrees)
-	{
-		delete[] m_pTrees;
-		m_pTrees = 0;
-	}
+	//if(m_pTrees)
+	//{
+	//	delete[] m_pTrees;
+	//	m_pTrees = 0;
+	//}
+	//if(m_pCreatures)
+	//{
+	//	delete[] m_pCreatures;
+	//	m_pCreatures = 0;
+	//}
+	//if(m_pHuman)
+	//{
+	//	delete[] m_pHuman;
+	//	m_pHuman = 0;
+	//}
 	if(m_pTerrain)
 	{
 		delete m_pTerrain;
@@ -156,16 +166,6 @@ CLevel::~CLevel()
 	//	delete m_pGrass;
 	//	m_pGrass = 0;
 	//}
-	if(m_pCreatures)
-	{
-		delete[] m_pCreatures;
-		m_pCreatures = 0;
-	}
-	if(m_pHuman)
-	{
-		delete[] m_pHuman;
-		m_pHuman = 0;
-	}
 	if(m_pEntityManager)
 	{
 		delete m_pEntityManager;
