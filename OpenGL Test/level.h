@@ -105,9 +105,9 @@ private:
 
 	//Game entities
 	//CPlayer* m_pPlayer;
-	CPrefab* m_pHuman;
-	CPrefab* m_pCreatures;
-	CPrefab* m_pTrees;
+	CPrefab** m_pHuman;
+	CPrefab** m_pCreatures;
+	CPrefab** m_pTrees;
 	CPrefab* m_pCursor;
 	CModel* m_pTerrain;
 	CModel* m_pSelectionCursor;

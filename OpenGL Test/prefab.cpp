@@ -49,7 +49,7 @@ CPrefab::~CPrefab()
 {
 	
 }
-void 
+bool 
 CPrefab::Initialise(ID3D11Device* _pDevice, float _fScale)
 {
 	m_vecScale.x = _fScale;
@@ -58,6 +58,7 @@ CPrefab::Initialise(ID3D11Device* _pDevice, float _fScale)
 
 	m_pBoundingBox = new CBoundingBox();
 	m_fBoundingBoxPercentage = 1.0f; //Full bounding box size
+	return true;
 }
 /**
 *

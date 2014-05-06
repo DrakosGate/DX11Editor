@@ -27,6 +27,7 @@ struct ID3D11DeviceContext;
 class CRenderEntity;
 class CCamera;
 class CShader;
+class CPrefab;
 class CBoundingBox;
 
 //Structure defined here due to forward declaration
@@ -51,9 +52,10 @@ public:
 	void SortTransparentEntities(CCamera* _pCurrentCamera, EGameScene _eGameScene);
 
 	void AddEntity(CRenderEntity* _pNewEntity, EGameScene _eScene);
-	void RecreateScene(EGameScene _eScene);
-	void EndOfEntityCreation();
-
+	void AddPrefab(TPrefabOptions* _pPrefab);
+	TPrefabOptions* GetPrefabOptions(char* _pcPrefabName);
+	CPrefab* InstantiatePrefab(ID3D11Device* _pDevice, char* _pcPrefabName, CShader* _pShader, EGameScene _eScene, D3DXVECTOR3& _rPos, D3DXVECTOR3& _rScale, D3DXVECTOR3& _rRotation, D3DXCOLOR& _rColour);
+	
 	bool IsEntityInFrustum(CCamera* _pCamera, CBoundingBox* _pBoundingBox);
 
 private:
@@ -62,33 +64,13 @@ private:
 
 //Member variables
 protected:
-	std::vector<TTemporaryEntity*> m_vecTemporaryEntityContainer;
-	CRenderEntity*** m_pRenderEntities;
-	CRenderEntity*** m_pTransparentEntities;
-	int* m_pNumEntities;
-	int* m_pNumTransparent;
+	std::vector<CRenderEntity*>* m_pRenderEntities;
+	std::vector<CRenderEntity*>* m_pTransparentEntities;
+
+	std::vector<TPrefabOptions*> m_vecPrefabTypes;
+
 	float* m_pCameraDepths;
 	int m_iTotalTransparentCount;
-	
-	////Shader variables
-	//ID3D11EffectMatrixVariable* m_fxWorldViewProjection;
-	//ID3D11EffectMatrixVariable* m_pObjectWorld;
-	//
-	//ID3D11EffectTechnique* m_pShadowTech;
-	//
-	//ID3D11EffectShaderResourceVariable* m_pDiffuseMap;
-	//ID3D11EffectShaderResourceVariable* m_pNormalMap;
-	//ID3D11EffectShaderResourceVariable* m_pSpecularMap;
-	//
-	//D3DXMATRIX m_matWorldViewProjection;
-	//
-	////Textures
-	//ID3D11ShaderResourceView* m_pSpecularTexture;
-	//ID3D11EffectMatrixVariable* m_pTextureMatrix;
-	//D3DXMATRIX m_matTexMatrix;
-	//
-	////Lighting and projection
-	//ID3D11EffectMatrixVariable* m_pLightMatrix;
 	
 };
 

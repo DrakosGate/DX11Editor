@@ -16,8 +16,11 @@
 #include <D3DX10math.h>
 #include "chrismaths.h"
 
+struct ID3D11ShaderResourceView;
 struct ID3D10Blob;
 struct TRay;
+
+class CModel;
 
 //Program definitions
 #define WINDOW_WIDTH 1280
@@ -99,6 +102,20 @@ struct TRay
 	}
 	D3DXVECTOR3 vecPosition;
 	D3DXVECTOR3 vecDirection;
+};
+struct TPrefabOptions
+{
+	TPrefabOptions(char* _pcPrefabName, CModel* _pModel, bool _bIsAnimated, ID3D11ShaderResourceView* _pTexture)
+	{
+		pcPrefabName = _pcPrefabName;
+		pModel = _pModel;
+		bIsAnimated = _bIsAnimated;
+		pTexture = _pTexture;
+	}
+	char* pcPrefabName;
+	CModel* pModel;
+	bool bIsAnimated;
+	ID3D11ShaderResourceView* pTexture;
 };
 struct TInputStruct
 {

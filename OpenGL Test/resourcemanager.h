@@ -16,6 +16,7 @@
 #include <map>
 
 // Local Includes
+#include "defines.h"
 
 // Types
 struct TTexturePoolData
@@ -32,6 +33,7 @@ struct ID3D11Device;
 
 class CModel;
 class CAnimatedModel;
+class CEntityManager;
 
 class CResourceManager
 {
@@ -41,6 +43,8 @@ public:
 	virtual ~CResourceManager();
 
 	virtual void Initialise(ID3D11Device* _pDevice, char* _pcResourceFilename);
+	void LoadPrefabTypes(ID3D11Device* _pDevice, CEntityManager* _pEntityManager, char* _pcResourceFilename);
+
 	CModel*  GetModel(char* _pcModelName) const;
 	CAnimatedModel* GetAnimatedModel(char* _pcAnimatedModelName) const;
 	ID3D11ShaderResourceView* GetTexture(char* _pcTextureName) const;
@@ -60,6 +64,7 @@ protected:
 
 	ID3D11ShaderResourceView** m_pTextureArray;
 	ID3D11Texture2D* pTexture;
+
 };
 
 

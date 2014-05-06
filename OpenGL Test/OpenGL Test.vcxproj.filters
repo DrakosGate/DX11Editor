@@ -75,12 +75,6 @@
     <ClInclude Include="consolewindow.h">
       <Filter>Header Files\Engine</Filter>
     </ClInclude>
-    <ClInclude Include="entitymanager.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="resourcemanager.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
     <ClInclude Include="window.h">
       <Filter>Header Files\Engine</Filter>
     </ClInclude>
@@ -138,6 +132,12 @@
     <ClInclude Include="spotlight.h">
       <Filter>Header Files\Lighting</Filter>
     </ClInclude>
+    <ClInclude Include="entitymanager.h">
+      <Filter>Header Files\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="resourcemanager.h">
+      <Filter>Header Files\Rendering</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -168,12 +168,6 @@
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
     <ClCompile Include="consolewindow.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="entitymanager.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="resourcemanager.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
     <ClCompile Include="window.cpp">
@@ -226,6 +220,12 @@
     </ClCompile>
     <ClCompile Include="spotlight.cpp">
       <Filter>Source Files\Lighting</Filter>
+    </ClCompile>
+    <ClCompile Include="entitymanager.cpp">
+      <Filter>Source Files\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="resourcemanager.cpp">
+      <Filter>Source Files\Rendering</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

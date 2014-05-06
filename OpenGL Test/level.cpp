@@ -321,13 +321,14 @@ void
 CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext)
 {	
 	printf("================= Creating Entities =================\n");
-	//Read level resources
-	m_pResourceManager = new CResourceManager();
-	m_pResourceManager->Initialise(_pDevice, "Data/Resources.xml");
-
 	//Create entity manager to contain all objects
 	m_pEntityManager = new CEntityManager();
 	m_pEntityManager->Initialise(_pDevice);
+
+	//Read level resources
+	m_pResourceManager = new CResourceManager();
+	m_pResourceManager->Initialise(_pDevice, "Data/Resources.xml");
+	m_pResourceManager->LoadPrefabTypes(_pDevice, m_pEntityManager, "Data/Prefabs.xml");
 
 	m_pRenderTarget = new CModel();
 	m_pRenderTarget->Initialise();
@@ -372,7 +373,7 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	m_iNumHumans = 5;
 	m_iNumCreatures = 20;
 	m_iNumTrees = 20;
-	m_pHuman = new CPrefab[m_iNumHumans];
+	m_pHuman = new CPrefab*[m_iNumHumans];
 	//Add all entities to the grass avoidance
 	m_iNumGrassEntities = 1 + m_iNumCreatures + m_iNumHumans; // + 1 for the cursor
 	m_pGrassEntities = new CRenderEntity*[m_iNumGrassEntities];
@@ -382,50 +383,66 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 
 	for(int iHuman = 0; iHuman < m_iNumHumans; ++iHuman)
 	{
-		m_pHuman[iHuman].Initialise(_pDevice, 1.0f);
-		m_pHuman[iHuman].SetModel(m_pResourceManager->GetModel("human"));
-		m_pHuman[iHuman].SetDiffuseMap(m_pResourceManager->GetTexture("human"));
-		m_pHuman[iHuman].SetObjectShader(&m_pShaderCollection[SHADER_MRT]);
-		m_pHuman[iHuman].SetPosition(D3DXVECTOR3(0.0f, 0.5f, 0.0f));
-		m_pHivemind->AddAI(&m_pHuman[iHuman], AI_HUMAN);
-		m_pEntityManager->AddEntity(&m_pHuman[iHuman], SCENE_3DSCENE);
+		//m_pHuman[iHuman].Initialise(_pDevice, 1.0f);
+		//m_pHuman[iHuman].SetModel(m_pResourceManager->GetModel("human"));
+		//m_pHuman[iHuman].SetDiffuseMap(m_pResourceManager->GetTexture("human"));
+		//m_pHuman[iHuman].SetObjectShader(&m_pShaderCollection[SHADER_MRT]);
+		//m_pHuman[iHuman].SetPosition(D3DXVECTOR3(0.0f, 0.5f, 0.0f));
+		m_pHuman[iHuman] = m_pEntityManager->InstantiatePrefab(	_pDevice,
+																"human",
+																&m_pShaderCollection[SHADER_MRT],
+																SCENE_3DSCENE,
+																D3DXVECTOR3(D3DXVECTOR3(0.0f, 0.25f, 0.0f)),
+																D3DXVECTOR3(1.0f, 1.0f, 1.0f),
+																D3DXVECTOR3(0.0f, static_cast<float>(rand() % 360), 0.0f),
+																D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
+		m_pHivemind->AddAI(m_pHuman[iHuman], AI_HUMAN);
+		//m_pEntityManager->AddEntity(m_pHuman[iHuman], SCENE_3DSCENE);
 
-		m_pGrassEntities[iCurrentGrassEntity] = &m_pHuman[iHuman];
+		m_pGrassEntities[iCurrentGrassEntity] = m_pHuman[iHuman];
 		++iCurrentGrassEntity;
 	}
 
-	m_pCreatures = new CPrefab[m_iNumCreatures];
+	m_pCreatures = new CPrefab*[m_iNumCreatures];
 	for(int iCreature = 0; iCreature < m_iNumCreatures; ++iCreature)
 	{
-		m_pCreatures[iCreature].Initialise(_pDevice, 1.0f);
-		m_pCreatures[iCreature].SetModel(m_pResourceManager->GetModel("chicken"));
-		m_pCreatures[iCreature].SetDiffuseMap(m_pResourceManager->GetTexture("chicken"));
-		m_pCreatures[iCreature].SetObjectShader(&m_pShaderCollection[SHADER_ANIMOBJECT]);
-		m_pCreatures[iCreature].SetPosition(D3DXVECTOR3(0.0f, 0.25f, 0.0f));
-		m_pCreatures[iCreature].SetScale(D3DXVECTOR3(0.5f, 0.5f, 0.5f));
-		m_pHivemind->AddAI(&m_pCreatures[iCreature], AI_CREATURE);
-		m_pEntityManager->AddEntity(&m_pCreatures[iCreature], SCENE_3DSCENE);
+		//m_pCreatures[iCreature].Initialise(_pDevice, 1.0f);
+		//m_pCreatures[iCreature].SetModel(m_pResourceManager->GetModel("chicken"));
+		//m_pCreatures[iCreature].SetDiffuseMap(m_pResourceManager->GetTexture("chicken"));
+		//m_pCreatures[iCreature].SetObjectShader(&m_pShaderCollection[SHADER_ANIMOBJECT]);
+		//m_pCreatures[iCreature].SetPosition(D3DXVECTOR3(0.0f, 0.25f, 0.0f));
+		//m_pCreatures[iCreature].SetScale(D3DXVECTOR3(0.5f, 0.5f, 0.5f));
+		m_pCreatures[iCreature] = m_pEntityManager->InstantiatePrefab(	_pDevice,
+																		"chicken",
+																		&m_pShaderCollection[SHADER_MRT],
+																		SCENE_3DSCENE,
+																		D3DXVECTOR3(D3DXVECTOR3(0.0f, 0.25f, 0.0f)),
+																		D3DXVECTOR3(0.5f, 0.5f, 0.5f),
+																		D3DXVECTOR3(0.0f, static_cast<float>(rand() % 360), 0.0f),
+																		D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
+		m_pHivemind->AddAI(m_pCreatures[iCreature], AI_CREATURE);
+		//m_pEntityManager->AddEntity(&m_pCreatures[iCreature], SCENE_3DSCENE);
 		//m_pEntityManager->AddEntity(&m_pCreatures[iCreature], SCENE_3DANIM);
 
-		m_pGrassEntities[iCurrentGrassEntity] = &m_pCreatures[iCreature];
+		m_pGrassEntities[iCurrentGrassEntity] = m_pCreatures[iCreature];
 		++iCurrentGrassEntity;
 	}
 
-	m_pTrees = new CPrefab[m_iNumTrees];
+	m_pTrees = new CPrefab*[m_iNumTrees];
 	float fTreeRadius = 4.0f;
 	float fTreeDensity = 0.1f;
 	for(int iTree = 0; iTree < m_iNumTrees; ++iTree)
 	{
 		float fCurrentTreeRadius = fTreeRadius + (iTree * fTreeDensity);
-		m_pTrees[iTree].Initialise(_pDevice, 1.0f);
-		m_pTrees[iTree].SetModel(m_pResourceManager->GetModel("tree"));
-		m_pTrees[iTree].SetDiffuseMap(m_pResourceManager->GetTexture("tree"));
-		m_pTrees[iTree].SetObjectShader(&m_pShaderCollection[SHADER_MRT]);
-		m_pTrees[iTree].SetPosition(D3DXVECTOR3(sinf(static_cast<float>(iTree)) * fCurrentTreeRadius, 0.75f, cosf(static_cast<float>(iTree)) * fCurrentTreeRadius));
-		m_pTrees[iTree].SetScale(D3DXVECTOR3(1.5f, 1.5f, 1.5f));
-		m_pTrees[iTree].SetRotation(D3DXVECTOR3(0.0f, static_cast<float>(rand() % 360), 0.0f));
-		m_pHivemind->AddStaticObject(_pDevice, &m_pTrees[iTree]);
-		m_pEntityManager->AddEntity(&m_pTrees[iTree], SCENE_3DSCENE);
+		m_pTrees[iTree] = m_pEntityManager->InstantiatePrefab(	_pDevice,
+																"tree",
+																&m_pShaderCollection[SHADER_MRT],
+																SCENE_3DSCENE,
+																D3DXVECTOR3(sinf(static_cast<float>(iTree)) * fCurrentTreeRadius, 0.75f, cosf(static_cast<float>(iTree)) * fCurrentTreeRadius),
+																D3DXVECTOR3(1.5f, 1.5f, 1.5f),
+																D3DXVECTOR3(0.0f, static_cast<float>(rand() % 360), 0.0f),
+																D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
+		m_pHivemind->AddStaticObject(_pDevice, m_pTrees[iTree]);
 	}
 	m_pSelectionCursor = new CModel();
 	m_pSelectionCursor->Initialise();
@@ -441,9 +458,6 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	m_pEditor->SetObjectShader(&m_pShaderCollection[SHADER_POINTSPRITE]);
 	m_pEditor->SetDiffuseMap(m_pResourceManager->GetTexture("menu_button"));
 	m_pEntityManager->AddEntity(m_pEditor, SCENE_UI);
-
-	//Set end of object creation
-	m_pEntityManager->EndOfEntityCreation();
 
 	_pDevContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	_pDevContext->IASetInputLayout(m_pVertexLayout[VERTEX_STATIC]);
@@ -476,7 +490,7 @@ CLevel::Process(ID3D11Device* _pDevice, float _fDeltaTime)
 
 	for (int i = 0; i < m_iNumHumans; ++i)
 	{
-		m_pLightManager->GetPoint(i)->SetPosition(m_pHuman[i].GetPosition() + m_pHuman[i].GetForward() * 0.5f);
+		m_pLightManager->GetPoint(i)->SetPosition(m_pHuman[i]->GetPosition() + m_pHuman[i]->GetForward() * 0.5f);
 	}
 	m_pLightManager->GetPoint(m_iNumHumans)->SetPosition(m_pCursor->GetPosition() + D3DXVECTOR3(0.0f, 0.1f, 0.0f));
 	
@@ -543,14 +557,13 @@ CLevel::Draw(ID3D11DeviceContext* _pDevice)
 	_pDevice->PSSetShader(m_pShaderCollection[SHADER_ANIMOBJECT].GetPixelShader(), NULL, 0);
 	_pDevice->IASetInputLayout(m_pVertexLayout[VERTEX_ANIMATED]);
 	DrawScene(_pDevice, m_pCamera, SCENE_3DANIM);
-	//=== DRAW STILL CHARACTERS ===
 
+	//=== DRAW STILL CHARACTERS ===
 	_pDevice->VSSetShader(m_pShaderCollection[SHADER_MRT].GetVertexShader(), NULL, 0);
 	_pDevice->GSSetShader(NULL, NULL, 0);
 	_pDevice->PSSetShader(m_pShaderCollection[SHADER_MRT].GetPixelShader(), NULL, 0);
 	_pDevice->IASetInputLayout(m_pVertexLayout[VERTEX_STATIC]);
 	DrawScene(_pDevice, m_pCamera, SCENE_3DSCENE);
-	
 
 	//=== DRAW GRASS ===
 	//_pDevice->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_POINTLIST);
@@ -576,29 +589,26 @@ CLevel::Draw(ID3D11DeviceContext* _pDevice)
 	m_pRenderTarget->SetDiffuseMap(m_pRenderTargets[RENDER_DEFERRED].GetRenderShaderResource());
 	
 	//============================ FINAL PASS ================================
-	//Prepare swapchain buffers
-	_pDevice->VSSetShader(m_pShaderCollection[SHADERPOST_RADIALBLUR].GetVertexShader(), NULL, 0);
-	_pDevice->GSSetShader(NULL, NULL, 0);
-	_pDevice->PSSetShader(m_pShaderCollection[SHADERPOST_RADIALBLUR].GetPixelShader(), NULL, 0);
-	
 	m_pRenderer->PrepareLastScene();
-	
+	//Prepare swapchain buffers
+	_pDevice->VSSetShader(m_pShaderCollection[SHADER_FINALOUTPUT].GetVertexShader(), NULL, 0);
+	_pDevice->GSSetShader(NULL, NULL, 0);
+	_pDevice->PSSetShader(m_pShaderCollection[SHADER_FINALOUTPUT].GetPixelShader(), NULL, 0);
 	DrawScene(_pDevice, m_pOrthoCamera, SCENE_FINAL);	
 
+	//Render debug lines to screen
 	_pDevice->IASetInputLayout(m_pVertexLayout[VERTEX_POINT]);
 	_pDevice->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
-#if defined(_DEBUG)
 	_pDevice->VSSetShader(m_pShaderCollection[SHADER_LINERENDERER].GetVertexShader(), NULL, 0);
 	_pDevice->GSSetShader(m_pShaderCollection[SHADER_LINERENDERER].GetGeometryShader(), NULL, 0);
 	_pDevice->PSSetShader(m_pShaderCollection[SHADER_LINERENDERER].GetPixelShader(), NULL, 0);
-
 	DrawScene(_pDevice, m_pCamera, SCENE_DEBUG);
-#endif
+
+	//Render UI objects to screen
 	_pDevice->VSSetShader(m_pShaderCollection[SHADER_POINTSPRITE].GetVertexShader(), NULL, 0);
 	_pDevice->GSSetShader(m_pShaderCollection[SHADER_POINTSPRITE].GetGeometryShader(), NULL, 0);
 	_pDevice->PSSetShader(m_pShaderCollection[SHADER_POINTSPRITE].GetPixelShader(), NULL, 0);
 	m_pResourceManager->SendTextureDataToShader(_pDevice);
-
 	DrawScene(_pDevice, m_pOrthoCamera, SCENE_UI);
 
 	//Unbind all render targets and shader resources prior to next frame

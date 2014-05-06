@@ -217,13 +217,13 @@ CRenderToTexture::CreateDepthStencil(ID3D11Device* _pDevice, int _iWidth, int _i
 	tDepthStencilDesc.StencilWriteMask = 0xff;
 	
 	tDepthStencilDesc.FrontFace.StencilFailOp		= D3D11_STENCIL_OP_KEEP;
-	tDepthStencilDesc.FrontFace.StencilDepthFailOp	= D3D11_STENCIL_OP_KEEP;
-	tDepthStencilDesc.FrontFace.StencilPassOp		= D3D11_STENCIL_OP_REPLACE;
+	tDepthStencilDesc.FrontFace.StencilDepthFailOp	= D3D11_STENCIL_OP_INCR;
+	tDepthStencilDesc.FrontFace.StencilPassOp		= D3D11_STENCIL_OP_KEEP;
 	tDepthStencilDesc.FrontFace.StencilFunc			= D3D11_COMPARISON_ALWAYS;
 
 	tDepthStencilDesc.BackFace.StencilFailOp		= D3D11_STENCIL_OP_KEEP;
-	tDepthStencilDesc.BackFace.StencilDepthFailOp	= D3D11_STENCIL_OP_KEEP;
-	tDepthStencilDesc.BackFace.StencilPassOp		= D3D11_STENCIL_OP_REPLACE;
+	tDepthStencilDesc.BackFace.StencilDepthFailOp	= D3D11_STENCIL_OP_DECR;
+	tDepthStencilDesc.BackFace.StencilPassOp		= D3D11_STENCIL_OP_KEEP;
 	tDepthStencilDesc.BackFace.StencilFunc			= D3D11_COMPARISON_ALWAYS;
 
 	HRCheck(_pDevice->CreateDepthStencilState(&tDepthStencilDesc, &m_pAddDepthState),
