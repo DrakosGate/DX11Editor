@@ -50,6 +50,10 @@ public:
 	virtual void ExecuteOneFrame(float _fDeltaTick);
 	virtual void PrepareLastScene();
 
+	ID3D11RenderTargetView* GetRenderTargetView();
+	ID3D11DepthStencilView* GetDepthStencilView();
+	ID3D11ShaderResourceView* GetDepthSRV();
+
 private:
 	CDirectXRenderer(const CDirectXRenderer& _krInstanceToCopy);
 	const CDirectXRenderer& operator =(const CDirectXRenderer& _krInstanceToCopy);
@@ -73,6 +77,7 @@ private:
 	ID3D11Texture2D* m_pDepthStencilBuffer;
 	ID3D11DepthStencilState* m_pDepthStencilState;
 	ID3D11DepthStencilView* m_pDepthStencilView;
+	ID3D11ShaderResourceView* m_pDepthShaderResource;
 	ID3D11BlendState* m_pTransparentBlendState;
 
 	CLevel* m_pLevel;

@@ -344,6 +344,26 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	m_pResourceManager = new CResourceManager();
 	m_pResourceManager->Initialise(_pDevice, "Data/Resources.xml");
 	m_pResourceManager->LoadPrefabTypes(_pDevice, m_pEntityManager, "Data/Prefabs.xml");
+	
+	int iCurrentPixel = 0;
+	int iTextureWidth = 256;
+	int iTextureHeight = 256;
+	std::string sTextureName = "terraingradient";
+	TUCHARColour* pTerrainTexture = new TUCHARColour[iTextureWidth * iTextureHeight];
+	for (int iHeight = 0; iHeight < iTextureHeight; ++iHeight)
+	{
+		for (int iWidth = 0; iWidth < iTextureWidth; ++iWidth)
+		{
+			float fRandom = (rand() % 25500) * 0.01f;
+			pTerrainTexture[iCurrentPixel].r = fRandom;
+			pTerrainTexture[iCurrentPixel].g = fRandom;
+			pTerrainTexture[iCurrentPixel].b = fRandom;
+			pTerrainTexture[iCurrentPixel].a = 255;
+			++iCurrentPixel;
+		}
+	}
+	m_pResourceManager->CreateTextureFromData(_pDevice, reinterpret_cast<unsigned char*>(pTerrainTexture), sTextureName, iTextureWidth, iTextureHeight);
+	delete[] pTerrainTexture;
 
 	m_pRenderTarget = new CModel();
 	m_pRenderTarget->Initialise();
@@ -352,6 +372,7 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	m_pRenderTarget->SetScale(D3DXVECTOR3(WINDOW_WIDTH, WINDOW_HEIGHT, 1.0f));
 	m_pEntityManager->AddEntity(m_pRenderTarget, SCENE_FINAL);
 	
+
 	m_pTerrain = new CModel();
 	m_pTerrain->Initialise();
 	m_pTerrain->LoadSquare(_pDevice, 100.0f, D3DXVECTOR2(100.0f, 100.0f), D3DXCOLOR(1.0f, 0.9f, 1.0f, 1.0f));
@@ -558,11 +579,11 @@ CLevel::Draw(ID3D11DeviceContext* _pDevice)
 	//Set shader for rendering
 	
 	_pDevice->OMSetDepthStencilState(m_pRenderTargets[RENDER_MRT].GetAddDepthState(), 0);
-	_pDevice->OMSetRenderTargets(3, m_pMRT, m_pDiffuseMRT->GetDepthStencilView());
+	_pDevice->OMSetRenderTargets(3, m_pMRT, m_pRenderer->GetDepthStencilView());
 
-	m_pDiffuseMRT->ClearRenderTarget(_pDevice, 0, m_pClearColour);
-	m_pNormalsMRT->ClearRenderTarget(_pDevice, 0, m_pClearColour);
-	m_pPositionMRT->ClearRenderTarget(_pDevice, 0, m_pClearColour);
+	m_pDiffuseMRT->ClearRenderTarget(_pDevice, m_pRenderer->GetDepthStencilView(), m_pClearColour);
+	m_pNormalsMRT->ClearRenderTarget(_pDevice, m_pRenderer->GetDepthStencilView(), m_pClearColour);
+	m_pPositionMRT->ClearRenderTarget(_pDevice, m_pRenderer->GetDepthStencilView(), m_pClearColour);
 	
 	// Render to MRT
 
@@ -589,9 +610,9 @@ CLevel::Draw(ID3D11DeviceContext* _pDevice)
 	_pDevice->VSSetShader(m_pShaderCollection[SHADER_DEFERRED].GetVertexShader(), NULL, 0);
 	_pDevice->GSSetShader(NULL, NULL, 0);
 	_pDevice->PSSetShader(m_pShaderCollection[SHADER_DEFERRED].GetPixelShader(), NULL, 0);
-	m_pRenderTargets[RENDER_DEFERRED].SetRenderTarget(_pDevice, 1, m_pNormalsMRT->GetDepthStencilView());
-	m_pRenderTargets[RENDER_DEFERRED].ClearRenderTarget(_pDevice, 0, m_pClearColour);
-
+	m_pRenderTargets[RENDER_DEFERRED].SetRenderTarget(_pDevice, 1, m_pDiffuseMRT->GetDepthStencilView());
+	m_pRenderTargets[RENDER_DEFERRED].ClearRenderTarget(_pDevice, m_pDiffuseMRT->GetDepthStencilView(), m_pClearColour);
+	
 	//Send MRT texture data to shader
 	ID3D11ShaderResourceView* const texture[3] = {	m_pDiffuseMRT->GetRenderShaderResource(),
 													m_pNormalsMRT->GetRenderShaderResource(), 
@@ -604,12 +625,19 @@ CLevel::Draw(ID3D11DeviceContext* _pDevice)
 	m_pRenderTarget->SetDiffuseMap(m_pRenderTargets[RENDER_DEFERRED].GetRenderShaderResource());
 	
 	//============================ FINAL PASS ================================
-	m_pRenderer->PrepareLastScene();
-	
-	//Prepare swapchain buffers
-	_pDevice->VSSetShader(m_pShaderCollection[SHADER_FINALOUTPUT].GetVertexShader(), NULL, 0);
+	m_pRenderTargets[RENDER_POST].SetRenderTarget(_pDevice, 1, m_pDiffuseMRT->GetDepthStencilView());
+	m_pRenderTargets[RENDER_POST].ClearRenderTarget(_pDevice, m_pDiffuseMRT->GetDepthStencilView(), m_pClearColour);
+	_pDevice->VSSetShader(m_pShaderCollection[SHADERPOST_RADIALBLUR].GetVertexShader(), NULL, 0);
 	_pDevice->GSSetShader(NULL, NULL, 0);
-	_pDevice->PSSetShader(m_pShaderCollection[SHADER_FINALOUTPUT].GetPixelShader(), NULL, 0);
+	_pDevice->PSSetShader(m_pShaderCollection[SHADERPOST_RADIALBLUR].GetPixelShader(), NULL, 0);
+	DrawScene(_pDevice, m_pOrthoCamera, SCENE_FINAL);
+	m_pRenderTarget->SetDiffuseMap(m_pRenderTargets[RENDER_POST].GetRenderShaderResource());
+
+	m_pRenderer->PrepareLastScene();
+	//Prepare swapchain buffers
+	_pDevice->VSSetShader(m_pShaderCollection[SHADERPOST_RADIALBLUR].GetVertexShader(), NULL, 0);
+	_pDevice->GSSetShader(NULL, NULL, 0);
+	_pDevice->PSSetShader(m_pShaderCollection[SHADERPOST_RADIALBLUR].GetPixelShader(), NULL, 0);
 	DrawScene(_pDevice, m_pOrthoCamera, SCENE_FINAL);	
 
 	//Render debug lines to screen
@@ -658,16 +686,17 @@ void
 CLevel::CreateRenderTargets(ID3D11Device* _pDevice)
 {
 	m_pRenderTargets = new CRenderToTexture[RENDER_MAX];
-	m_pRenderTargets[RENDER_MRT].Initialise(_pDevice, true, true, static_cast<int>(WINDOW_WIDTH), static_cast<int>(WINDOW_HEIGHT));
-	m_pRenderTargets[RENDER_DEFERRED].Initialise(_pDevice, true, true, static_cast<int>(WINDOW_WIDTH), static_cast<int>(WINDOW_HEIGHT));
-	m_pRenderTargets[RENDER_FINAL].Initialise(_pDevice, true, true, static_cast<int>(WINDOW_WIDTH), static_cast<int>(WINDOW_HEIGHT));
+	m_pRenderTargets[RENDER_MRT].Initialise(_pDevice, true, false, static_cast<int>(WINDOW_WIDTH), static_cast<int>(WINDOW_HEIGHT));
+	m_pRenderTargets[RENDER_DEFERRED].Initialise(_pDevice, true, false, static_cast<int>(WINDOW_WIDTH), static_cast<int>(WINDOW_HEIGHT));
+	m_pRenderTargets[RENDER_POST].Initialise(_pDevice, true, false, static_cast<int>(WINDOW_WIDTH), static_cast<int>(WINDOW_HEIGHT));
+	m_pRenderTargets[RENDER_FINAL].Initialise(_pDevice, true, false, static_cast<int>(WINDOW_WIDTH), static_cast<int>(WINDOW_HEIGHT));
 	
 	m_pDiffuseMRT = new CRenderToTexture();
-	m_pDiffuseMRT->Initialise(_pDevice, true, true, static_cast<int>(WINDOW_WIDTH), static_cast<int>(WINDOW_HEIGHT));
+	m_pDiffuseMRT->Initialise(_pDevice, true, false, static_cast<int>(WINDOW_WIDTH), static_cast<int>(WINDOW_HEIGHT));
 	m_pNormalsMRT = new CRenderToTexture();
-	m_pNormalsMRT->Initialise(_pDevice, true, true, static_cast<int>(WINDOW_WIDTH), static_cast<int>(WINDOW_HEIGHT));
+	m_pNormalsMRT->Initialise(_pDevice, true, false, static_cast<int>(WINDOW_WIDTH), static_cast<int>(WINDOW_HEIGHT));
 	m_pPositionMRT = new CRenderToTexture();
-	m_pPositionMRT->Initialise(_pDevice, true, true, static_cast<int>(WINDOW_WIDTH), static_cast<int>(WINDOW_HEIGHT));
+	m_pPositionMRT->Initialise(_pDevice, true, false, static_cast<int>(WINDOW_WIDTH), static_cast<int>(WINDOW_HEIGHT));
 	m_pMRT = new ID3D11RenderTargetView*[3];
 	m_pMRT[0] = m_pDiffuseMRT->GetRenderTarget();
 	m_pMRT[1] = m_pNormalsMRT->GetRenderTarget();

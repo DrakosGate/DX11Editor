@@ -200,6 +200,49 @@ CResourceManager::LoadPrefabTypes(ID3D11Device* _pDevice, CEntityManager* _pEnti
 }
 /**
 *
+* CResourceManager class Creates a texture file from an array of data
+* (Task ID: n/a)
+*
+* @author Christopher Howlett
+*
+*/
+void 
+CResourceManager::CreateTextureFromData(ID3D11Device* _pDevice, unsigned char* _pcData, std::string& _sTextureString, int _iWidth, int _iHeight)
+{
+	ID3D11Texture2D* pNewTexture;
+	TTexturePoolData* pNewPoolData = new TTexturePoolData();
+
+	D3D11_TEXTURE2D_DESC textureDesc;
+	D3D11_SUBRESOURCE_DATA resourceData;
+	ZeroMemory(&textureDesc, sizeof(D3D11_TEXTURE2D_DESC));
+	ZeroMemory(&resourceData, sizeof(D3D11_SUBRESOURCE_DATA));
+	
+	textureDesc.Width = _iWidth;
+	textureDesc.Height = _iHeight;
+	textureDesc.MipLevels = 1;
+	textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	textureDesc.SampleDesc.Count = 1;
+	textureDesc.SampleDesc.Quality = 0;
+	textureDesc.Usage = D3D11_USAGE_DYNAMIC;
+	textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+	textureDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	textureDesc.MiscFlags = 0;
+	textureDesc.ArraySize = 1;
+
+	resourceData.pSysMem = _pcData;
+	resourceData.SysMemPitch = _iWidth * 4 * sizeof(unsigned char);
+	resourceData.SysMemSlicePitch = _iWidth * _iHeight * 4 * sizeof(unsigned char);
+
+	HRESULT hResult = _pDevice->CreateTexture2D(&textureDesc, &resourceData, &pNewTexture);
+	HRCheck(hResult, L"Could not create texture from data");
+	hResult = _pDevice->CreateShaderResourceView(pNewTexture, NULL, &pNewPoolData->pTexture);
+	HRCheck(hResult, L"Could not bind custom texture to shader resource view");
+	pNewPoolData->sName = _sTextureString;
+	m_TexturePool.push_back(pNewPoolData);
+	pNewTexture->Release();
+}
+/**
+*
 * CResourceManager class GetModel
 * (Task ID: n/a)
 *

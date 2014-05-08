@@ -21,6 +21,7 @@ enum ERenderTargetType
 	RENDER_INVALID = -1,
 	RENDER_MRT,
 	RENDER_DEFERRED,
+	RENDER_POST,
 	RENDER_FINAL,
 	RENDER_MAX
 };
@@ -50,7 +51,13 @@ enum EVertexLayoutType
 	VERTEX_POINT,
 	VERTEX_MAX
 };
-
+struct TUCHARColour
+{
+	unsigned char r;
+	unsigned char g;
+	unsigned char b;
+	unsigned char a;
+};
 // Constants
 
 // Prototypes
