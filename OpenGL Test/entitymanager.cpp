@@ -19,6 +19,7 @@
 #include "renderentity.h"
 #include "camera.h"
 #include "shader.h"
+#include "prefab.h"
 
 // This Include
 #include "entitymanager.h"
@@ -38,16 +39,11 @@
 *
 */
 CEntityManager::CEntityManager()
-:	m_pRenderEntities(0)
-//,	m_fxWorldViewProjection(0)
-,	m_pNumEntities(0)
-//,	m_pDiffuseMap(0)
-//,	m_pSpecularMap(0)
-//,	m_pSpecularTexture(0)
-//,	m_pTextureMatrix(0)
-,	m_pCameraDepths(0)
+: m_pRenderEntities(0)
+, m_pTransparentEntities(0)
+, m_pCameraDepths(0)
 {
-	//D3DXMatrixIdentity(&m_matTexMatrix);
+	
 }
 /**
 *
@@ -59,22 +55,36 @@ CEntityManager::CEntityManager()
 */
 CEntityManager::~CEntityManager()
 {
+	for (unsigned int iPrefab = 0; iPrefab < m_vecPrefabTypes.size(); ++iPrefab)
+	{
+		delete m_vecPrefabTypes[iPrefab];
+		m_vecPrefabTypes[iPrefab] = 0;
+	}
+	m_vecPrefabTypes.clear();
 	if(m_pRenderEntities)
 	{
 		for(int iScene = 0; iScene < SCENE_MAX; ++iScene)
 		{
-			delete[] m_pRenderEntities[iScene];
-			m_pRenderEntities[iScene] = 0;
+			for (unsigned int iObject = 0; iObject < m_pRenderEntities[iScene].size(); ++iObject)
+			{
+				//delete m_pRenderEntities[iScene][iObject];
+				//m_pRenderEntities[iScene][iObject] = 0;
+			}
+			m_pRenderEntities[iScene].clear();
 		}
 		delete[] m_pRenderEntities;
 		m_pRenderEntities = 0;
 	}
 	if(m_pTransparentEntities)
 	{
-		for(int iScene = 0; iScene < SCENE_MAX; ++iScene)
+		for (int iScene = 0; iScene < SCENE_MAX; ++iScene)
 		{
-			delete[] m_pTransparentEntities[iScene];
-			m_pTransparentEntities[iScene] = 0;
+			for (unsigned int iObject = 0; iObject < m_pTransparentEntities[iScene].size(); ++iObject)
+			{
+				//delete m_pTransparentEntities[iScene][iObject];
+				//m_pTransparentEntities[iScene][iObject] = 0;
+			}
+			m_pTransparentEntities[iScene].clear();
 		}
 		delete[] m_pTransparentEntities;
 		m_pTransparentEntities = 0;
@@ -84,17 +94,6 @@ CEntityManager::~CEntityManager()
 		delete[] m_pCameraDepths;
 		m_pCameraDepths = 0;
 	}
-	if(m_pNumEntities)
-	{
-		delete[] m_pNumEntities;
-		m_pNumEntities = 0;
-	}
-	if(m_pNumTransparent)
-	{
-		delete[] m_pNumTransparent;
-		m_pNumTransparent = 0;
-	}
-	m_vecTemporaryEntityContainer.clear();
 }
 /**
 *
@@ -109,7 +108,9 @@ bool
 CEntityManager::Initialise(ID3D11Device* _pDevice)
 {
 	//Set resources that will never change
-	
+	m_pRenderEntities = new std::vector<CRenderEntity*>[SCENE_MAX];
+	m_pTransparentEntities = new std::vector<CRenderEntity*>[SCENE_MAX];
+
 	return true;
 }
 /**
@@ -124,7 +125,7 @@ CEntityManager::Initialise(ID3D11Device* _pDevice)
 void 
 CEntityManager::Process(float _fDeltaTime, EGameScene _eGameScene, CCamera* _pCurrentCamera)
 {
-	for(int iEntity = 0; iEntity < m_pNumEntities[_eGameScene]; ++iEntity)
+	for(unsigned int iEntity = 0; iEntity < m_pRenderEntities[_eGameScene].size(); ++iEntity)
 	{
 		if(m_pRenderEntities[_eGameScene][iEntity]->DoDraw())
 		{
@@ -150,7 +151,7 @@ CEntityManager::Draw(ID3D11DeviceContext* _pDevice, CCamera* _pCurrentCamera, EG
 	D3DXMATRIX matBillboard;
 	D3DXMatrixInverse(&matBillboard, 0, &_pCurrentCamera->GetViewMatrix());
 	
-	for(int iEntity = 0; iEntity < m_pNumEntities[_eScene]; ++iEntity)
+	for(unsigned int iEntity = 0; iEntity < m_pRenderEntities[_eScene].size(); ++iEntity)
 	{
 		pCurrentEntity = m_pRenderEntities[_eScene][iEntity];
 		if(pCurrentEntity->IsTransparent())
@@ -199,7 +200,7 @@ CEntityManager::Draw(ID3D11DeviceContext* _pDevice, CCamera* _pCurrentCamera, EG
 void 
 CEntityManager::DrawTransparentEntities(ID3D11DeviceContext* _pDevice, CCamera* _pCurrentCamera, EGameScene _eScene)
 {
-	if(m_pNumTransparent[_eScene] > 0)
+	if(m_pTransparentEntities[_eScene].size() > 0)
 	{
 		//Draw entities
 		CRenderEntity* pCurrentEntity = 0;
@@ -207,7 +208,7 @@ CEntityManager::DrawTransparentEntities(ID3D11DeviceContext* _pDevice, CCamera* 
 		D3DXMatrixInverse(&matBillboard, 0, &_pCurrentCamera->GetViewMatrix());
 		//SortTransparentEntities(_pCurrentCamera, _eScene);
 
-		for(int iEntity = 0; iEntity < m_pNumTransparent[_eScene]; ++iEntity)
+		for(unsigned int iEntity = 0; iEntity < m_pTransparentEntities[_eScene].size(); ++iEntity)
 		{
 			pCurrentEntity = m_pTransparentEntities[_eScene][iEntity];
 			//Check frustum culling of camera
@@ -242,7 +243,7 @@ void
 CEntityManager::SortTransparentEntities(CCamera* _pCurrentCamera, EGameScene _eGameScene)
 {
 	//Calculate camera depths
-	for(int iEntity = 0; iEntity < m_pNumTransparent[_eGameScene]; ++iEntity)
+	for(unsigned int iEntity = 0; iEntity < m_pTransparentEntities[_eGameScene].size(); ++iEntity)
 	{
 		m_pCameraDepths[iEntity] = D3DXVec3LengthSq(&(m_pTransparentEntities[_eGameScene][iEntity]->GetPosition() - _pCurrentCamera->GetPosition()));
 	}
@@ -252,9 +253,9 @@ CEntityManager::SortTransparentEntities(CCamera* _pCurrentCamera, EGameScene _eG
 	while(bIsSorted == false)
 	{
 		bIsSorted = true;
-		for(int iEntity = 0; iEntity < m_pNumTransparent[_eGameScene]; ++iEntity)
+		for (unsigned int iEntity = 0; iEntity < m_pTransparentEntities[_eGameScene].size(); ++iEntity)
 		{
-			for(int iOther = iEntity + 1; iOther < m_pNumTransparent[_eGameScene]; ++iOther)
+			for (unsigned int iOther = iEntity + 1; iOther < m_pTransparentEntities[_eGameScene].size(); ++iOther)
 			{
 				if(m_pCameraDepths[iEntity] < m_pCameraDepths[iOther])
 				{
@@ -333,127 +334,69 @@ CEntityManager::DrawProjection(ID3D11DeviceContext* _pDevice, CCamera* _pCurrent
 void 
 CEntityManager::AddEntity(CRenderEntity* _pNewEntity, EGameScene _eScene)
 {
-	//Add this entity to the temporary vector
-	TTemporaryEntity* tTemp = new TTemporaryEntity;
-	tTemp->pEntity = _pNewEntity;
-	tTemp->eScene = _eScene;
-	m_vecTemporaryEntityContainer.push_back(tTemp);
+	if (_pNewEntity->IsTransparent())
+	{
+		m_pTransparentEntities[_eScene].push_back(_pNewEntity);
+	}
+	else
+	{
+		m_pRenderEntities[_eScene].push_back(_pNewEntity);
+	}
 }
 /**
 *
-* CEntityManager class Transfers data from temporary vector to a scene
+* CEntityManager class Adds Prefab to the prefab container
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
-* @param _eScene Scene to recreate
+* @param _pNewEntity Entity to add to vector
 *
 */
 void 
-CEntityManager::RecreateScene(EGameScene _eScene)
+CEntityManager::AddPrefab(TPrefabOptions* _pPrefab)
 {
-	//Delete this scene if it already exists
-	if(m_pRenderEntities[_eScene])
-	{
-		delete[] m_pRenderEntities[_eScene];
-		m_pRenderEntities[_eScene] = 0;
-	}
-	//Count number of entities waiting to be added to this scene
-	int iNumEntities = 0;
-	for(unsigned int iEntity = 0; iEntity < m_vecTemporaryEntityContainer.size(); ++iEntity)
-	{
-		if(m_vecTemporaryEntityContainer[iEntity]->eScene == _eScene)
-		{
-			++iNumEntities;
-		}
-	}
-	m_pNumEntities[_eScene] = iNumEntities;
-	//Create new array of entities and transfer vector data
-	m_pRenderEntities[_eScene] = new CRenderEntity*[iNumEntities];
-	for(unsigned int iEntity = 0; iEntity < m_vecTemporaryEntityContainer.size(); ++iEntity)
-	{
-		//WARNING!!! This will assume the vector ONLY contains entities for one scene
-		m_pRenderEntities[_eScene][iEntity] = m_vecTemporaryEntityContainer[iEntity]->pEntity;
-		delete m_vecTemporaryEntityContainer[iEntity];
-	}
-	m_vecTemporaryEntityContainer.clear();
+	m_mapPrefabIndex[_pPrefab->pcPrefabName] = m_vecPrefabTypes.size();
+	m_vecPrefabTypes.push_back(_pPrefab);
 }
 /**
 *
-* CEntityManager class EndOfEntityCreation Specifies the last object has been added
+* CEntityManager class Returns the prefab options
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
+* @param _pcPrefabName Name of prefab to return
 *
 */
-void 
-CEntityManager::EndOfEntityCreation()
+TPrefabOptions*
+CEntityManager::GetPrefabOptions(char* _pcPrefabName)
 {
-	int iTotalEntities = m_vecTemporaryEntityContainer.size();
-	m_pNumEntities = new int[SCENE_MAX];
-	m_pNumTransparent = new int[SCENE_MAX];
-	for(int i = 0; i < SCENE_MAX; ++i)
-	{
-		m_pNumEntities[i] = 0;
-		m_pNumTransparent[i] = 0;
-	}
-	//Count type of each entity
-	for(int i = 0; i < iTotalEntities; ++i)
-	{
-		//Increment the number of entities per this scene
-		if(m_vecTemporaryEntityContainer[i]->pEntity->IsTransparent())
-		{
-			++m_pNumTransparent[m_vecTemporaryEntityContainer[i]->eScene];
-		}
-		else
-		{
-			++m_pNumEntities[m_vecTemporaryEntityContainer[i]->eScene];
-		}
-	}
+	return m_vecPrefabTypes[m_mapPrefabIndex[_pcPrefabName]];
+}
+/**
+*
+* CEntityManager class Instantiates a prefab from the string specified
+* (Task ID: n/a)
+*
+* @author Christopher Howlett
+* @param _pcPrefabName Name of prefab to instantiate
+*
+*/
+CPrefab*
+CEntityManager::InstantiatePrefab(ID3D11Device* _pDevice, char* _pcPrefabName, CShader* _pShader, EGameScene _eScene, D3DXVECTOR3& _rPos, D3DXVECTOR3& _rScale, D3DXVECTOR3& _rRotation, D3DXCOLOR& _rColour)
+{
+	CPrefab* pNewEntity = new CPrefab();
+	TPrefabOptions* pPrefabOptions = GetPrefabOptions(_pcPrefabName);
 
-	//Create the array of render entities
-	m_pRenderEntities = new CRenderEntity**[SCENE_MAX];
-	m_pTransparentEntities = new CRenderEntity**[SCENE_MAX];
-	int* pCurrentEntity = new int[SCENE_MAX];
-	int* pCurrentTransparent = new int[SCENE_MAX];
-	for(int i = 0; i < SCENE_MAX; ++i)
-	{
-		pCurrentEntity[i] = 0;
-		pCurrentTransparent[i] = 0;
-		m_pRenderEntities[i] = new CRenderEntity*[m_pNumEntities[i]];
-		m_pTransparentEntities[i] = new CRenderEntity*[m_pNumTransparent[i]];
-	}
-	//Transfer entities from vector to the new array
-	m_iTotalTransparentCount = 0;
-	for(int iEntity = 0; iEntity < iTotalEntities; ++iEntity)
-	{
-		//				[SCENE]  [Entity Index]
-		TTemporaryEntity* pEntity = m_vecTemporaryEntityContainer[iEntity];
-		if(pEntity->pEntity->IsTransparent())
-		{
-			m_pTransparentEntities[pEntity->eScene][pCurrentTransparent[pEntity->eScene]] = pEntity->pEntity;
-			++pCurrentTransparent[pEntity->eScene];
-			++m_iTotalTransparentCount;
-		}
-		else
-		{
-			m_pRenderEntities[pEntity->eScene][pCurrentEntity[pEntity->eScene]] = pEntity->pEntity;
-			++pCurrentEntity[pEntity->eScene];
-		}
-	}
-	m_pCameraDepths = new float[m_iTotalTransparentCount];
+	pNewEntity->Initialise(_pDevice, 1.0f);
+	pNewEntity->SetModel(pPrefabOptions->pModel);
+	pNewEntity->SetDiffuseMap(pPrefabOptions->pTexture);
+	pNewEntity->SetObjectShader(_pShader);
+	pNewEntity->SetPosition(_rPos);
+	pNewEntity->SetScale(_rScale);
+	pNewEntity->SetRotation(_rRotation);
 
-	//Clear out the old vector container
-	delete[] pCurrentEntity;
-	delete[] pCurrentTransparent;
-	pCurrentEntity = 0;
-	pCurrentTransparent = 0;
-
-	for(int iEntity = 0; iEntity < iTotalEntities; ++iEntity)
-	{
-		delete m_vecTemporaryEntityContainer[iEntity];
-		m_vecTemporaryEntityContainer[iEntity] = 0;
-	}
-	m_vecTemporaryEntityContainer.clear();
+	AddEntity(pNewEntity, _eScene);
+	return pNewEntity;
 }
 /**
 *

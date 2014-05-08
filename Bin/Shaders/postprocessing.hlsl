@@ -58,9 +58,7 @@ float4 RadialBlurPS(PS_IN _input) : SV_Target
 		iSampleCount += 8;
 	}
 	diffuse = (blur / iSampleCount);
-	//Vignette
-	//diffuse *= 1.0f - fRatio;
-	diffuse.a = 1.0f;//fAlpha;
+	diffuse.a = 1.0f;
 
 	return diffuse;
 }

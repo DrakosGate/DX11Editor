@@ -38,7 +38,7 @@ public:
 	CRenderEntity();
 	virtual ~CRenderEntity();
 
-	virtual bool Initialise(ID3D11Device* _pDevice, float _fScale, wchar_t* _pcFilename);
+	virtual bool Initialise(ID3D11Device* _pDevice, float _fScale);
 	virtual void Process(float _fDeltaTime);
 	virtual void Draw(ID3D11DeviceContext* _pDevice);
 	

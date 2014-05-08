@@ -30,7 +30,7 @@ public:
 	CPrefab();
 	~CPrefab();
 	
-	virtual void Initialise(ID3D11Device* _pDevice, float _fScale);
+	virtual bool Initialise(ID3D11Device* _pDevice, float _fScale);
 	virtual void Draw(ID3D11DeviceContext* _pDevice);
 	virtual void Process(float _fDeltaTime);
 

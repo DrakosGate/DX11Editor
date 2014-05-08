@@ -20,6 +20,7 @@
 #include "defines.h"
 #include "shader.h"
 #include "resourcemanager.h"
+#include "entitymanager.h"
 #include "audioplayer.h"
 
 // This Include
@@ -42,7 +43,6 @@
 CEditorInterface::CEditorInterface()
 : m_bIsActive(false)
 , m_pWindowColours(0)
-, m_pEntityManager(0)
 , m_pDraggedWindow(0)
 {
 
@@ -89,10 +89,8 @@ CEditorInterface::~CEditorInterface()
 *
 */
 bool 
-CEditorInterface::Initialise(CEntityManager* _pEntityManager)
+CEditorInterface::Initialise()
 {
-	m_pEntityManager = _pEntityManager;
-
 	m_pWindowColours = new D3DXCOLOR[WINDOWSTATE_MAX];
 	m_pWindowColours[WINDOWSTATE_OPEN] = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
 	m_pWindowColours[WINDOWSTATE_CLOSED] = D3DXCOLOR(0.0f, 0.0f, 0.0f, 0.0f);
@@ -239,13 +237,19 @@ CEditorInterface::ProcessButtonPressed(TWindow* _pWindow, TButton* _pButton)
 	{
 		m_vecWindows[1]->SetIsActive(true, m_pWindowColours[WINDOWSTATE_OPEN]);
 	}
-	//switch (_pcButtonName)
-	//{
-	//case "":
-	//	break;
-	//default:
-	//	break;
-	//}
+	if (strcmp(_pButton->sName.c_str(), "Create") == 0)
+	{
+		m_bCreateObject = true;
+		m_pcNextObjectCreated = _pButton->sOptions.c_str();
+	}
+}
+void
+CEditorInterface::CheckForNewObjects(ID3D11Device* _pDevice, CEntityManager* _pEntityManager, CShader* _pObjectShader, CRenderEntity* _pSpawnPos)
+{
+	if (m_bCreateObject)
+	{
+		//_pEntityManager->InstantiatePrefab(_pDevice, m_sNextObjectCreated.c_str(), _pObjectShader, )
+	}
 }
 /**
 *
@@ -311,6 +315,10 @@ CEditorInterface::LoadFromXML(ID3D11Device* _pDevice, CResourceManager* _pResour
 		{
 			TButton* pNewButton = new TButton;
 			pNewButton->sName = pButtons->first_attribute("id")->value();
+			if (pButtons->first_node("options"))
+			{
+				pNewButton->sOptions = pButtons->first_node("options")->value();
+			}
 			int iMainTexture = _pResourceManager->GetTextureID(pButtons->first_node("maintexture")->value());
 			int iBackgroundTexture = _pResourceManager->GetTextureID(pButtons->first_node("bgtexture")->value());
 

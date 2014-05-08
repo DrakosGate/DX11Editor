@@ -42,6 +42,7 @@ struct TButton
 	D3DXCOLOR targetColour;
 	bool bIsActive;
 	std::string sName;
+	std::string sOptions;
 };
 struct TWindow : public TButton
 {
@@ -92,13 +93,14 @@ public:
 	CEditorInterface();
 	virtual ~CEditorInterface();
 
-	virtual bool Initialise(CEntityManager* _pEntityManager);
+	virtual bool Initialise();
 	virtual void ProcessInput(TInputStruct& _pKeys, float _fDT);
 
 	virtual void ToggleEditor(bool _bIsActive);
 	virtual void RefreshBuffers(ID3D11Device* _pDevice);
 	virtual bool HasCollided(D3DXVECTOR2& _rPoint, TButton* _pButton);
 	virtual void ProcessButtonPressed(TWindow* _pWindow, TButton* _pButton);
+	virtual void CheckForNewObjects(ID3D11Device* _pDevice, CEntityManager* _pEntityManager, CShader* _pObjectShader, CRenderEntity* _pSpawnPos);
 
 	virtual void LoadFromXML(ID3D11Device* _pDevice, CResourceManager* _pResourceManager, char* _pcXMLFilename);
 	virtual TPointSpriteVertex* CreatePointSprite(ID3D11Device* _pDevice, D3DXVECTOR3& _rPosition, D3DXVECTOR2& _rScale, D3DXCOLOR& _rColour, float _fRotation, int _iTextureID);
@@ -112,7 +114,6 @@ private:
 	//Member variables
 protected:
 	std::vector<TWindow*> m_vecWindows;
-	CEntityManager* m_pEntityManager;
 
 	D3DXCOLOR* m_pWindowColours;
 	bool m_bHasChanged;
@@ -120,6 +121,9 @@ protected:
 
 	TWindow* m_pDraggedWindow;
 	D3DXVECTOR3 m_vecInitialDraggedWindowOffset;
+
+	std::string m_pcNextObjectCreated;
+	bool m_bCreateObject;
 };
 
 #endif //__EDITORINTERFACE_H__

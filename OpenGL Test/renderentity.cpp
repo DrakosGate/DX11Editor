@@ -107,7 +107,7 @@ CRenderEntity::~CRenderEntity()
 *
 */
 bool 
-CRenderEntity::Initialise(ID3D11Device* _pDevice, float _fScale, wchar_t* _pcFilename)
+CRenderEntity::Initialise(ID3D11Device* _pDevice, float _fScale)
 {
 	//Render entity will never be created
 	return true;

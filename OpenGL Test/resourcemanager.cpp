@@ -16,11 +16,11 @@
 #include <D3DX11.h>
 #include <rapidxml_utils.hpp>
 #include <iostream>
-//#include "../Bin/Tools/dxtk/WICTextureLoader.h"
 
 // Local Includes
 #include "model.h"
 #include "animatedmodel.h"
+#include "entitymanager.h"
 
 // This Include
 #include "resourcemanager.h"
@@ -60,7 +60,7 @@ CResourceManager::~CResourceManager()
 		m_TexturePool[iTexture] = 0;
 	}
 	m_TexturePool.clear();
-
+	
 	std::map<std::string, CModel*>::iterator modelIter;
 	std::map<std::string, CAnimatedModel*>::iterator animIter = m_mapAnimations.begin();
 	for (modelIter = m_mapModels.begin(); modelIter != m_mapModels.end(); ++modelIter)
@@ -130,7 +130,7 @@ CResourceManager::Initialise(ID3D11Device* _pDevice, char* _pcResourceFilename)
 		std::string sTextureFilename = pCurrentTexture->first_node()->value();
 		//Concatenate model prefix and model filename
 		std::string sFilename = sFilePrefix + sTextureFilename;
-		sprintf(pcBuffer, "%s ", sFilename.c_str());
+		sprintf_s(pcBuffer, iMaxMessageSize, "%s ", sFilename.c_str());
 		
 		//Load new textures from file
 		ID3D11ShaderResourceView* pNewTexture;
@@ -180,6 +180,23 @@ CResourceManager::Initialise(ID3D11Device* _pDevice, char* _pcResourceFilename)
 	//Clean up
 	delete[] pcBuffer;
 	pcBuffer = 0;
+}
+/**
+*
+* CResourceManager class Loads all of the prefab types from file
+* (Task ID: n/a)
+*
+* @author Christopher Howlett
+* @param _pcResourceFilename Name of file containing prefab types
+*
+*/
+void
+CResourceManager::LoadPrefabTypes(ID3D11Device* _pDevice, CEntityManager* _pEntityManager, char* _pcResourceFilename)
+{
+	_pEntityManager->AddPrefab(new TPrefabOptions("human", GetModel("human"), false, GetTexture("human")));
+	_pEntityManager->AddPrefab(new TPrefabOptions("chicken", GetModel("chicken"), false, GetTexture("chicken")));
+	_pEntityManager->AddPrefab(new TPrefabOptions("tree", GetModel("tree"), false, GetTexture("tree")));
+	_pEntityManager->AddPrefab(new TPrefabOptions("cursor", GetModel("cursor"), false, GetTexture("cursor")));
 }
 /**
 *
