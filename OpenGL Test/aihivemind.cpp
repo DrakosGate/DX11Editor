@@ -20,6 +20,7 @@
 #include "aicontroller.h"
 #include "pointsprite.h"
 #include "entitymanager.h"
+#include "threadpool.h"
 
 // This Include
 #include "aihivemind.h"
@@ -30,6 +31,11 @@
 
 // Implementation
 
+void ThreadedAI(void* _pParameters)
+{
+	TAIThreadData* pParam = reinterpret_cast<TAIThreadData*>(_pParameters);
+	pParam->pThis->ProcessIndividualAIController(pParam->iAIIndex, pParam->fDeltaTime);
+}
 /**
 *
 * CAIHiveMind class constructor
@@ -113,29 +119,49 @@ CAIHiveMind::Initialise()
 *
 */
 void 
-CAIHiveMind::Process(float _fDeltaTime)
+CAIHiveMind::Process(CThreadPool* _pThreadPool, float _fDeltaTime)
 {
-	D3DXVECTOR3 vecAvoidance;
+	std::function<void(void*)> aiFunction = ThreadedAI;
+	//std::function<void(CAIHiveMind&, int, float)> aiFunction = &CAIHiveMind::ProcessIndividualAIController;
 	for(int iAI = 0; iAI < m_iNumAI; ++iAI)
 	{
-		vecAvoidance *= 0.0f;
-		for(int iOther = iAI; iOther < m_iNumAI; ++iOther)
-		{
-			if(m_pAI[iAI]->GetEntity()->HasCollided(m_pAI[iOther]->GetEntity()))
-			{
-				vecAvoidance += (m_pAI[iAI]->GetEntity()->GetPosition() - m_pAI[iOther]->GetEntity()->GetPosition()) * 0.75f;
-			}
-		}
-		for(unsigned int iStatic = 0; iStatic < m_vecStaticObstacles.size(); ++iStatic)
-		{
-			if(m_pAI[iAI]->GetEntity()->HasCollided(m_vecStaticObstacles[iStatic]))
-			{
-				vecAvoidance += (m_pAI[iAI]->GetEntity()->GetPosition() - m_vecStaticObstacles[iStatic]->GetPosition()) * 0.75f;
-			}
-		}
-		vecAvoidance.y = 0.0f;
-		m_pAI[iAI]->Process(_fDeltaTime, vecAvoidance);
+		//aiFunction = std::function<void(int, float)>(ProcessIndividualAIController(iAI, _fDeltaTime));
+		//Add AI processing to thread pool
+		ProcessIndividualAIController(iAI, _fDeltaTime);
+		//_pThreadPool->AddJobToPool(aiFunction, &TAIThreadData(this, iAI, _fDeltaTime));
 	}
+}
+/**
+*
+* CAIHiveMind class Processes an individual AI controller based on the Index given
+* (Task ID: n/a)
+*
+* @author Christopher Howlett
+* @param _fDeltaTime Game time elapsed
+*
+*/
+void
+CAIHiveMind::ProcessIndividualAIController(int _iAIIndex, float _fDeltaTime)
+{
+	//printf("Processing AI %i\n", _iID);
+	D3DXVECTOR3 vecAvoidance;
+	vecAvoidance *= 0.0f;
+	for (int iOther = _iAIIndex; iOther < m_iNumAI; ++iOther)
+	{
+		if (m_pAI[_iAIIndex]->GetEntity()->HasCollided(m_pAI[iOther]->GetEntity()))
+		{
+			vecAvoidance += (m_pAI[_iAIIndex]->GetEntity()->GetPosition() - m_pAI[iOther]->GetEntity()->GetPosition()) * 0.75f;
+		}
+	}
+	for (unsigned int iStatic = 0; iStatic < m_vecStaticObstacles.size(); ++iStatic)
+	{
+		if (m_pAI[_iAIIndex]->GetEntity()->HasCollided(m_vecStaticObstacles[iStatic]))
+		{
+			vecAvoidance += (m_pAI[_iAIIndex]->GetEntity()->GetPosition() - m_vecStaticObstacles[iStatic]->GetPosition()) * 0.75f;
+		}
+	}
+	vecAvoidance.y = 0.0f;
+	m_pAI[_iAIIndex]->Process(_fDeltaTime, vecAvoidance);
 }
 /**
 *
@@ -181,7 +207,7 @@ CAIHiveMind::AddStaticObject(ID3D11Device* _pDevice, CRenderEntity* _pObject)
 	m_vecStaticObstacles.push_back(_pObject);
 	//Check navigation grid for grid sections in range of this obstacle
 
-	D3DXCOLOR deactiveColour(1.5f, 0.1f, 0.1f, 0.8f);
+	D3DXCOLOR deactiveColour(1.5f, 0.1f, 0.1f, 0.5f);
 	int iCurrentObstacle = 0;
 	bool bHasDeactivatedGrid = false;
 	for (int iHeight = 0; iHeight < m_iHeight; ++iHeight)
@@ -192,11 +218,11 @@ CAIHiveMind::AddStaticObject(ID3D11Device* _pDevice, CRenderEntity* _pObject)
 			{
 				D3DXVECTOR3 vecToObstacle = _pObject->GetPosition() - m_pNavigationGrid[iCurrentObstacle].vecPosition;
 				vecToObstacle.y = 0.0f;
-				if (D3DXVec3LengthSq(&vecToObstacle) < _pObject->GetRadius() * _pObject->GetRadius())
+				if (D3DXVec3LengthSq(&vecToObstacle) < _pObject->GetRadius() * 0.2f)
 				{
 					//Deactivate this grid element
 					m_pNavigationGrid[iCurrentObstacle].bIsActive = false;
-					//m_pNavigationGridMesh->GetPointSprite(iCurrentObstacle)->colour = deactiveColour;
+					m_pNavigationGridMesh->GetPointSprite(iCurrentObstacle)->colour = deactiveColour;
 					bHasDeactivatedGrid = true;
 				}
 			}
@@ -240,14 +266,8 @@ CAIHiveMind::CreateNavigationGrid(ID3D11Device* _pDevice, CEntityManager* _pEnti
 			m_pNavigationGrid[iCurrentGrid].vecPosition = D3DXVECTOR3(m_pNavigationGrid[iCurrentGrid].vecPosition.x * vecGridScale.x, m_pNavigationGrid[iCurrentGrid].vecPosition.y, m_pNavigationGrid[iCurrentGrid].vecPosition.z * vecGridScale.z);
 			m_pNavigationGrid[iCurrentGrid].bIsActive = true;
 
-			if (iCurrentGrid > 0.0f && iWidth > 0)
-			{
-				m_pNavigationGridMesh->AddPointSprite(_pDevice, m_pNavigationGrid[iCurrentGrid].vecPosition, m_pNavigationGrid[iCurrentGrid - 1].vecPosition - m_pNavigationGrid[iCurrentGrid].vecPosition, D3DXVECTOR2(100.0f, 100.0f), lineColour, 0.0f, 0);
-			}
-			if (iHeight > 0)
-			{
-				m_pNavigationGridMesh->AddPointSprite(_pDevice, m_pNavigationGrid[iCurrentGrid].vecPosition, m_pNavigationGrid[((iHeight - 1) * m_iHeight) + iWidth].vecPosition - m_pNavigationGrid[iCurrentGrid].vecPosition, D3DXVECTOR2(100.0f, 100.0f), lineColour, 0.0f, 0);
-			}
+			m_pNavigationGridMesh->AddPointSprite(_pDevice, m_pNavigationGrid[iCurrentGrid].vecPosition, D3DXVECTOR3(0.0f, 0.1f, 0.0f), D3DXVECTOR2(100.0f, 100.0f), lineColour, 0.0f, 0);
+			
 			++iCurrentGrid;
 		}
 	}

@@ -358,7 +358,7 @@ CWindow::msgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			break;
 		case 'R':
 		{
-			m_tInput.bResetPlayer.bPressed = true;
+			m_tInput.bToggleRender.bPressed = true;
 		}
 			break;
 		case '1':
@@ -442,7 +442,7 @@ CWindow::msgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			break;
 		case 'R':
 		{
-			m_tInput.bResetPlayer.bPressed = false;
+			m_tInput.bToggleRender.bPressed = false;
 		}
 			break;
 		case '1':

@@ -132,6 +132,7 @@
     <ClInclude Include="resourcemanager.h" />
     <ClInclude Include="shader.h" />
     <ClInclude Include="spotlight.h" />
+    <ClInclude Include="threadpool.h" />
     <ClInclude Include="vertex.h" />
     <ClInclude Include="window.h" />
   </ItemGroup>
@@ -164,6 +165,7 @@
     <ClCompile Include="resourcemanager.cpp" />
     <ClCompile Include="shader.cpp" />
     <ClCompile Include="spotlight.cpp" />
+    <ClCompile Include="threadpool.cpp" />
     <ClCompile Include="window.cpp" />
   </ItemGroup>
   <ItemGroup>

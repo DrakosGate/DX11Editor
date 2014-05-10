@@ -16,6 +16,7 @@
 // Local Includes
 #include "defines.h"
 
+class CAIHiveMind;
 // Types
 struct TAIDescription
 {
@@ -36,6 +37,18 @@ struct TGridNode
 {
 	D3DXVECTOR3 vecPosition;
 	bool bIsActive;
+}; 
+struct TAIThreadData
+{
+	TAIThreadData(CAIHiveMind* _pHivemind, int _iAIIndex, float _fDeltaTime)
+	{
+		pThis = _pHivemind;
+		iAIIndex = _iAIIndex;
+		fDeltaTime = _fDeltaTime;
+	}
+	CAIHiveMind* pThis;
+	int iAIIndex;
+	float fDeltaTime;
 };
 // Constants
 
@@ -47,6 +60,7 @@ class CRenderEntity;
 class CAIController;
 class CPointSprite;
 class CEntityManager;
+class CThreadPool;
 
 class CAIHiveMind
 {
@@ -55,7 +69,8 @@ public:
 	virtual ~CAIHiveMind();
 
 	virtual bool Initialise();
-	void Process(float _fDeltaTime);
+	void Process(CThreadPool* _pThreadPool, float _fDeltaTime);
+	void ProcessIndividualAIController(int _iAIIndex, float _fDeltaTime);
 	void AddAI(CRenderEntity* _pEntity, EAIType _eAIType);
 	void AddStaticObject(ID3D11Device* _pDevice, CRenderEntity* _pObject);
 

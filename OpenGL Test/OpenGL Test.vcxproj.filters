@@ -43,6 +43,12 @@
     <Filter Include="Source Files\Lighting">
       <UniqueIdentifier>{ccd8956e-9779-48a7-af51-ad3f22880f75}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Parallel">
+      <UniqueIdentifier>{2a39768c-765e-4df2-ac14-b3e3f3413936}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Parallel">
+      <UniqueIdentifier>{57dc9d1e-8695-4ffc-b05e-88101ac191dc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="defines.h">
@@ -138,6 +144,9 @@
     <ClInclude Include="resourcemanager.h">
       <Filter>Header Files\Rendering</Filter>
     </ClInclude>
+    <ClInclude Include="threadpool.h">
+      <Filter>Header Files\Parallel</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -226,6 +235,9 @@
     </ClCompile>
     <ClCompile Include="resourcemanager.cpp">
       <Filter>Source Files\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="threadpool.cpp">
+      <Filter>Source Files\Parallel</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

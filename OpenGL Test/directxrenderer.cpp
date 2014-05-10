@@ -154,7 +154,6 @@ CDirectXRenderer::SetupDirectX11(HWND _hWnd)
 	ID3D11Texture2D* pBackBuffer;
 
 	D3D11_TEXTURE2D_DESC tDepthTextureDesc;
-	D3D11_DEPTH_STENCIL_DESC tDepthStencilDesc;
 	D3D11_DEPTH_STENCIL_VIEW_DESC tStencilViewDesc;
 	D3D11_SHADER_RESOURCE_VIEW_DESC tResourceDesc;
 	ZeroMemory(&tResourceDesc, sizeof(D3D11_SHADER_RESOURCE_VIEW_DESC));

@@ -1,6 +1,6 @@
 //
 //  File Name   :   defines.h
-//  Description :   Definition of general structures and defines
+//  Description :   Definition of commonly used structures, enums and #defines
 //  Author      :   Christopher Howlett
 //  Mail        :   drakos_gate@yahoo.com
 //
@@ -129,7 +129,7 @@ struct TInputStruct
 		bA.bPressed = false;
 		bS.bPressed = false;
 		bD.bPressed = false;
-		bResetPlayer.bPressed = false;
+		bToggleRender.bPressed = false;
 		b1.bPressed = false;
 		b2.bPressed = false;
 		b3.bPressed = false;
@@ -153,7 +153,7 @@ struct TInputStruct
 		bA.RecordPreviousState();
 		bS.RecordPreviousState();
 		bD.RecordPreviousState();
-		bResetPlayer.RecordPreviousState();
+		bToggleRender.RecordPreviousState();
 		b1.RecordPreviousState();
 		b2.RecordPreviousState();
 		b3.RecordPreviousState();
@@ -173,7 +173,7 @@ struct TInputStruct
 	TButtonState bA;
 	TButtonState bS;
 	TButtonState bD;
-	TButtonState bResetPlayer;
+	TButtonState bToggleRender;
 	TButtonState b1;
 	TButtonState b2;
 	TButtonState b3;

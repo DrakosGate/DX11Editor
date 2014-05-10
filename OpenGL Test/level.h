@@ -51,6 +51,14 @@ enum EVertexLayoutType
 	VERTEX_POINT,
 	VERTEX_MAX
 };
+enum ERenderState
+{
+	RENDERSTATE_INVALID = -1,
+	RENDERSTATE_GAME,
+	RENDERSTATE_EDITOR,
+	RENDERSTATE_DEBUG,
+	RENDERSTATE_MAX
+};
 struct TUCHARColour
 {
 	unsigned char r;
@@ -80,6 +88,7 @@ class CCamera;
 class CDirectXRenderer;
 class CResourceManager;
 class CEditorInterface;
+class CThreadPool;
 
 class CLevel
 {
@@ -104,7 +113,9 @@ private:
 private:
 	CDirectXRenderer* m_pRenderer;
 	EGameScene m_eGameScene;
+	ERenderState m_eRenderState;
 	CResourceManager* m_pResourceManager;
+	CThreadPool* m_pThreadPool;
 	
 	CEntityManager* m_pEntityManager;
 	TInputStruct* m_pInput;
