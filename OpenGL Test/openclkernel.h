@@ -16,6 +16,8 @@ public:
 
 	void InitialiseOpenCL();
 	void LoadProgram(char* _pcCLProgram);
+	void SendDataToGPU();
+	void Run();
 
 private:
 	void BuildExecutable();
@@ -32,13 +34,18 @@ private:
 	
 	cl_platform_id m_clPlatformID;
 	cl_device_id* m_pDevices;
-	cl_mem m_clArray;
 
 	cl_uint m_iNumDevices;
-	cl_int m_clEvent;
+	cl_event m_clEvent;
 
 	size_t workGroupSize[1];
 	unsigned int m_iDeviceUsed;
+
+	//Memory 
+	cl_mem m_clArrayA;
+	cl_mem m_clArrayB;
+	cl_mem m_clArrayOut;
+	int m_iArraySize;
 };
 
 #endif

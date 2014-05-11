@@ -89,6 +89,7 @@ class CDirectXRenderer;
 class CResourceManager;
 class CEditorInterface;
 class CThreadPool;
+class COpenCLKernel;
 
 class CLevel
 {
@@ -116,7 +117,8 @@ private:
 	ERenderState m_eRenderState;
 	CResourceManager* m_pResourceManager;
 	CThreadPool* m_pThreadPool;
-	
+	COpenCLKernel* m_pOpenCLKernel;
+
 	CEntityManager* m_pEntityManager;
 	TInputStruct* m_pInput;
 	float m_fGameTimeElapsed;

@@ -38,6 +38,7 @@
 #include "resourcemanager.h"
 #include "editorinterface.h"
 #include "threadpool.h"
+#include "openclkernel.h"
 
 // This Include
 #include "level.h"
@@ -92,6 +93,7 @@ CLevel::CLevel()
 , m_iNumCreatures(0)
 , m_pResourceManager(0)
 , m_pThreadPool(0)
+, m_pOpenCLKernel(0)
 {
 	D3DXMatrixIdentity(&m_matWorldViewProjection); 
 }
@@ -116,6 +118,11 @@ CLevel::~CLevel()
 	{
 		delete m_pThreadPool;
 		m_pThreadPool = 0;
+	}
+	if (m_pOpenCLKernel)
+	{
+		delete m_pOpenCLKernel;
+		m_pOpenCLKernel = 0;
 	}
 	if (m_pEditor)
 	{
@@ -353,6 +360,12 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	m_pThreadPool = new CThreadPool();
 	//std::thread::hardware_concurrency() is the recommended thread usage for this system
 	m_pThreadPool->Initialise(std::thread::hardware_concurrency(), 20);
+	m_pOpenCLKernel = new COpenCLKernel();
+	m_pOpenCLKernel->InitialiseOpenCL();
+	m_pOpenCLKernel->LoadProgram("OpenCLKernels/test.cl");
+	m_pOpenCLKernel->SendDataToGPU();
+	m_pOpenCLKernel->Run();
+
 
 	//Read level resources
 	m_pResourceManager = new CResourceManager();

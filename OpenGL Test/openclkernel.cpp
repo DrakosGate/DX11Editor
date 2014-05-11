@@ -18,7 +18,10 @@ COpenCLKernel::~COpenCLKernel()
 		clReleaseProgram(m_clProgram);
 		clReleaseCommandQueue(m_clCommandQueue);
 
-		clReleaseMemObject(m_clArray);
+		clReleaseMemObject(m_clArrayA);
+		clReleaseMemObject(m_clArrayB);
+		clReleaseMemObject(m_clArrayOut);
+
 		clReleaseContext(m_clContext);
 		delete[] m_pDevices;
 	}
@@ -40,7 +43,9 @@ COpenCLKernel::InitialiseOpenCL()
 
 	m_iDeviceUsed = 0;
 	m_clCommandQueue = clCreateCommandQueue(m_clContext, m_pDevices[m_iDeviceUsed], 0, &iError);
-	m_clArray = 0;
+	m_clArrayA = 0;
+	m_clArrayB = 0;
+	m_clArrayOut = 0;
 }
 void
 COpenCLKernel::LoadProgram(char* _pcCLProgram)
@@ -59,6 +64,60 @@ COpenCLKernel::LoadProgram(char* _pcCLProgram)
 	BuildExecutable();
 	delete[] pCLSource;
 	pCLSource = 0;
+}
+void
+COpenCLKernel::SendDataToGPU()
+{
+	cl_int iError = 0;
+	m_clKernel = clCreateKernel(m_clProgram, "ArrayAdd", &iError);
+	printf("-\tCreating OpenCL Kernel %s: %s", "ArrayAdd", GetErrorString(iError));
+
+	m_iArraySize = 10;
+	float* pArrayA = new float[m_iArraySize];
+	float* pArrayB = new float[m_iArraySize];
+	for (int i = 0; i < m_iArraySize; ++i)
+	{
+		pArrayA[i] = i * 1.0f;
+		pArrayB[i] = i * 2.0f;
+	}
+	m_clArrayA = clCreateBuffer(m_clContext, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(float)* m_iArraySize, pArrayA, &iError);
+	m_clArrayB = clCreateBuffer(m_clContext, CL_MEM_READ_ONLY, sizeof(float)* m_iArraySize, NULL, &iError);
+	m_clArrayOut = clCreateBuffer(m_clContext, CL_MEM_WRITE_ONLY, sizeof(float)* m_iArraySize, NULL, &iError);
+
+	//Fill array B buffer
+	clEnqueueWriteBuffer(m_clCommandQueue, m_clArrayB, CL_TRUE, 0, sizeof(float)* m_iArraySize, pArrayB, 0, NULL, &m_clEvent);
+	clReleaseEvent(m_clEvent);
+
+	iError = clSetKernelArg(m_clKernel, 0, sizeof(cl_mem), (void*)&m_clArrayA);
+	iError = clSetKernelArg(m_clKernel, 0, sizeof(cl_mem), (void*)&m_clArrayB);
+	iError = clSetKernelArg(m_clKernel, 0, sizeof(cl_mem), (void*)&m_clArrayOut);
+	//Wait for this to finish before continuing
+	clFinish(m_clCommandQueue);
+
+	//Set work group size to the size of this calculation
+	workGroupSize[0] = m_iArraySize;
+
+	delete[] pArrayA;
+	delete[] pArrayB;
+}
+void
+COpenCLKernel::Run()
+{
+	cl_int iError = 0;
+	iError = clEnqueueNDRangeKernel(m_clCommandQueue, m_clKernel, 1, NULL, workGroupSize, NULL, 0, NULL, &m_clEvent);
+	clReleaseEvent(m_clEvent);
+	//Wait for this to finish
+	clFinish(m_clCommandQueue);
+
+	//Retrieve data from calculations
+	float* pResult = new float[m_iArraySize];
+	iError = clEnqueueReadBuffer(m_clCommandQueue, m_clArrayOut, CL_TRUE, 0, sizeof(float)* m_iArraySize, &pResult, 0, NULL, &m_clEvent);
+	clReleaseEvent(m_clEvent);
+	printf("Result:\n");
+	for (int i = 0; i < m_iArraySize; ++i)
+	{
+		printf("%g\n", pResult[i]);
+	}
 }
 void 
 COpenCLKernel::BuildExecutable()
