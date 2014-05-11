@@ -663,9 +663,9 @@ CLevel::Draw(ID3D11DeviceContext* _pDevice)
 
 		m_pRenderer->PrepareLastScene();
 		//Prepare swapchain buffers
-		_pDevice->VSSetShader(m_pShaderCollection[SHADERPOST_RADIALBLUR].GetVertexShader(), NULL, 0);
+		_pDevice->VSSetShader(m_pShaderCollection[SHADER_FINALOUTPUT].GetVertexShader(), NULL, 0);
 		_pDevice->GSSetShader(NULL, NULL, 0);
-		_pDevice->PSSetShader(m_pShaderCollection[SHADERPOST_RADIALBLUR].GetPixelShader(), NULL, 0);
+		_pDevice->PSSetShader(m_pShaderCollection[SHADER_FINALOUTPUT].GetPixelShader(), NULL, 0);
 		DrawScene(_pDevice, m_pOrthoCamera, SCENE_FINAL);
 	}
 	if (m_eRenderState >= RENDERSTATE_DEBUG)

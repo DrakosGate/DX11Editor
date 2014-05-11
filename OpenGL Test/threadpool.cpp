@@ -21,6 +21,8 @@ CThreadPool::~CThreadPool()
 	for (int iThread = 0; iThread < m_iThreadCount; ++iThread)
 	{
 		m_threads[iThread]->join();
+		delete m_threads[iThread];
+		m_threads[iThread] = 0;
 	}
 }
 bool

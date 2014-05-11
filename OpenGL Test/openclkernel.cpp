@@ -62,6 +62,7 @@ COpenCLKernel::LoadProgram(char* _pcCLProgram)
 	printf("-\tCreating Program with source: %s\n", GetErrorString(iError));
 
 	BuildExecutable();
+
 	delete[] pCLSource;
 	pCLSource = 0;
 }
@@ -70,9 +71,9 @@ COpenCLKernel::SendDataToGPU()
 {
 	cl_int iError = 0;
 	m_clKernel = clCreateKernel(m_clProgram, "ArrayAdd", &iError);
-	printf("-\tCreating OpenCL Kernel %s: %s", "ArrayAdd", GetErrorString(iError));
+	printf("-\tCreating OpenCL Kernel %s: %s\n", "ArrayAdd", GetErrorString(iError));
 
-	m_iArraySize = 10;
+	m_iArraySize = 20;
 	float* pArrayA = new float[m_iArraySize];
 	float* pArrayB = new float[m_iArraySize];
 	for (int i = 0; i < m_iArraySize; ++i)
@@ -81,16 +82,22 @@ COpenCLKernel::SendDataToGPU()
 		pArrayB[i] = i * 2.0f;
 	}
 	m_clArrayA = clCreateBuffer(m_clContext, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(float)* m_iArraySize, pArrayA, &iError);
+	printf("-\tA Buffer: %s\n", GetErrorString(iError));
 	m_clArrayB = clCreateBuffer(m_clContext, CL_MEM_READ_ONLY, sizeof(float)* m_iArraySize, NULL, &iError);
+	printf("-\tB Buffer: %s\n", GetErrorString(iError));
 	m_clArrayOut = clCreateBuffer(m_clContext, CL_MEM_WRITE_ONLY, sizeof(float)* m_iArraySize, NULL, &iError);
+	printf("-\tOut Buffer: %s\n", GetErrorString(iError));
 
 	//Fill array B buffer
 	clEnqueueWriteBuffer(m_clCommandQueue, m_clArrayB, CL_TRUE, 0, sizeof(float)* m_iArraySize, pArrayB, 0, NULL, &m_clEvent);
 	clReleaseEvent(m_clEvent);
 
 	iError = clSetKernelArg(m_clKernel, 0, sizeof(cl_mem), (void*)&m_clArrayA);
-	iError = clSetKernelArg(m_clKernel, 0, sizeof(cl_mem), (void*)&m_clArrayB);
-	iError = clSetKernelArg(m_clKernel, 0, sizeof(cl_mem), (void*)&m_clArrayOut);
+	printf("-\tA: %s\n", GetErrorString(iError));
+	iError = clSetKernelArg(m_clKernel, 1, sizeof(cl_mem), (void*)&m_clArrayB);
+	printf("-\tB: %s\n", GetErrorString(iError));
+	iError = clSetKernelArg(m_clKernel, 2, sizeof(cl_mem), (void*)&m_clArrayOut);
+	printf("-\tOut: %s\n", GetErrorString(iError));
 	//Wait for this to finish before continuing
 	clFinish(m_clCommandQueue);
 
@@ -105,19 +112,22 @@ COpenCLKernel::Run()
 {
 	cl_int iError = 0;
 	iError = clEnqueueNDRangeKernel(m_clCommandQueue, m_clKernel, 1, NULL, workGroupSize, NULL, 0, NULL, &m_clEvent);
+	printf("-\tRunning OpenCL Kernel: %s\n", GetErrorString(iError));
 	clReleaseEvent(m_clEvent);
 	//Wait for this to finish
 	clFinish(m_clCommandQueue);
 
 	//Retrieve data from calculations
 	float* pResult = new float[m_iArraySize];
-	iError = clEnqueueReadBuffer(m_clCommandQueue, m_clArrayOut, CL_TRUE, 0, sizeof(float)* m_iArraySize, &pResult, 0, NULL, &m_clEvent);
+	iError = clEnqueueReadBuffer(m_clCommandQueue, m_clArrayOut, CL_TRUE, 0, sizeof(float)* m_iArraySize, pResult, 0, NULL, &m_clEvent);
+	printf("-\tReading from buffer: %s\n", GetErrorString(iError));
 	clReleaseEvent(m_clEvent);
 	printf("Result:\n");
 	for (int i = 0; i < m_iArraySize; ++i)
 	{
 		printf("%g\n", pResult[i]);
 	}
+	delete[] pResult;
 }
 void 
 COpenCLKernel::BuildExecutable()
@@ -128,6 +138,7 @@ COpenCLKernel::BuildExecutable()
 
 	cl_build_status buildStats;
 	iError = clGetProgramBuildInfo(m_clProgram, m_pDevices[m_iDeviceUsed], CL_PROGRAM_BUILD_STATUS, sizeof(cl_build_status), &buildStats, NULL);
+	printf("-\tProgram build statistics: %s\n", GetErrorString(iError));
 
 	char* pBuildLog;
 	size_t valueSize;
@@ -136,6 +147,9 @@ COpenCLKernel::BuildExecutable()
 	iError = clGetProgramBuildInfo(m_clProgram, m_pDevices[m_iDeviceUsed], CL_PROGRAM_BUILD_LOG, valueSize, pBuildLog, NULL);
 	pBuildLog[valueSize] = '\0';
 	printf("BUILD LOG: %s", pBuildLog);
+
+	delete[] pBuildLog;
+	pBuildLog = 0;
 }
 cl_int 
 COpenCLKernel::GetPlatformID(cl_platform_id* _pPlatformID)
@@ -200,13 +214,22 @@ COpenCLKernel::GetCLFileContents(const char* _pcFilename, int& _iLength)
 
 	if (fileIn.is_open())
 	{
-		fileIn.seekg(0, fileIn.end);
-		_iLength = static_cast<int>(fileIn.tellg());
-		fileIn.seekg(0, fileIn.beg);
+		char* lineBuffer = new char[256];
+		while (fileIn.eof() == false)
+		{
+			//Read current file line into the line buffer
+			fileIn.getline(lineBuffer, 256);	
+			sFileString += lineBuffer;	//Add this line to the kernel string
+		}
+		delete[] lineBuffer;
+		lineBuffer = 0;
 
-		pcBuffer = new char[_iLength + 1];
-		fileIn.read(pcBuffer, _iLength);
-		pcBuffer[_iLength] = '\0';
+		_iLength = sFileString.length() + 1;
+		sFileString[_iLength - 1] = '\0';
+		
+		//Copy the kernel string to the file buffer
+		pcBuffer = new char[_iLength];
+		sprintf(pcBuffer, "%s", sFileString.c_str());
 
 		fileIn.close();
 	}
