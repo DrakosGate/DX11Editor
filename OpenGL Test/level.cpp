@@ -359,13 +359,13 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	//Create thread pool for parallel task management
 	m_pThreadPool = new CThreadPool();
 	//std::thread::hardware_concurrency() is the recommended thread usage for this system
-	m_pThreadPool->Initialise(std::thread::hardware_concurrency(), 20);
+	m_pThreadPool->Initialise(2, 20);// std::thread::hardware_concurrency(), 20);
+
 	m_pOpenCLKernel = new COpenCLKernel();
 	m_pOpenCLKernel->InitialiseOpenCL();
 	m_pOpenCLKernel->LoadProgram("OpenCLKernels/test.cl");
 	m_pOpenCLKernel->SendDataToGPU();
 	m_pOpenCLKernel->Run();
-
 
 	//Read level resources
 	m_pResourceManager = new CResourceManager();

@@ -69,7 +69,7 @@ public:
 	virtual ~CAIHiveMind();
 
 	virtual bool Initialise();
-	void Process(CThreadPool* _pThreadPool, float _fDeltaTime);
+	void Process(CThreadPool* _pCThreadPool, float _fDeltaTime);
 	void ProcessIndividualAIController(int _iAIIndex, float _fDeltaTime);
 	void AddAI(CRenderEntity* _pEntity, EAIType _eAIType);
 	void AddStaticObject(ID3D11Device* _pDevice, CRenderEntity* _pObject);

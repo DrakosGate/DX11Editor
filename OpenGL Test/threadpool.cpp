@@ -1,11 +1,18 @@
 //
-//  File Name   :   threadpool.cpp
-//  Description :   Definition for ThreadPool class
+//  File Name   :   CThreadPool.cpp
+//  Description :   Definition for CThreadPool class
 //  Author      :   Christopher Howlett
 //  Mail        :   drakos_gate@yahoo.com
 //
 
 #include "threadpool.h"
+
+
+void PrintSomething(void* _pSomething)
+{
+	int* pSomething = reinterpret_cast<int*>(_pSomething);
+	printf("Processing %i\n", *pSomething);
+}
 
 CThreadPool::CThreadPool()
 {
@@ -39,60 +46,90 @@ CThreadPool::Initialise(int _iThreadCount, int _iMaxJobCount)
 		//Assign the threads with the Run function - loop forever until killed
 		m_threads.push_back(new std::thread(&CThreadPool::Run, this, iThread));
 	}
+
+	for (int iJob = 0; iJob < 100; ++iJob)
+	{
+		AddJobToPool(PrintSomething, &iJob);
+	}
+
 	return true;
 }
 void
 CThreadPool::AddJobToPool(JOB_TYPE _job, void* _pParameters)
 {
-	{
-		std::unique_lock<std::mutex> lockList(m_jobLock);
-		m_jobList.push(_job);
-		m_parameterList.push(_pParameters);
-	}
+	std::unique_lock<std::mutex> lockList(m_jobLock);
+	m_jobList.push(new TTaskDescription(_job, _pParameters));
 	m_jobNotification.notify_one();
 }
 //Each thread will process this to find a an active job in the job list
 void
 CThreadPool::Run(int _iThreadIndex)
 {
-	//Run forever until threads are killed
-	while (m_bKillThreads == false)
+	TTaskDescription* pJob = 0;
+	while (true)
 	{
-		JOB_TYPE activeJob;
-		void* pParameters = 0;
-		{	//Lock this portion 
-			std::unique_lock<std::mutex> lockList(m_jobLock);
-
-			//Loop until a new job has been found
-			bool bHasJob = false;
-			while (bHasJob == false)
-			{
-				//Check if the program has exited
-				if (m_bKillThreads)
-				{
-					break;
-				}
-				//Check if there are jobs in the job list at the moment
-				if (m_jobList.empty() == false)
-				{
-					//New job has been retrieved from the list!
-					activeJob = m_jobList.front();
-					m_jobList.pop();
-					pParameters = m_parameterList.front();
-					m_parameterList.pop();
-					bHasJob = true;
-					break;
-				}
-
-				//Wait for a job to be added
-				m_jobNotification.wait(lockList);
-			}
-		}
-		//Carry out active job
-		if (activeJob)
+		std::unique_lock<std::mutex> lockList(m_jobLock);
+		while (true)
 		{
-			activeJob(pParameters);
+			if (m_bKillThreads)
+			{
+				return;
+			}
+			if (m_jobList.empty() == false)
+			{
+				pJob = m_jobList.front();
+				m_jobList.pop();
+				break;
+			}
+			m_jobNotification.wait(lockList);
+		}
+		if (pJob)
+		{
+			pJob->job(pJob->pParameter);
+			delete pJob;
+			pJob = 0;
 		}
 	}
-	printf("Killing thread %i\n", _iThreadIndex);
+	//Run forever until threads are killed
+	//while (m_bKillThreads == false)
+	//{
+	//	TTaskDescription* pActiveJob = 0;
+	//	{	//Lock this portion 
+	//		std::unique_lock<std::mutex> lockList(m_jobLock);
+	//
+	//		//Loop until a new job has been found
+	//		bool bHasJob = false;
+	//		while (bHasJob == false)
+	//		{
+	//			//Check if the program has exited
+	//			if (m_bKillThreads)
+	//			{
+	//				break;
+	//			}
+	//			//Check if there are jobs in the job list at the moment
+	//			if (m_jobList.empty() == false)
+	//			{
+	//				//New job has been retrieved from the list!
+	//				pActiveJob = m_jobList.front();
+	//				m_jobList.pop();
+	//				bHasJob = true;
+	//				break;
+	//			}
+	//
+	//			//Wait for a job to be added
+	//			m_jobNotification.wait(lockList);
+	//		}
+	//	}
+	//	//Carry out active job
+	//	if (pActiveJob)
+	//	{
+	//		std::unique_lock<std::mutex> lockList(m_jobLock);
+	//		pActiveJob->job(pActiveJob->pParameter);
+	//		delete pActiveJob;
+	//		pActiveJob = 0;
+	//
+	//		m_jobNotification.notify_one();
+	//	}
+	//}
+	//printf("Killing thread %i\n", _iThreadIndex);
 }

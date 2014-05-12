@@ -108,9 +108,6 @@ CPointSprite::AddPointSprite(ID3D11Device* _pDevice, D3DXVECTOR3& _rPosition, D3
 
 	CreateVertexBuffer(_pDevice);
 	CreateIndexBuffer(_pDevice);
-
-	//Return the latest point sprite created
-	//return &m_pPointSpriteVertices[m_iVertexCount - 1];
 }
 /**
 *

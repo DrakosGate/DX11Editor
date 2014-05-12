@@ -1,14 +1,14 @@
 //
-//  File Name   :   threadpool.h
-//  Description :   Definition of the ThreadPool class
+//  File Name   :   CThreadPool.h
+//  Description :   Definition of the CThreadPool class
 //  Author      :   Christopher Howlett
 //  Mail        :   drakos_gate@yahoo.com
 //
 
 #pragma once
 
-#ifndef __THREADPOOL_H__
-#define __THREADPOOL_H__
+#ifndef __CThreadPool_H__
+#define __CThreadPool_H__
 
 #include <thread>
 #include <vector>
@@ -18,6 +18,17 @@
 #include <atomic>
 
 #define JOB_TYPE std::function<void(void*)>
+
+struct TTaskDescription
+{
+	TTaskDescription(JOB_TYPE& _rJob, void* _pParameters)
+	{
+		job = _rJob;
+		pParameter = _pParameters;
+	}
+	JOB_TYPE job;
+	void* pParameter;
+};
 
 class CThreadPool
 {
@@ -36,17 +47,18 @@ private:
 private:
 	std::vector<std::thread*> m_threads;
 
-	std::queue<JOB_TYPE> m_jobList;
-	std::queue<void*> m_parameterList;
+	std::queue<TTaskDescription*> m_jobList;
 
 	std::mutex m_jobLock;
 	std::condition_variable m_jobNotification;
 
 	std::atomic<bool> m_bKillThreads;
 
+	std::mutex m_threadLock[2];
+
 	int m_iThreadCount;
 	int m_iMaxJobCount;
 };
 
 
-#endif//__THREADPOOL_H__
+#endif//__CThreadPool_H__

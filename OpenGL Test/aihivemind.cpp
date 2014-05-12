@@ -119,7 +119,7 @@ CAIHiveMind::Initialise()
 *
 */
 void 
-CAIHiveMind::Process(CThreadPool* _pThreadPool, float _fDeltaTime)
+CAIHiveMind::Process(CThreadPool* _pCThreadPool, float _fDeltaTime)
 {
 	std::function<void(void*)> aiFunction = ThreadedAI;
 	//std::function<void(CAIHiveMind&, int, float)> aiFunction = &CAIHiveMind::ProcessIndividualAIController;
@@ -127,8 +127,8 @@ CAIHiveMind::Process(CThreadPool* _pThreadPool, float _fDeltaTime)
 	{
 		//aiFunction = std::function<void(int, float)>(ProcessIndividualAIController(iAI, _fDeltaTime));
 		//Add AI processing to thread pool
-		ProcessIndividualAIController(iAI, _fDeltaTime);
-		//_pThreadPool->AddJobToPool(aiFunction, &TAIThreadData(this, iAI, _fDeltaTime));
+		//ProcessIndividualAIController(iAI, _fDeltaTime);
+		_pCThreadPool->AddJobToPool(aiFunction, &TAIThreadData(this, iAI, _fDeltaTime));
 	}
 }
 /**
@@ -143,7 +143,7 @@ CAIHiveMind::Process(CThreadPool* _pThreadPool, float _fDeltaTime)
 void
 CAIHiveMind::ProcessIndividualAIController(int _iAIIndex, float _fDeltaTime)
 {
-	//printf("Processing AI %i\n", _iID);
+	//printf("Processing AI %i\n", _iAIIndex);
 	D3DXVECTOR3 vecAvoidance;
 	vecAvoidance *= 0.0f;
 	for (int iOther = _iAIIndex; iOther < m_iNumAI; ++iOther)
