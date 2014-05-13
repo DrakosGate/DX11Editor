@@ -43,6 +43,8 @@ struct TButton
 	bool bIsActive;
 	std::string sName;
 	std::string sOptions;
+	int iForegroundTexture;
+	int iBackgroundTexture;
 };
 struct TWindow : public TButton
 {
@@ -62,6 +64,11 @@ struct TWindow : public TButton
 		{
 			vecButtons[iButton]->bIsActive = _bIsActive;
 			vecButtons[iButton]->targetColour = _rColour;
+			//Set the colour of all buttons in this to the default colour
+			for (unsigned int iButton = 0; iButton < vecButtons.size(); ++iButton)
+			{
+				vecButtons[iButton]->targetColour = _rColour;
+			}
 		}
 		bIsActive = _bIsActive;
 		targetColour = _rColour;
@@ -76,6 +83,14 @@ enum EWindowState
 	WINDOWSTATE_MOUSEOVER,
 	WINDOWSTATE_CLOSED,
 	WINDOWSTATE_MAX
+};
+enum EEditorState
+{
+	EDITOR_INVALID = -1,
+	EDITOR_IDLE,
+	EDITOR_SELECTED,
+	EDITOR_CLOSED,
+	EDITOR_MAX
 };
 // Constants
 
@@ -94,9 +109,13 @@ public:
 	virtual ~CEditorInterface();
 
 	virtual bool Initialise();
-	virtual void ProcessInput(TInputStruct& _pKeys, float _fDT);
+	virtual bool ProcessInput(TInputStruct* _pKeys, float _fDT);
+	virtual EEditorState GetEditorState() const;
+	virtual std::string& GetSelectedPrefab();
 
 	virtual void ToggleEditor(bool _bIsActive);
+	virtual bool IsActive() const;
+
 	virtual void RefreshBuffers(ID3D11Device* _pDevice);
 	virtual bool HasCollided(D3DXVECTOR2& _rPoint, TButton* _pButton);
 	virtual void ProcessButtonPressed(TWindow* _pWindow, TButton* _pButton);
@@ -113,6 +132,7 @@ private:
 
 	//Member variables
 protected:
+	EEditorState m_eEditorState;
 	std::vector<TWindow*> m_vecWindows;
 
 	D3DXCOLOR* m_pWindowColours;

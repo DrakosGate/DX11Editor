@@ -391,7 +391,7 @@ CEntityManager::InstantiatePrefab(ID3D11Device* _pDevice, char* _pcPrefabName, C
 	pNewEntity->SetModel(pPrefabOptions->pModel);
 	pNewEntity->SetDiffuseMap(pPrefabOptions->pTexture);
 	pNewEntity->SetObjectShader(_pShader);
-	pNewEntity->SetPosition(_rPos);
+	pNewEntity->SetPosition(_rPos + D3DXVECTOR3(0.0f, _rScale.y * 0.5f, 0.0f)); //Offset the position above the ground
 	pNewEntity->SetScale(_rScale);
 	pNewEntity->SetRotation(_rRotation);
 

@@ -52,7 +52,7 @@ public:
 	virtual void SetRotation(D3DXVECTOR3& _rVecRotation);
 	virtual void SetPosition(D3DXVECTOR3& _rVecPosition);
 	virtual void SetForward(D3DXVECTOR3& _rVecForward);
-	virtual void ProcessInput(TInputStruct& _pKeys, float _fDT);
+	virtual bool ProcessInput(TInputStruct& _pKeys, float _fDT);
 	virtual void SetWorldMatrix(D3DXMATRIX& _rWorld);
 	virtual void SetScale(D3DXVECTOR3& _rVecScale);
 

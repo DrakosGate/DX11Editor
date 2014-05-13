@@ -51,6 +51,8 @@ CCamera::CCamera()
 	m_vecRotation *= 0.0f;
 	m_vecVelocity *= 0.0f;
 	m_vecPosition *= 0.0f;
+
+	m_vecCameraRotationOrigin *= 0.0f;
 	
 	m_vecLook.x = 0.0f;
 	m_vecLook.y = 0.0f;
@@ -125,14 +127,6 @@ CCamera::Process(float _fDeltaTime)
 		m_vecPosition.y = 0.1f;
 	}
 
-	//Process camera rotation
-	//D3DXMATRIX camRotation;
-	//D3DXMatrixRotationYawPitchRoll(&camRotation, m_vecRotation.y, m_vecRotation.z, m_vecRotation.x);
-	//D3DXVec3TransformCoord(&m_vecLook, &m_vecLook, &camRotation);
-	//D3DXVec3TransformCoord(&m_vecRight, &m_vecRight, &camRotation);
-	//D3DXVec3TransformCoord(&m_vecUp, &m_vecUp, &camRotation);
-	//m_vecRotation *= 0.0f;
-
 	//Populate view matrix
 	D3DXVec3Normalize(&m_vecLook, &m_vecLook);
 	D3DXVec3Normalize(&m_vecRight, &m_vecRight);
@@ -156,8 +150,8 @@ CCamera::Process(float _fDeltaTime)
 * @param _fDT Time elapsed
 *
 */
-void 
-CCamera::ProcessInput(TInputStruct* _pKeys, D3DXVECTOR2& _vecMouseDirection, float _fDT)
+bool 
+CCamera::ProcessInput(TInputStruct* _pKeys, D3DXVECTOR2& _vecMouseDirection, bool _bScrollCamera, float _fDT)
 {
 	m_bMouseRayCalculatedThisFrame = false;
 	
@@ -170,28 +164,36 @@ CCamera::ProcessInput(TInputStruct* _pKeys, D3DXVECTOR2& _vecMouseDirection, flo
 	}
 	if (_pKeys->bRightMouseClick.bPressed)
 	{
+		//Set rotation origin
+		if (_pKeys->bRightMouseClick.bPreviousState == false)
+		{
+			m_vecCameraRotationOrigin = _pKeys->vecMouse;
+		}
 		D3DXVECTOR2 vecSensitivity = D3DXVECTOR2(0.5f, 0.5f);
-		D3DXVECTOR2 vecMouseOffset = (_pKeys->vecMouse - _pKeys->vecPreviousMouse);
-		m_vecTargetLook += m_vecRight * (-_pKeys->vecMouse.x * vecSensitivity.x) * _fDT;
-		m_vecTargetLook += m_vecUp * (_pKeys->vecMouse.y * vecSensitivity.y) * _fDT;
+		D3DXVECTOR2 vecMouseOffset = _pKeys->vecMouse - m_vecCameraRotationOrigin;
+		m_vecTargetLook += m_vecRight * (-vecMouseOffset.x * vecSensitivity.x) * _fDT;
+		m_vecTargetLook += m_vecUp * (vecMouseOffset.y * vecSensitivity.y) * _fDT;
 	}
 	//Move according to mouse coordinates
 	float fScreenZones = 0.1f;
-	if (_pKeys->vecMouse.x > ((WINDOW_WIDTH * 0.5f) - (WINDOW_WIDTH * fScreenZones)))
+	if (_bScrollCamera)
 	{
-		m_vecVelocity -= D3DXVECTOR3(m_vecRight.x, 0.0f, m_vecRight.z) * fCurrentMovementSpeed * _fDT;
-	}
-	if (_pKeys->vecMouse.x < (-(WINDOW_WIDTH * 0.5f) + (WINDOW_WIDTH * fScreenZones)))
-	{
-		m_vecVelocity += D3DXVECTOR3(m_vecRight.x, 0.0f, m_vecRight.z) * fCurrentMovementSpeed * _fDT;
-	}
-	if (_pKeys->vecMouse.y > ((WINDOW_HEIGHT * 0.5f) - (WINDOW_HEIGHT * fScreenZones)))
-	{
-		m_vecVelocity += D3DXVECTOR3(m_vecLook.x, 0.0f, m_vecLook.z) * fCurrentMovementSpeed * _fDT;
-	}
-	if (_pKeys->vecMouse.y < (-(WINDOW_HEIGHT * 0.5f) + (WINDOW_HEIGHT * fScreenZones)))
-	{
-		m_vecVelocity -= D3DXVECTOR3(m_vecLook.x, 0.0f, m_vecLook.z) * fCurrentMovementSpeed * _fDT;
+		if (_pKeys->vecMouse.x > ((WINDOW_WIDTH * 0.5f) - (WINDOW_WIDTH * fScreenZones)))
+		{
+			m_vecVelocity -= D3DXVECTOR3(m_vecRight.x, 0.0f, m_vecRight.z) * fCurrentMovementSpeed * _fDT;
+		}
+		if (_pKeys->vecMouse.x < (-(WINDOW_WIDTH * 0.5f) + (WINDOW_WIDTH * fScreenZones)))
+		{
+			m_vecVelocity += D3DXVECTOR3(m_vecRight.x, 0.0f, m_vecRight.z) * fCurrentMovementSpeed * _fDT;
+		}
+		if (_pKeys->vecMouse.y >((WINDOW_HEIGHT * 0.5f) - (WINDOW_HEIGHT * fScreenZones)))
+		{
+			m_vecVelocity += D3DXVECTOR3(m_vecLook.x, 0.0f, m_vecLook.z) * fCurrentMovementSpeed * _fDT;
+		}
+		if (_pKeys->vecMouse.y < (-(WINDOW_HEIGHT * 0.5f) + (WINDOW_HEIGHT * fScreenZones)))
+		{
+			m_vecVelocity -= D3DXVECTOR3(m_vecLook.x, 0.0f, m_vecLook.z) * fCurrentMovementSpeed * _fDT;
+		}
 	}
 	m_vecVelocity += D3DXVECTOR3(0.0f, _pKeys->fMouseWheel, 0.0f) * (fCurrentMovementSpeed * 10.0f) * _fDT;
 
@@ -216,6 +218,7 @@ CCamera::ProcessInput(TInputStruct* _pKeys, D3DXVECTOR2& _vecMouseDirection, flo
 	//Recreate vectors
 	D3DXVec3Cross(&m_vecRight, &m_vecLook, &D3DXVECTOR3(0.0f, 1.0f, 0.0f));
 	D3DXVec3Cross(&m_vecUp, &m_vecRight, &m_vecLook);
+	return true;
 }
 /**
 *

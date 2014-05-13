@@ -338,7 +338,7 @@ CResourceManager::SendTextureDataToShader(ID3D11DeviceContext* _pDevContext)
 	m_pTextureArray = new ID3D11ShaderResourceView*[iTextureCount];
 	for (int iTexture = 0; iTexture < iTextureCount; ++iTexture)
 	{
-		m_pTextureArray[iTexture] = m_TexturePool[iTextureCount - iTexture - 1]->pTexture;
+		m_pTextureArray[iTextureCount - 1 - iTexture] = m_TexturePool[iTextureCount - iTexture - 1]->pTexture;
 	}
 	_pDevContext->PSSetShaderResources(0, iTextureCount, m_pTextureArray);
 	

@@ -69,7 +69,7 @@ float4 SampleTextureArray(PS_IN _input)
 //=============================
 float4 PointPS(PS_IN _input) : SV_TARGET
 {
-	float4 diffuseColour = g_textureArray[4].Sample(textureSampler, _input.texC);// SampleTextureArray(_input);
+	float4 diffuseColour = SampleTextureArray(_input);
 	diffuseColour *= _input.colour;
 	//diffuseColour.a = 0.5f;
 	return diffuseColour;

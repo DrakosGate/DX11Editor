@@ -16,49 +16,6 @@
 #include "defines.h"
 
 // Types
-enum ERenderTargetType
-{
-	RENDER_INVALID = -1,
-	RENDER_MRT,
-	RENDER_DEFERRED,
-	RENDER_POST,
-	RENDER_FINAL,
-	RENDER_MAX
-};
-enum EShaderType
-{
-	SHADER_INVALID = -1,
-	SHADER_POINTSPRITE,		//GS Shaders
-	SHADER_LINERENDERER,
-
-	SHADER_OBJECT,			//Object Shaders
-	SHADER_UNLITOBJECT,
-	SHADER_ANIMOBJECT,
-
-	SHADER_MRT,				//Deferred Rendering Shaders
-	SHADER_DEFERRED,
-
-	SHADER_FINALOUTPUT,		//Post processing Shaders
-	SHADERPOST_PIXELATE,
-	SHADERPOST_RADIALBLUR,
-	SHADER_MAX
-};
-enum EVertexLayoutType
-{
-	VERTEX_INVALID = -1,
-	VERTEX_STATIC,
-	VERTEX_ANIMATED,
-	VERTEX_POINT,
-	VERTEX_MAX
-};
-enum ERenderState
-{
-	RENDERSTATE_INVALID = -1,
-	RENDERSTATE_GAME,
-	RENDERSTATE_EDITOR,
-	RENDERSTATE_DEBUG,
-	RENDERSTATE_MAX
-};
 struct TUCHARColour
 {
 	unsigned char r;
@@ -100,6 +57,7 @@ public:
 	virtual bool Initialise(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext, CDirectXRenderer* _pRenderer, TInputStruct* _pInput, int _iScreenWidth, int _iScreenHeight);
 	virtual void CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext);
 	virtual void Process(ID3D11Device* _pDevice, float _fDeltaTime);
+	virtual bool ProcessInput(ID3D11Device* _pDevice, float _fDeltaTime);
 	virtual void Draw(ID3D11DeviceContext* _pDevice);
 	virtual void DrawScene(ID3D11DeviceContext* _pDevice, CCamera* _pCurrentCamera, EGameScene _EGameScene);
 	
@@ -125,20 +83,22 @@ private:
 
 	//Game entities
 	//CPlayer* m_pPlayer;
-	CPrefab** m_pHuman;
-	CPrefab** m_pCreatures;
-	CPrefab** m_pTrees;
+	std::vector<CPrefab*> m_pHumans;
+	std::vector<CPrefab*> m_pCreatures;
+	std::vector<CPrefab*> m_pTrees;
 	CPrefab* m_pCursor;
 	CModel* m_pTerrain;
 	CModel* m_pSelectionCursor;
+
+	//Editor
 	CEditorInterface* m_pEditor;
+	std::vector<CPrefab*> m_pNewEntities;
+	char* m_pcSelectedPrefab;
+	bool m_bCreateObject;
 
 	//CGrass* m_pGrass;
 	CRenderEntity** m_pGrassEntities;
 	int m_iNumGrassEntities;
-	int m_iNumTrees;
-	int m_iNumHumans;
-	int m_iNumCreatures;
 	float m_fGrassScale;
 
 	CAIHiveMind* m_pHivemind;

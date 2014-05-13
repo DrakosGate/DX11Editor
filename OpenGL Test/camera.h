@@ -32,7 +32,7 @@ public:
 
 	bool Initialise(float _fMovementSpeed, float _fRotationSpeed, float _fOrbitSpeed, int _iWindowWidth, int _iWindowHeight, bool _bUsesPerspective);
 	void Process(float _fDeltaTime);
-	void ProcessInput(TInputStruct* _pKeys, D3DXVECTOR2& _vecMouseDirection, float _fDT);
+	bool ProcessInput(TInputStruct* _pKeys, D3DXVECTOR2& _vecMouseDirection, bool _bScrollCamera, float _fDT);
 
 	TRay& GetMouseRay(D3DXVECTOR2& _rMousePoint);
 	void CreateProjectionMatrix(float _fAspect);
@@ -78,6 +78,7 @@ private:
 	float m_fCurrentZoomHeight;
 
 	TInputStruct* m_pPlayerInput;
+	D3DXVECTOR2 m_vecCameraRotationOrigin;
 	bool m_bUsesPerspective;
 	int m_iWindowWidth;
 	int m_iWindowHeight;

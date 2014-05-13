@@ -62,9 +62,6 @@ CLevel::CLevel()
 , m_eGameScene(SCENE_3DSCENE)
 , m_pEntityManager(0)
 //, m_pPlayer(0)
-, m_pHuman(0)
-, m_pCreatures(0)
-, m_pTrees(0)
 , m_pCursor(0)
 , m_pTerrain(0)
 //, m_pGrass(0)
@@ -88,12 +85,11 @@ CLevel::CLevel()
 , m_iScreenWidth(0)
 , m_iScreenHeight(0)
 , m_iNumGrassEntities(0)
-, m_iNumTrees(0)
-, m_iNumHumans(0)
-, m_iNumCreatures(0)
 , m_pResourceManager(0)
 , m_pThreadPool(0)
 , m_pOpenCLKernel(0)
+, m_pcSelectedPrefab(0)
+, m_bCreateObject(false)
 {
 	D3DXMatrixIdentity(&m_matWorldViewProjection); 
 }
@@ -114,6 +110,11 @@ CLevel::~CLevel()
 	//	delete m_pPlayer;
 	//	m_pPlayer = 0;
 	//}
+	if (m_pcSelectedPrefab)
+	{
+		delete[] m_pcSelectedPrefab;
+		m_pcSelectedPrefab = 0;
+	}
 	if (m_pThreadPool)
 	{
 		delete m_pThreadPool;
@@ -151,37 +152,31 @@ CLevel::~CLevel()
 		delete m_pHivemind;
 		m_pHivemind = 0;
 	}
-	if(m_pTrees)
+	for (unsigned int iTree = 0; iTree < m_pTrees.size(); ++iTree)
 	{
-		for (int iTree = 0; iTree < m_iNumTrees; ++iTree)
-		{
-			delete m_pTrees[iTree];
-			m_pTrees[iTree] = 0;
-		}
-		delete[] m_pTrees;
-		m_pTrees = 0;
+		delete m_pTrees[iTree];
+		m_pTrees[iTree] = 0;
 	}
-	if(m_pCreatures)
+	m_pTrees.clear();
+	for (unsigned int iCreature = 0; iCreature < m_pCreatures.size(); ++iCreature)
 	{
-		for (int iCreature = 0; iCreature < m_iNumCreatures; ++iCreature)
-		{
-			delete m_pCreatures[iCreature];
-			m_pCreatures[iCreature] = 0;
-		}
-		delete[] m_pCreatures;
-		m_pCreatures = 0;
+		delete m_pCreatures[iCreature];
+		m_pCreatures[iCreature] = 0;
 	}
-	if(m_pHuman)
+	m_pCreatures.clear();
+	for (unsigned int iHuman = 0; iHuman < m_pHumans.size(); ++iHuman)
 	{
-		for (int iHuman = 0; iHuman < m_iNumHumans; ++iHuman)
-		{
-			delete m_pHuman[iHuman];
-			m_pHuman[iHuman] = 0;
-		}
-		delete[] m_pHuman;
-		m_pHuman = 0;
+		delete m_pHumans[iHuman];
+		m_pHumans[iHuman] = 0;
 	}
-	if(m_pTerrain)
+	m_pHumans.clear();
+	for (unsigned int iEntity = 0; iEntity < m_pNewEntities.size(); ++iEntity)
+	{
+		delete m_pNewEntities[iEntity];
+		m_pNewEntities[iEntity] = 0;
+	}
+	m_pHumans.clear();
+	if (m_pTerrain)
 	{
 		delete m_pTerrain;
 		m_pTerrain = 0;
@@ -319,7 +314,7 @@ CLevel::Initialise(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext, CD
 	//Directional
 	//m_pLightManager->AddDirectional(D3DXVECTOR3(0.0f, -0.2f, 1.0f), D3DXCOLOR(0.5f, 0.6f, 0.5f, 1.0f), 5.0f);
 	//Point
-	for(int i = 0; i < m_iNumHumans; ++i)
+	for(unsigned int i = 0; i < m_pHumans.size(); ++i)
 	{
 		m_pLightManager->AddPoint(D3DXVECTOR3(0.0f, 0.4f, 0.0f), D3DXCOLOR(0.7f, 0.7f, 0.3f, 1.0f), D3DXVECTOR3(0.15f, 0.02f, 5.0f), 1.0f);
 	}
@@ -433,65 +428,62 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	m_pHivemind->Initialise();
 	m_pHivemind->CreateNavigationGrid(_pDevice, m_pEntityManager, &m_pShaderCollection[SHADER_POINTSPRITE], 20.0f, 60, 60);
 
-	m_iNumHumans = 5;
-	m_iNumCreatures = 20;
-	m_iNumTrees = 50;
-	m_pHuman = new CPrefab*[m_iNumHumans];
+	int iNumHumans = 5;
+	int iNumCreatures = 20;
+	int iNumTrees = 50;
 	
 	//Add all entities to the grass avoidance
-	m_iNumGrassEntities = 1 + m_iNumCreatures + m_iNumHumans; // + 1 for the cursor
+	m_iNumGrassEntities = 1 + iNumCreatures + iNumHumans; // + 1 for the cursor
 	m_pGrassEntities = new CRenderEntity*[m_iNumGrassEntities];
 	int iCurrentGrassEntity = 0;
 	m_pGrassEntities[iCurrentGrassEntity] = m_pCursor;
 	++iCurrentGrassEntity;
 
-	for(int iHuman = 0; iHuman < m_iNumHumans; ++iHuman)
+	for (int iHuman = 0; iHuman < iNumHumans; ++iHuman)
 	{
-		m_pHuman[iHuman] = m_pEntityManager->InstantiatePrefab(	_pDevice,
+		m_pHumans.push_back(m_pEntityManager->InstantiatePrefab(_pDevice,
 																"human",
 																&m_pShaderCollection[SHADER_MRT],
 																SCENE_3DSCENE,
-																D3DXVECTOR3(D3DXVECTOR3(0.0f, 0.5f, 0.0f)),
+																D3DXVECTOR3(D3DXVECTOR3(0.0f, 0.0f, 0.0f)),
 																D3DXVECTOR3(1.0f, 1.0f, 1.0f),
 																D3DXVECTOR3(0.0f, static_cast<float>(rand() % 360), 0.0f),
-																D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
-		m_pHivemind->AddAI(m_pHuman[iHuman], AI_HUMAN);
-		m_pGrassEntities[iCurrentGrassEntity] = m_pHuman[iHuman];
+																D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f)));
+		m_pHivemind->AddAI(m_pHumans[iHuman], AI_HUMAN);
+		m_pGrassEntities[iCurrentGrassEntity] = m_pHumans[iHuman];
 		++iCurrentGrassEntity;
 	}
 
-	m_pCreatures = new CPrefab*[m_iNumCreatures];
-	for(int iCreature = 0; iCreature < m_iNumCreatures; ++iCreature)
+	for(int iCreature = 0; iCreature < iNumCreatures; ++iCreature)
 	{
-		m_pCreatures[iCreature] = m_pEntityManager->InstantiatePrefab(	_pDevice,
-																		"chicken",
-																		&m_pShaderCollection[SHADER_MRT],
-																		SCENE_3DSCENE,
-																		D3DXVECTOR3(D3DXVECTOR3(0.0f, 0.25f, 0.0f)),
-																		D3DXVECTOR3(0.5f, 0.5f, 0.5f),
-																		D3DXVECTOR3(0.0f, static_cast<float>(rand() % 360), 0.0f),
-																		D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
+		m_pCreatures.push_back(m_pEntityManager->InstantiatePrefab(	_pDevice,
+																	"chicken",
+																	&m_pShaderCollection[SHADER_MRT],
+																	SCENE_3DSCENE,
+																	D3DXVECTOR3(D3DXVECTOR3(0.0f, 0.0f, 0.0f)),
+																	D3DXVECTOR3(0.5f, 0.5f, 0.5f),
+																	D3DXVECTOR3(0.0f, static_cast<float>(rand() % 360), 0.0f),
+																	D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f)));
 		m_pHivemind->AddAI(m_pCreatures[iCreature], AI_CREATURE);
 		m_pGrassEntities[iCurrentGrassEntity] = m_pCreatures[iCreature];
 		++iCurrentGrassEntity;
 	}
 
-	m_pTrees = new CPrefab*[m_iNumTrees];
 	float fTreeRadius = 4.0f;
 	float fTreeDensity = 0.1f;
-	for(int iTree = 0; iTree < m_iNumTrees; ++iTree)
+	for(int iTree = 0; iTree < iNumTrees; ++iTree)
 	{
 		float fCurrentTreeRadius = fTreeRadius + (iTree * fTreeDensity);
 		D3DXVECTOR3 treePos = m_pHivemind->GetRandomWaypoint();
-		treePos.y = 0.75f;
-		m_pTrees[iTree] = m_pEntityManager->InstantiatePrefab(	_pDevice,
+		//treePos.y = 0.75f;
+		m_pTrees.push_back(m_pEntityManager->InstantiatePrefab(	_pDevice,
 																"tree",
 																&m_pShaderCollection[SHADER_MRT],
 																SCENE_3DSCENE,
 																treePos,
 																D3DXVECTOR3(1.5f, 1.5f, 1.5f),
 																D3DXVECTOR3(0.0f, static_cast<float>(rand() % 360), 0.0f),
-																D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
+																D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f)));
 		m_pHivemind->AddStaticObject(_pDevice, m_pTrees[iTree]);
 	}
 	m_pSelectionCursor = new CModel();
@@ -525,40 +517,19 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 void 
 CLevel::Process(ID3D11Device* _pDevice, float _fDeltaTime)
 {
-	m_pCamera->ProcessInput(m_pInput, D3DXVECTOR2(1.0f, 0.0f), _fDeltaTime);
-	if (m_pInput->bToggleRender.bPressed && m_pInput->bToggleRender.bPreviousState == false)
-	{
-		if (m_eRenderState == RENDERSTATE_EDITOR)
-		{
-			m_eRenderState = RENDERSTATE_DEBUG;
-		}
-		else
-		{
-			m_eRenderState = RENDERSTATE_EDITOR;
-		}
-	}
+	ProcessInput(_pDevice, _fDeltaTime);
 
 	m_pCamera->Process(_fDeltaTime);
 	m_pOrthoCamera->Process(_fDeltaTime);
 
-	m_pInput->m_tMouseRay = m_pCamera->GetMouseRay(m_pInput->vecMouse);
-	float fIntersectionPoint = PlaneToLine(D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 1.0f, 0.0f), m_pInput->m_tMouseRay);
-	if (fIntersectionPoint > 0.0f)
+	for (unsigned int i = 0; i < m_pHumans.size(); ++i)
 	{
-		m_pCursor->SetPosition(m_pInput->m_tMouseRay.vecPosition + (m_pInput->m_tMouseRay.vecDirection * fIntersectionPoint));
-		float fCameraRotation = (static_cast<float>(D3DX_PI) * 0.9f) + atan2f(m_pCamera->GetLook().x, m_pCamera->GetLook().z);
-		m_pCursor->SetRotation(D3DXVECTOR3(0.0f, fCameraRotation, 0.0f));
+		m_pLightManager->GetPoint(i)->SetPosition(m_pHumans[i]->GetPosition() + m_pHumans[i]->GetForward() * 0.5f);
 	}
-
-	for (int i = 0; i < m_iNumHumans; ++i)
-	{
-		m_pLightManager->GetPoint(i)->SetPosition(m_pHuman[i]->GetPosition() + m_pHuman[i]->GetForward() * 0.5f);
-	}
-	m_pLightManager->GetPoint(m_iNumHumans)->SetPosition(m_pCursor->GetPosition() + D3DXVECTOR3(0.0f, 0.1f, 0.0f));
+	m_pLightManager->GetPoint(m_pLightManager->GetLightCount(LIGHT_POINT) - 1)->SetPosition(m_pCursor->GetPosition() + D3DXVECTOR3(0.0f, 0.1f, 0.0f));
 	
 	//Process camera and movement
 	//m_pPlayer->ProcessInput(_fDeltaTime);
-	m_pEditor->ProcessInput(*m_pInput, _fDeltaTime);
 	m_pEditor->RefreshBuffers(_pDevice);
 	m_pEditor->Process(_fDeltaTime);
 	
@@ -583,6 +554,88 @@ CLevel::Process(ID3D11Device* _pDevice, float _fDeltaTime)
 	//Process audio
 	CAudioPlayer::GetInstance().SetListenerPosition(m_pCamera->GetPosition(), m_pCamera->GetLook(), D3DXVECTOR3(0.0f, 1.0f, 0.0f));
 	CAudioPlayer::GetInstance().Process();
+}
+/**
+*
+* CLevel class Processes input for all entities in this level
+* (Task ID: n/a)
+*
+* @author Christopher Howlett
+* @param _fDeltaTime Game time elapsed
+*
+*/
+bool
+CLevel::ProcessInput(ID3D11Device* _pDevice, float _fDeltaTime)
+{
+	//Toggle level editor
+	if (m_pInput->bTilde.bPressed && m_pInput->bTilde.bPreviousState == false)
+	{
+		m_pEditor->ToggleEditor(!m_pEditor->IsActive());
+	}
+	bool bMouseOverEditor = m_pEditor->ProcessInput(m_pInput, _fDeltaTime);
+	//Check if new objects are being created
+	if (m_pEditor->GetEditorState() == EDITOR_SELECTED)
+	{
+		std::string sPrefab = m_pEditor->GetSelectedPrefab();
+
+		delete[] m_pcSelectedPrefab;
+		m_pcSelectedPrefab = new char[sPrefab.size() + 1];
+		sprintf(m_pcSelectedPrefab, "%s", sPrefab.c_str());
+		m_bCreateObject = true;
+		m_pCursor->SetModel(m_pResourceManager->GetModel(m_pcSelectedPrefab));
+		m_pCursor->SetDiffuseMap(m_pResourceManager->GetTexture(m_pcSelectedPrefab));
+	}
+	//Create new objects
+	if (m_bCreateObject && bMouseOverEditor == false)
+	{
+		//Instantiate a new entity
+		if (m_pInput->bLeftMouseClick.bPressed && m_pInput->bLeftMouseClick.bPreviousState == false)
+		{
+			m_pNewEntities.push_back(m_pEntityManager->InstantiatePrefab(	_pDevice,
+																			m_pcSelectedPrefab,
+																			&m_pShaderCollection[SHADER_MRT],
+																			SCENE_3DSCENE,
+																			m_pCursor->GetPosition(),
+																			D3DXVECTOR3(0.5f, 0.5f, 0.5f),
+																			D3DXVECTOR3(0.0f, static_cast<float>(rand() % 360), 0.0f),
+																			D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f)));
+		}
+		//Cancel entity creation
+		if (m_pInput->bRightMouseClick.bPressed && m_pInput->bRightMouseClick.bPreviousState == false)
+		{
+			m_bCreateObject = false;
+			//Set model back to cursor model
+			m_pCursor->SetModel(m_pResourceManager->GetModel("cursor"));
+			m_pCursor->SetDiffuseMap(m_pResourceManager->GetTexture("cursor"));
+		}
+	}
+
+	//Process Camera Input
+	m_pCamera->ProcessInput(m_pInput, D3DXVECTOR2(1.0f, 0.0f), !bMouseOverEditor, _fDeltaTime);
+	//Cast ray from camera to ground plane
+	m_pInput->m_tMouseRay = m_pCamera->GetMouseRay(m_pInput->vecMouse);
+	float fIntersectionPoint = PlaneToLine(D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 1.0f, 0.0f), m_pInput->m_tMouseRay);
+	if (fIntersectionPoint > 0.0f)
+	{
+		m_pCursor->SetPosition(m_pInput->m_tMouseRay.vecPosition + (m_pInput->m_tMouseRay.vecDirection * fIntersectionPoint));
+		float fCameraRotation = (static_cast<float>(D3DX_PI)* 0.9f) + atan2f(m_pCamera->GetLook().x, m_pCamera->GetLook().z);
+		m_pCursor->SetRotation(D3DXVECTOR3(0.0f, fCameraRotation, 0.0f));
+	}
+	
+	//Toggle rendering mode
+	if (m_pInput->bToggleRender.bPressed && m_pInput->bToggleRender.bPreviousState == false)
+	{
+		if (m_eRenderState == RENDERSTATE_EDITOR)
+		{
+			m_eRenderState = RENDERSTATE_DEBUG;
+		}
+		else
+		{
+			m_eRenderState = RENDERSTATE_EDITOR;
+		}
+	}
+
+	return true;
 }
 /*
 *

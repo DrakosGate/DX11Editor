@@ -300,10 +300,11 @@ CRenderEntity::SetForward(D3DXVECTOR3& _rVecForward)
 * @param _fDT Time elapsed
 *
 */
-void
+bool
 CRenderEntity::ProcessInput(TInputStruct& _pKeys, float _fDT)
 {
 	//Do nothing
+	return false;
 }
 /**
 *

@@ -35,10 +35,10 @@
 *
 */
 CPrefab::CPrefab()
-:	m_pModel(0)
-,	m_eTileType(TILE_INVALID)
-,	m_fBoundingBoxPercentage(0.0f)
-,	m_bIsCollidable(false)
+: m_pModel(0)
+, m_eTileType(TILE_INVALID)
+, m_fBoundingBoxPercentage(0.0f)
+, m_bIsCollidable(false)
 {	
 	m_vecScale.x = 1.0f;
 	m_vecScale.y = 1.0f;
@@ -47,7 +47,11 @@ CPrefab::CPrefab()
 
 CPrefab::~CPrefab()
 {
-	
+	if (m_pBoundingBox)
+	{
+		delete m_pBoundingBox;
+		m_pBoundingBox = 0;
+	}
 }
 bool 
 CPrefab::Initialise(ID3D11Device* _pDevice, float _fScale)
@@ -56,8 +60,11 @@ CPrefab::Initialise(ID3D11Device* _pDevice, float _fScale)
 	m_vecScale.y = _fScale;
 	m_vecScale.z = _fScale;
 
-	m_pBoundingBox = new CBoundingBox();
-	m_fBoundingBoxPercentage = 1.0f; //Full bounding box size
+	if (!m_pBoundingBox)
+	{
+		m_pBoundingBox = new CBoundingBox();
+		m_fBoundingBoxPercentage = 1.0f; //Full bounding box size
+	}
 	return true;
 }
 /**
