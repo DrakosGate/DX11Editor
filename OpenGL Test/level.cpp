@@ -576,12 +576,17 @@ CLevel::ProcessInput(ID3D11Device* _pDevice, float _fDeltaTime)
 	//Check if new objects are being created
 	if (m_pEditor->GetEditorState() == EDITOR_SELECTED)
 	{
-		std::string sPrefab = m_pEditor->GetSelectedPrefab();
-
+		//Get name of new prefab
 		delete[] m_pcSelectedPrefab;
-		m_pcSelectedPrefab = new char[sPrefab.size() + 1];
-		sprintf(m_pcSelectedPrefab, "%s", sPrefab.c_str());
+		std::string sPrefab = m_pEditor->GetSelectedPrefab();
+		sPrefab += '\0';
+		int iSize = sPrefab.size();
+
+		//Copy name to a char buffer
+		m_pcSelectedPrefab = new char[iSize];
+		sprintf_s(m_pcSelectedPrefab, iSize, "%s", sPrefab.c_str());
 		m_bCreateObject = true;
+		//Change the cursor model
 		m_pCursor->SetModel(m_pResourceManager->GetModel(m_pcSelectedPrefab));
 		m_pCursor->SetDiffuseMap(m_pResourceManager->GetTexture(m_pcSelectedPrefab));
 	}

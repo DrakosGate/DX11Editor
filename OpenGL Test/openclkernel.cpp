@@ -229,7 +229,7 @@ COpenCLKernel::GetCLFileContents(const char* _pcFilename, int& _iLength)
 		
 		//Copy the kernel string to the file buffer
 		pcBuffer = new char[_iLength];
-		sprintf(pcBuffer, "%s", sFileString.c_str());
+		sprintf_s(pcBuffer, _iLength, "%s", sFileString.c_str());
 
 		fileIn.close();
 	}

@@ -370,7 +370,8 @@ CEntityManager::AddPrefab(TPrefabOptions* _pPrefab)
 TPrefabOptions*
 CEntityManager::GetPrefabOptions(char* _pcPrefabName)
 {
-	return m_vecPrefabTypes[m_mapPrefabIndex[_pcPrefabName]];
+	int iPrefabIndex = m_mapPrefabIndex[_pcPrefabName];
+	return m_vecPrefabTypes[iPrefabIndex];
 }
 /**
 *
@@ -384,6 +385,7 @@ CEntityManager::GetPrefabOptions(char* _pcPrefabName)
 CPrefab*
 CEntityManager::InstantiatePrefab(ID3D11Device* _pDevice, char* _pcPrefabName, CShader* _pShader, EGameScene _eScene, D3DXVECTOR3& _rPos, D3DXVECTOR3& _rScale, D3DXVECTOR3& _rRotation, D3DXCOLOR& _rColour)
 {
+	int ilength = strlen(_pcPrefabName);
 	CPrefab* pNewEntity = new CPrefab();
 	TPrefabOptions* pPrefabOptions = GetPrefabOptions(_pcPrefabName);
 
