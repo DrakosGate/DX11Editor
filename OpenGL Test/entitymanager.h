@@ -54,8 +54,8 @@ public:
 
 	void AddEntity(CRenderEntity* _pNewEntity, EGameScene _eScene);
 	void AddPrefab(TPrefabOptions* _pPrefab);
-	TPrefabOptions* GetPrefabOptions(char* _pcPrefabName);
-	CPrefab* InstantiatePrefab(ID3D11Device* _pDevice, char* _pcPrefabName, CShader* _pShader, EGameScene _eScene, D3DXVECTOR3& _rPos, D3DXVECTOR3& _rScale, D3DXVECTOR3& _rRotation, D3DXCOLOR& _rColour);
+	TPrefabOptions* GetPrefabOptions(std::string& _pcPrefabName);
+	CPrefab* InstantiatePrefab(ID3D11Device* _pDevice, std::string& _pcPrefabName, CShader* _pShader, EGameScene _eScene, D3DXVECTOR3& _rPos, D3DXVECTOR3& _rScale, D3DXVECTOR3& _rRotation, D3DXCOLOR& _rColour);
 	
 	bool IsEntityInFrustum(CCamera* _pCamera, CBoundingBox* _pBoundingBox);
 
@@ -69,7 +69,7 @@ protected:
 	std::vector<CRenderEntity*>* m_pTransparentEntities;
 	std::vector<TPrefabOptions*> m_vecPrefabTypes;
 
-	std::map<char*, unsigned int> m_mapPrefabIndex;
+	std::map<std::string, unsigned int> m_mapPrefabIndex;
 
 
 	float* m_pCameraDepths;

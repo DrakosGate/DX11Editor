@@ -193,10 +193,42 @@ CResourceManager::Initialise(ID3D11Device* _pDevice, char* _pcResourceFilename)
 void
 CResourceManager::LoadPrefabTypes(ID3D11Device* _pDevice, CEntityManager* _pEntityManager, char* _pcResourceFilename)
 {
-	_pEntityManager->AddPrefab(new TPrefabOptions("human", GetModel("human"), false, GetTexture("human")));
-	_pEntityManager->AddPrefab(new TPrefabOptions("chicken", GetModel("chicken"), false, GetTexture("chicken")));
-	_pEntityManager->AddPrefab(new TPrefabOptions("tree", GetModel("tree"), false, GetTexture("tree")));
-	_pEntityManager->AddPrefab(new TPrefabOptions("cursor", GetModel("cursor"), false, GetTexture("cursor")));
+	int iMaxMessageSize = 128;
+	printf("==== Loading Prefabs from %s ====\n", _pcResourceFilename);
+
+	//Open file containing resource information
+	rapidxml::file<> xmlFile(_pcResourceFilename);
+	rapidxml::xml_document<> xmlDoc;
+
+	//Parse file string
+	xmlDoc.parse<0>(xmlFile.data());
+	rapidxml::xml_node<>* pRoot = xmlDoc.first_node();
+
+	//Loop through models
+	printf("\n  == LOADING PREFABS\n");
+	for (rapidxml::xml_node<>* pCurrentPrefab = pRoot->first_node("prefab"); pCurrentPrefab; pCurrentPrefab = pCurrentPrefab->next_sibling())
+	{
+		std::string sPrefabName = pCurrentPrefab->first_attribute("id")->value();
+		std::string sPrefabModel = pCurrentPrefab->first_node("model")->value();
+		std::string sPrefabDiffuseTexture = pCurrentPrefab->first_node("texture")->value();
+
+		D3DXVECTOR3 vecScale(	ReadFromString<float>(pCurrentPrefab->first_node("scale")->first_attribute("x")->value()),
+								ReadFromString<float>(pCurrentPrefab->first_node("scale")->first_attribute("y")->value()),
+								ReadFromString<float>(pCurrentPrefab->first_node("scale")->first_attribute("z")->value()));
+		bool bIsAnimated = false;
+		bool bIsStatic = false;
+		if (pCurrentPrefab->first_node("animated"))
+		{
+			bIsAnimated = strcmp(pCurrentPrefab->first_node("animated")->value(), "true") == 0;
+		}
+		if (pCurrentPrefab->first_node("static"))
+		{
+			bIsStatic = strcmp(pCurrentPrefab->first_node("static")->value(), "true") == 0;
+		}
+
+		_pEntityManager->AddPrefab(new TPrefabOptions(sPrefabName, GetModel(sPrefabModel), GetTexture(sPrefabDiffuseTexture), vecScale, bIsAnimated, bIsStatic));
+		printf("    = Prefab %s successfully loaded\n", sPrefabName.c_str());
+	}
 }
 /**
 *
@@ -252,10 +284,9 @@ CResourceManager::CreateTextureFromData(ID3D11Device* _pDevice, unsigned char* _
 *
 */
 CModel* 
-CResourceManager::GetModel(char* _pcModelName) const
+CResourceManager::GetModel(std::string& _pcModelName) const
 {
-	std::string sKey = _pcModelName;
-	return (m_mapModels.find(sKey)->second);
+	return (m_mapModels.find(_pcModelName)->second);
 }
 /**
 *
@@ -268,7 +299,7 @@ CResourceManager::GetModel(char* _pcModelName) const
 *
 */
 CAnimatedModel* 
-CResourceManager::GetAnimatedModel(char* _pcAnimatedModelName) const
+CResourceManager::GetAnimatedModel(std::string& _pcAnimatedModelName) const
 {
 	std::string sKey = _pcAnimatedModelName;
 	return (m_mapAnimations.find(sKey)->second);
@@ -284,13 +315,13 @@ CResourceManager::GetAnimatedModel(char* _pcAnimatedModelName) const
 *
 */
 ID3D11ShaderResourceView* 
-CResourceManager::GetTexture(char* _pcTextureName) const
+CResourceManager::GetTexture(std::string& _pcTextureName) const
 {
 	//Loop through texture vector and return texture matching this name
 	ID3D11ShaderResourceView* pTexture = 0;
 	for (unsigned int iTexture = 0; iTexture < m_TexturePool.size(); ++iTexture)
 	{
-		if (strcmp(m_TexturePool[iTexture]->sName.c_str(), _pcTextureName) == 0)
+		if (strcmp(m_TexturePool[iTexture]->sName.c_str(), _pcTextureName.c_str()) == 0)
 		{
 			pTexture = m_TexturePool[iTexture]->pTexture;
 			break;
@@ -313,13 +344,13 @@ CResourceManager::GetTexture(char* _pcTextureName) const
 *
 */
 int
-CResourceManager::GetTextureID(char* _pcTextureName) const
+CResourceManager::GetTextureID(std::string& _pcTextureName) const
 {
 	//Loop through texture vector and return texture matching this name
 	int iTextureID = -1;
 	for (unsigned int iTexture = 0; iTexture < m_TexturePool.size(); ++iTexture)
 	{
-		if (strcmp(m_TexturePool[iTexture]->sName.c_str(), _pcTextureName) == 0)
+		if (strcmp(m_TexturePool[iTexture]->sName.c_str(), _pcTextureName.c_str()) == 0)
 		{
 			iTextureID = iTexture;
 			break;

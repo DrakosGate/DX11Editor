@@ -322,8 +322,8 @@ CEditorInterface::LoadFromXML(ID3D11Device* _pDevice, CResourceManager* _pResour
 		D3DXVECTOR2 vecWindowSize(static_cast<float>(WINDOW_WIDTH), static_cast<float>(WINDOW_HEIGHT));
 		TWindow* pNewWindow = new TWindow;
 		pNewWindow->sName = pCurrentWindow->first_attribute("id")->value();
-		pNewWindow->iForegroundTexture = _pResourceManager->GetTextureID(pCurrentWindow->first_node("foregroundtexture")->value());
-		pNewWindow->iBackgroundTexture = _pResourceManager->GetTextureID(pCurrentWindow->first_node("backgroundtexture")->value());
+		pNewWindow->iForegroundTexture = _pResourceManager->GetTextureID(std::string(pCurrentWindow->first_node("foregroundtexture")->value()));
+		pNewWindow->iBackgroundTexture = _pResourceManager->GetTextureID(std::string(pCurrentWindow->first_node("backgroundtexture")->value()));
 
 		pNewWindow->vecScale = D3DXVECTOR2(
 			ReadFromString<float>(pCurrentWindow->first_node("scale")->first_attribute("x")->value()) * vecWindowSize.x,
@@ -355,8 +355,8 @@ CEditorInterface::LoadFromXML(ID3D11Device* _pDevice, CResourceManager* _pResour
 			{
 				pNewButton->sOptions = pButtons->first_node("options")->value();
 			}
-			pNewButton->iForegroundTexture = _pResourceManager->GetTextureID(pButtons->first_node("maintexture")->value());
-			pNewButton->iBackgroundTexture = _pResourceManager->GetTextureID(pButtons->first_node("bgtexture")->value());
+			pNewButton->iForegroundTexture = _pResourceManager->GetTextureID(std::string(pButtons->first_node("maintexture")->value()));
+			pNewButton->iBackgroundTexture = _pResourceManager->GetTextureID(std::string(pButtons->first_node("bgtexture")->value()));
 
 			pNewButton->vecScale = D3DXVECTOR2(
 				ReadFromString<float>(pButtons->first_node("scale")->first_attribute("x")->value()) * pNewWindow->vecScale.x,

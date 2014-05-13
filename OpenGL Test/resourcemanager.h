@@ -47,10 +47,10 @@ public:
 
 	void CreateTextureFromData(ID3D11Device* _pDevice, unsigned char* _pcData, std::string& _sTextureString, int _iWidth, int _iHeight);
 
-	CModel*  GetModel(char* _pcModelName) const;
-	CAnimatedModel* GetAnimatedModel(char* _pcAnimatedModelName) const;
-	ID3D11ShaderResourceView* GetTexture(char* _pcTextureName) const;
-	int GetTextureID(char* _pcTextureName) const;
+	CModel*  GetModel(std::string& _pcModelName) const;
+	CAnimatedModel* GetAnimatedModel(std::string& _pcAnimatedModelName) const;
+	ID3D11ShaderResourceView* GetTexture(std::string& _pcTextureName) const;
+	int GetTextureID(std::string& _pcTextureName) const;
 	
 	virtual void SendTextureDataToShader(ID3D11DeviceContext* _pDevContext);
 

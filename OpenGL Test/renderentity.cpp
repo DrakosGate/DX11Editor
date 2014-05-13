@@ -624,15 +624,8 @@ CRenderEntity::SetRadius(float _fRadius)
 bool
 CRenderEntity::HasCollided(CRenderEntity* _pOtherEntity)
 {
-	float fThisRadius = (m_fRadius * m_fRadius);
-	float fOtherRadius = (_pOtherEntity->GetRadius() * _pOtherEntity->GetRadius());
-	return (D3DXVec3LengthSq(&(m_vecPosition - _pOtherEntity->GetPosition())) < (fOtherRadius));
-	//TBoundingBox tThisRect = *GetBoundingBox()->GetRect();
-	//TBoundingBox tOtherRect = *_pOtherEntity->GetBoundingBox()->GetRect();
-	//return !(	tThisRect.fLeft		+ m_vecPosition.x	> tOtherRect.fRight		+ _pOtherEntity->GetPosition().x	|| 
-	//			tThisRect.fRight	+ m_vecPosition.x	< tOtherRect.fLeft		+ _pOtherEntity->GetPosition().x	|| 
-	//			tThisRect.fTop		+ m_vecPosition.y	< tOtherRect.fBottom	+ _pOtherEntity->GetPosition().y	|| 
-	//			tThisRect.fBottom	+ m_vecPosition.y	> tOtherRect.fTop		+ _pOtherEntity->GetPosition().y	);
+	float fRadius = (m_fRadius + _pOtherEntity->GetRadius());
+	return (D3DXVec3LengthSq(&(m_vecPosition - _pOtherEntity->GetPosition())) < (fRadius * 0.5f));
 }
 /**
 *

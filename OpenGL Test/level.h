@@ -93,8 +93,11 @@ private:
 	//Editor
 	CEditorInterface* m_pEditor;
 	std::vector<CPrefab*> m_pNewEntities;
-	char* m_pcSelectedPrefab;
+	std::string m_sSelectedPrefab;
 	bool m_bCreateObject;
+
+	CRenderEntity* m_pSelectedObject;
+	bool m_bHasSelectedObject;
 
 	//CGrass* m_pGrass;
 	CRenderEntity** m_pGrassEntities;
@@ -114,6 +117,7 @@ private:
 	CRenderToTexture* m_pDiffuseMRT;
 	CRenderToTexture* m_pNormalsMRT;
 	CRenderToTexture* m_pPositionMRT;
+	CRenderToTexture* m_pDepthMRT;
 	ID3D11RenderTargetView** m_pMRT;
 	
 	bool bLastMouseState;

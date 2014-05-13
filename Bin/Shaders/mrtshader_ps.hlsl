@@ -19,6 +19,7 @@ struct MRTPS_OUT
 	float4 oDiffuse		: Color0;
 	float4 oNormal		: Color1;
 	float4 oPosition	: Color2;
+	float4 oDepth		: Color3;
 };
 
 //=============================
@@ -30,9 +31,13 @@ MRTPS_OUT MRTPS(PS_IN _input) : SV_TARGET
 
 	float4 diffuseColour = diffuseMap.Sample(textureSampler, _input.texC);
 	float fAlpha = diffuseColour.a;
+
 	pOut.oDiffuse = diffuseColour;
 	pOut.oNormal = float4(_input.normal, fAlpha);
 	pOut.oPosition = float4(_input.worldPos, 1.0f);
+
+	float fDepth = pOut.oPosition.z / pOut.oPosition.w;
+	pOut.oDepth = float4(fDepth, fDepth, fDepth, 1.0f);
 
 	return pOut;
 }

@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<prefabs>
+	<prefab id="human">
+		<model>human</model>
+		<texture>human</texture>
+		<scale x="1.0" y="1.0" z="1.0"></scale>
+	</prefab>
+	<prefab id="tree">
+		<model>tree</model>
+		<texture>tree</texture>
+		<scale x="1.5" y="1.5" z="1.5"></scale>
+		<static>true</static>
+	</prefab>
+	<prefab id="cursor">
+		<model>cursor</model>
+		<texture>cursor</texture>
+		<scale x="0.5" y="0.5" z="0.5"></scale>
+	</prefab>
+	<prefab id="chicken">
+		<model>chicken</model>
+		<texture>chicken</texture>
+		<scale x="0.5" y="0.5" z="0.5"></scale>
+		<animated>true</animated>
+	</prefab>
+</prefabs>

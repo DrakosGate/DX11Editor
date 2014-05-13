@@ -23,8 +23,8 @@ struct TRay;
 class CModel;
 
 //Program definitions
-#define WINDOW_WIDTH 1280
-#define WINDOW_HEIGHT 720
+#define WINDOW_WIDTH 1680
+#define WINDOW_HEIGHT 1050
 #define MAX_LIGHTS 50
 
 //Helpful defines / functions
@@ -157,17 +157,21 @@ struct TRay
 };
 struct TPrefabOptions
 {
-	TPrefabOptions(char* _pcPrefabName, CModel* _pModel, bool _bIsAnimated, ID3D11ShaderResourceView* _pTexture)
+	TPrefabOptions(std::string& _pcPrefabName, CModel* _pModel, ID3D11ShaderResourceView* _pTexture, D3DXVECTOR3& _rScale, bool _bIsAnimated, bool _bIsStatic)
 	{
 		pcPrefabName = _pcPrefabName;
 		pModel = _pModel;
-		bIsAnimated = _bIsAnimated;
 		pTexture = _pTexture;
+		vecScale = _rScale;
+		bIsAnimated = _bIsAnimated;
+		bIsStatic = _bIsStatic;
 	}
-	char* pcPrefabName;
+	std::string pcPrefabName;
 	CModel* pModel;
-	bool bIsAnimated;
 	ID3D11ShaderResourceView* pTexture;
+	D3DXVECTOR3 vecScale;
+	bool bIsAnimated;
+	bool bIsStatic;
 };
 struct TInputStruct
 {
