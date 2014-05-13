@@ -58,6 +58,9 @@
 		</texture>
 		<texture id="menu_windowBG">
 			<filename>Menu/EditorHUD_WindowBG.png</filename>
-		</texture>		
+		</texture>	
+		<texture id="font_arial">
+			<filename>Font/arial.png</filename>
+		</texture>
 	</textures>
 </resources>

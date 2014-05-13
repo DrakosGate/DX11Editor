@@ -99,10 +99,9 @@ CAIController::Process(float _fDeltaTime, D3DXVECTOR3& _rAvoidance)
 	if(fDistanceToWaypoint < 0.5f)
 	{
 		m_vecWaypoint = m_pHivemind->GetRandomWaypoint();
-		//m_vecWaypoint = GetRandomVector(D3DXVECTOR3(-10.0f, -10.0f, -10.0f), D3DXVECTOR3(10.0f, 10.0f, 10.0f));
 	}
 	vecCurrentPos += vecForward * m_fMovementSpeed * _fDeltaTime;
-	vecCurrentPos += _rAvoidance * m_fMovementSpeed * _fDeltaTime;
+	vecCurrentPos += _rAvoidance * m_fMovementSpeed * 5.0f * _fDeltaTime;
 	m_pEntity->SetPosition(vecCurrentPos);
 	m_pEntity->SetForward(vecForward);
 	m_pEntity->SetRotation(D3DXVECTOR3(0.0f, atan2(vecForward.x, vecForward.z), 0.0f));

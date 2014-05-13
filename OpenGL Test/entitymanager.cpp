@@ -368,7 +368,7 @@ CEntityManager::AddPrefab(TPrefabOptions* _pPrefab)
 *
 */
 TPrefabOptions*
-CEntityManager::GetPrefabOptions(char* _pcPrefabName)
+CEntityManager::GetPrefabOptions(std::string& _pcPrefabName)
 {
 	int iPrefabIndex = m_mapPrefabIndex[_pcPrefabName];
 	return m_vecPrefabTypes[iPrefabIndex];
@@ -383,18 +383,18 @@ CEntityManager::GetPrefabOptions(char* _pcPrefabName)
 *
 */
 CPrefab*
-CEntityManager::InstantiatePrefab(ID3D11Device* _pDevice, char* _pcPrefabName, CShader* _pShader, EGameScene _eScene, D3DXVECTOR3& _rPos, D3DXVECTOR3& _rScale, D3DXVECTOR3& _rRotation, D3DXCOLOR& _rColour)
+CEntityManager::InstantiatePrefab(ID3D11Device* _pDevice, std::string& _pcPrefabName, CShader* _pShader, EGameScene _eScene, D3DXVECTOR3& _rPos, D3DXVECTOR3& _rScale, D3DXVECTOR3& _rRotation, D3DXCOLOR& _rColour)
 {
-	int ilength = strlen(_pcPrefabName);
 	CPrefab* pNewEntity = new CPrefab();
 	TPrefabOptions* pPrefabOptions = GetPrefabOptions(_pcPrefabName);
+	D3DXVECTOR3 vecInstanceScale = D3DXVECTOR3(_rScale.x * pPrefabOptions->vecScale.x, _rScale.y * pPrefabOptions->vecScale.y, _rScale.z * pPrefabOptions->vecScale.z);
 
 	pNewEntity->Initialise(_pDevice, 1.0f);
 	pNewEntity->SetModel(pPrefabOptions->pModel);
 	pNewEntity->SetDiffuseMap(pPrefabOptions->pTexture);
 	pNewEntity->SetObjectShader(_pShader);
-	pNewEntity->SetPosition(_rPos + D3DXVECTOR3(0.0f, _rScale.y * 0.5f, 0.0f)); //Offset the position above the ground
-	pNewEntity->SetScale(_rScale);
+	pNewEntity->SetPosition(_rPos + D3DXVECTOR3(0.0f, vecInstanceScale.y * 0.5f, 0.0f)); //Offset the position above the ground
+	pNewEntity->SetScale(vecInstanceScale);
 	pNewEntity->SetRotation(_rRotation);
 
 	AddEntity(pNewEntity, _eScene);

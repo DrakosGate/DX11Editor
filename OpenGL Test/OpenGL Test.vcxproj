@@ -117,6 +117,7 @@
     <ClInclude Include="directxrenderer.h" />
     <ClInclude Include="editorinterface.h" />
     <ClInclude Include="entitymanager.h" />
+    <ClInclude Include="fontrenderer.h" />
     <ClInclude Include="irenderer.h" />
     <ClInclude Include="level.h" />
     <ClInclude Include="light.h" />
@@ -152,6 +153,7 @@
     <ClCompile Include="directxrenderer.cpp" />
     <ClCompile Include="editorinterface.cpp" />
     <ClCompile Include="entitymanager.cpp" />
+    <ClCompile Include="fontrenderer.cpp" />
     <ClCompile Include="level.cpp" />
     <ClCompile Include="light.cpp" />
     <ClCompile Include="lightmanager.cpp" />
@@ -173,6 +175,9 @@
   <ItemGroup>
     <FxCompile Include="..\Bin\Shaders\animatedobject_vs.hlsl" />
     <FxCompile Include="..\Bin\Shaders\deferred_ps.hlsl" />
+    <FxCompile Include="..\Bin\Shaders\fontshader_gs.hlsl" />
+    <FxCompile Include="..\Bin\Shaders\fontshader_ps.hlsl" />
+    <FxCompile Include="..\Bin\Shaders\fontshader_vs.hlsl" />
     <FxCompile Include="..\Bin\Shaders\linerenderer_gs.hlsl" />
     <FxCompile Include="..\Bin\Shaders\linerenderer_ps.hlsl" />
     <FxCompile Include="..\Bin\Shaders\linerenderer_vs.hlsl" />

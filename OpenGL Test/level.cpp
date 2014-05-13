@@ -39,6 +39,7 @@
 #include "editorinterface.h"
 #include "threadpool.h"
 #include "openclkernel.h"
+#include "fontrenderer.h"
 
 // This Include
 #include "level.h"
@@ -74,6 +75,7 @@ CLevel::CLevel()
 , m_pDiffuseMRT(0)
 , m_pNormalsMRT(0)
 , m_pPositionMRT(0)
+, m_pDepthMRT(0)
 , m_pMRT(0)
 , m_pRenderTarget(0)
 , m_pRenderMonitor(0)
@@ -88,8 +90,10 @@ CLevel::CLevel()
 , m_pResourceManager(0)
 , m_pThreadPool(0)
 , m_pOpenCLKernel(0)
-, m_pcSelectedPrefab(0)
+, m_pSelectedObject(0)
+, m_pFont(0)
 , m_bCreateObject(false)
+, m_bHasSelectedObject(false)
 {
 	D3DXMatrixIdentity(&m_matWorldViewProjection); 
 }
@@ -110,10 +114,10 @@ CLevel::~CLevel()
 	//	delete m_pPlayer;
 	//	m_pPlayer = 0;
 	//}
-	if (m_pcSelectedPrefab)
+	if (m_pFont)
 	{
-		delete[] m_pcSelectedPrefab;
-		m_pcSelectedPrefab = 0;
+		delete m_pFont;
+		m_pFont = 0;
 	}
 	if (m_pThreadPool)
 	{
@@ -210,7 +214,12 @@ CLevel::~CLevel()
 		delete m_pPositionMRT;
 		m_pPositionMRT = 0;
 	}
-	if(m_pMRT)
+	if (m_pDepthMRT)
+	{
+		delete m_pDepthMRT;
+		m_pDepthMRT = 0;
+	}
+	if (m_pMRT)
 	{
 		delete[] m_pMRT;
 		m_pMRT = 0;
@@ -367,6 +376,14 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	m_pResourceManager->Initialise(_pDevice, "Data/Resources.xml");
 	m_pResourceManager->LoadPrefabTypes(_pDevice, m_pEntityManager, "Data/Prefabs.xml");
 	
+	//Load font
+	m_pFont = new CFontRenderer();
+	m_pFont->Initialise("Something", 16, 6);
+	m_pFont->Write("This is a message", D3DXVECTOR3(10.0f, 10.0f, 0.0f), D3DXVECTOR2(15.0f, 20.0f));
+	m_pFont->SetObjectShader(&m_pShaderCollection[SHADER_FONT]);
+	m_pFont->SetDiffuseMap(m_pResourceManager->GetTexture(std::string("font_arial")));
+	m_pEntityManager->AddEntity(m_pFont, SCENE_FONT);
+
 	int iCurrentPixel = 0;
 	int iTextureWidth = 256;
 	int iTextureHeight = 256;
@@ -393,14 +410,13 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	m_pRenderTarget->SetObjectShader(&m_pShaderCollection[SHADER_FINALOUTPUT]);
 	m_pRenderTarget->SetScale(D3DXVECTOR3(WINDOW_WIDTH, WINDOW_HEIGHT, 1.0f));
 	m_pEntityManager->AddEntity(m_pRenderTarget, SCENE_FINAL);
-	
 
 	m_pTerrain = new CModel();
 	m_pTerrain->Initialise();
 	m_pTerrain->LoadSquare(_pDevice, 100.0f, D3DXVECTOR2(100.0f, 100.0f), D3DXCOLOR(1.0f, 0.9f, 1.0f, 1.0f));
 	m_pTerrain->SetRotation(D3DXVECTOR3((static_cast<float>(D3DX_PI) * 0.5f), 0.0f, 0.0f));
 	m_pTerrain->SetObjectShader(&m_pShaderCollection[SHADER_MRT]);
-	m_pTerrain->SetDiffuseMap(m_pResourceManager->GetTexture("grass"));
+	m_pTerrain->SetDiffuseMap(m_pResourceManager->GetTexture(std::string("grass")));
 	m_pEntityManager->AddEntity(m_pTerrain, SCENE_3DSCENE);
 	m_pTerrain->SetRadius(FLT_MAX);
 
@@ -415,13 +431,13 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	
 	m_pCursor = new CPrefab();
 	m_pCursor->Initialise(_pDevice, 1.0f);
-	m_pCursor->SetModel(m_pResourceManager->GetModel("cursor"));
-	m_pCursor->SetDiffuseMap(m_pResourceManager->GetTexture("cursor"));
+	m_pCursor->SetModel(m_pResourceManager->GetModel(std::string("cursor")));
+	m_pCursor->SetDiffuseMap(m_pResourceManager->GetTexture(std::string("cursor")));
 	m_pCursor->SetObjectShader(&m_pShaderCollection[SHADER_MRT]);
 	m_pCursor->SetPosition(D3DXVECTOR3(0.0f, 0.4f, 0.0f));
 	m_pCursor->SetScale(D3DXVECTOR3(0.5f, 0.5f, 0.5f));
 	m_pCursor->SetRotation(D3DXVECTOR3(0.0f, -0.5f, 0.0f));
-	m_pEntityManager->AddEntity(m_pCursor, SCENE_3DSCENE);
+	m_pEntityManager->AddEntity(m_pCursor, SCENE_3DSCENE); 
 
 	//Setup AI
 	m_pHivemind = new CAIHiveMind();
@@ -442,7 +458,7 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	for (int iHuman = 0; iHuman < iNumHumans; ++iHuman)
 	{
 		m_pHumans.push_back(m_pEntityManager->InstantiatePrefab(_pDevice,
-																"human",
+																std::string("human"),
 																&m_pShaderCollection[SHADER_MRT],
 																SCENE_3DSCENE,
 																D3DXVECTOR3(D3DXVECTOR3(0.0f, 0.0f, 0.0f)),
@@ -457,11 +473,11 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	for(int iCreature = 0; iCreature < iNumCreatures; ++iCreature)
 	{
 		m_pCreatures.push_back(m_pEntityManager->InstantiatePrefab(	_pDevice,
-																	"chicken",
+																	std::string("chicken"),
 																	&m_pShaderCollection[SHADER_MRT],
 																	SCENE_3DSCENE,
 																	D3DXVECTOR3(D3DXVECTOR3(0.0f, 0.0f, 0.0f)),
-																	D3DXVECTOR3(0.5f, 0.5f, 0.5f),
+																	D3DXVECTOR3(1.0f, 1.0f, 1.0f),
 																	D3DXVECTOR3(0.0f, static_cast<float>(rand() % 360), 0.0f),
 																	D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f)));
 		m_pHivemind->AddAI(m_pCreatures[iCreature], AI_CREATURE);
@@ -477,29 +493,31 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 		D3DXVECTOR3 treePos = m_pHivemind->GetRandomWaypoint();
 		//treePos.y = 0.75f;
 		m_pTrees.push_back(m_pEntityManager->InstantiatePrefab(	_pDevice,
-																"tree",
+																std::string("tree"),
 																&m_pShaderCollection[SHADER_MRT],
 																SCENE_3DSCENE,
 																treePos,
-																D3DXVECTOR3(1.5f, 1.5f, 1.5f),
+																D3DXVECTOR3(1.0f, 1.0f, 1.0f),
 																D3DXVECTOR3(0.0f, static_cast<float>(rand() % 360), 0.0f),
 																D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f)));
 		m_pHivemind->AddStaticObject(_pDevice, m_pTrees[iTree]);
 	}
-	m_pSelectionCursor = new CModel();
-	m_pSelectionCursor->Initialise();
-	m_pSelectionCursor->LoadSquare(_pDevice, 1.0f, D3DXVECTOR2(1.0f, 1.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
-	m_pSelectionCursor->SetPosition(D3DXVECTOR3(0.0f, 0.4f, 0.0f));
-	m_pSelectionCursor->SetObjectShader(&m_pShaderCollection[SHADER_MRT]);
-	m_pSelectionCursor->SetDiffuseMap(m_pResourceManager->GetTexture("selectionbox"));
-	m_pEntityManager->AddEntity(m_pSelectionCursor, SCENE_3DSCENE);
 
 	m_pEditor = new CEditorInterface();
 	m_pEditor->Initialise();
 	m_pEditor->LoadFromXML(_pDevice, m_pResourceManager, "Data/EditorLayout.xml");
 	m_pEditor->SetObjectShader(&m_pShaderCollection[SHADER_POINTSPRITE]);
-	m_pEditor->SetDiffuseMap(m_pResourceManager->GetTexture("menu_button"));
+	m_pEditor->SetDiffuseMap(m_pResourceManager->GetTexture(std::string("menu_button")));
 	m_pEntityManager->AddEntity(m_pEditor, SCENE_UI);
+
+	m_pSelectionCursor = new CModel();
+	m_pSelectionCursor->Initialise();
+	m_pSelectionCursor->LoadSquare(_pDevice, 1.0f, D3DXVECTOR2(1.0f, 1.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
+	m_pSelectionCursor->SetPosition(D3DXVECTOR3(0.0f, 0.4f, 0.0f));
+	m_pSelectionCursor->SetObjectShader(&m_pShaderCollection[SHADER_MRT]);
+	m_pSelectionCursor->SetDiffuseMap(m_pResourceManager->GetTexture(std::string("selectionbox")));
+	m_pSelectionCursor->ToggleBillboarded(true);
+	m_pEntityManager->AddEntity(m_pSelectionCursor, SCENE_3DSCENE);
 
 	_pDevContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	_pDevContext->IASetInputLayout(m_pVertexLayout[VERTEX_STATIC]);
@@ -534,12 +552,31 @@ CLevel::Process(ID3D11Device* _pDevice, float _fDeltaTime)
 	m_pEditor->Process(_fDeltaTime);
 	
 	//Process entities
-	m_pHivemind->Process(m_pThreadPool, _fDeltaTime);
+	if (m_pEditor->IsActive() == false)
+	{
+		m_pHivemind->Process(m_pThreadPool, _fDeltaTime);
+	}
+	//Process entity selection
+	if (m_bHasSelectedObject)
+	{
+		if (m_pInput->bLeftMouseClick.bPressed)
+		{
+			D3DXVECTOR3 vecCursor = m_pCursor->GetPosition();
+			vecCursor.y = m_pSelectedObject->GetScale().y * 0.5f;
+			m_pSelectedObject->SetPosition(vecCursor);
+		}
+		m_pSelectionCursor->SetPosition(m_pSelectedObject->GetPosition());
+		m_pSelectionCursor->SetScale(m_pSelectedObject->GetScale());
+	}
+	
 	//m_pResourceManager->GetAnimatedModel("chicken")->Process(_fDeltaTime);
+	m_pFont->ProcessFont(_pDevice);
+
 	m_pEntityManager->Process(_fDeltaTime, SCENE_3DSCENE, m_pCamera);
 	m_pEntityManager->Process(_fDeltaTime, SCENE_3DANIM, m_pCamera);
 	m_pEntityManager->Process(_fDeltaTime, SCENE_UI, m_pCamera);
 	m_pEntityManager->Process(_fDeltaTime, SCENE_DEBUG, m_pCamera);
+	m_pEntityManager->Process(_fDeltaTime, SCENE_FONT, m_pCamera);
 	m_pEntityManager->Process(_fDeltaTime, SCENE_FINAL, m_pCamera);
 	m_fGameTimeElapsed += _fDeltaTime;
 	
@@ -577,18 +614,12 @@ CLevel::ProcessInput(ID3D11Device* _pDevice, float _fDeltaTime)
 	if (m_pEditor->GetEditorState() == EDITOR_SELECTED)
 	{
 		//Get name of new prefab
-		delete[] m_pcSelectedPrefab;
-		std::string sPrefab = m_pEditor->GetSelectedPrefab();
-		sPrefab += '\0';
-		int iSize = sPrefab.size();
-
-		//Copy name to a char buffer
-		m_pcSelectedPrefab = new char[iSize];
-		sprintf_s(m_pcSelectedPrefab, iSize, "%s", sPrefab.c_str());
+		m_sSelectedPrefab = m_pEditor->GetSelectedPrefab();
 		m_bCreateObject = true;
+
 		//Change the cursor model
-		m_pCursor->SetModel(m_pResourceManager->GetModel(m_pcSelectedPrefab));
-		m_pCursor->SetDiffuseMap(m_pResourceManager->GetTexture(m_pcSelectedPrefab));
+		m_pCursor->SetModel(m_pResourceManager->GetModel(m_sSelectedPrefab));
+		m_pCursor->SetDiffuseMap(m_pResourceManager->GetTexture(m_sSelectedPrefab));
 	}
 	//Create new objects
 	if (m_bCreateObject && bMouseOverEditor == false)
@@ -597,11 +628,11 @@ CLevel::ProcessInput(ID3D11Device* _pDevice, float _fDeltaTime)
 		if (m_pInput->bLeftMouseClick.bPressed && m_pInput->bLeftMouseClick.bPreviousState == false)
 		{
 			m_pNewEntities.push_back(m_pEntityManager->InstantiatePrefab(	_pDevice,
-																			m_pcSelectedPrefab,
+																			m_sSelectedPrefab,
 																			&m_pShaderCollection[SHADER_MRT],
 																			SCENE_3DSCENE,
 																			m_pCursor->GetPosition(),
-																			D3DXVECTOR3(0.5f, 0.5f, 0.5f),
+																			D3DXVECTOR3(1.0f, 1.0f, 1.0f),
 																			D3DXVECTOR3(0.0f, static_cast<float>(rand() % 360), 0.0f),
 																			D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f)));
 		}
@@ -610,8 +641,57 @@ CLevel::ProcessInput(ID3D11Device* _pDevice, float _fDeltaTime)
 		{
 			m_bCreateObject = false;
 			//Set model back to cursor model
-			m_pCursor->SetModel(m_pResourceManager->GetModel("cursor"));
-			m_pCursor->SetDiffuseMap(m_pResourceManager->GetTexture("cursor"));
+			m_pCursor->SetModel(m_pResourceManager->GetModel(std::string("cursor")));
+			m_pCursor->SetDiffuseMap(m_pResourceManager->GetTexture(std::string("cursor")));
+		}
+	}
+	else
+	{
+		//Check if the cursor has collided with any objects
+		if (m_pInput->bLeftMouseClick.bPressed && m_pInput->bLeftMouseClick.bPreviousState == false)
+		{
+			for (unsigned int iHuman = 0; iHuman < m_pHumans.size(); ++iHuman)
+			{
+				if (m_pCursor->HasCollided(m_pHumans[iHuman]))
+				{
+					m_bHasSelectedObject = true;
+					m_pSelectedObject = m_pHumans[iHuman];
+					break;
+				}
+			}
+			for (unsigned int iCreature = 0; iCreature < m_pCreatures.size(); ++iCreature)
+			{
+				if (m_pCursor->HasCollided(m_pCreatures[iCreature]))
+				{
+					m_bHasSelectedObject = true;
+					m_pSelectedObject = m_pCreatures[iCreature];
+					break;
+				}
+			}
+			for (unsigned int iTree = 0; iTree < m_pTrees.size(); ++iTree)
+			{
+				if (m_pCursor->HasCollided(m_pTrees[iTree]))
+				{
+					m_bHasSelectedObject = true;
+					m_pSelectedObject = m_pTrees[iTree];
+					break;
+				}
+			}
+			for (unsigned int iObject = 0; iObject < m_pNewEntities.size(); ++iObject)
+			{
+				if (m_pCursor->HasCollided(m_pNewEntities[iObject]))
+				{
+					m_bHasSelectedObject = true;
+					m_pSelectedObject = m_pNewEntities[iObject];
+					break;
+				}
+			}
+		}
+		//Cancel entity selection
+		if (m_pInput->bRightMouseClick.bPressed && m_pInput->bRightMouseClick.bPreviousState == false)
+		{
+			m_bHasSelectedObject = false;
+			m_pSelectedObject = 0;
 		}
 	}
 
@@ -665,11 +745,12 @@ CLevel::Draw(ID3D11DeviceContext* _pDevice)
 		//============================ Multiple Render Texture ================================
 		//Set shader for rendering
 		_pDevice->OMSetDepthStencilState(m_pRenderTargets[RENDER_MRT].GetAddDepthState(), 0);
-		_pDevice->OMSetRenderTargets(3, m_pMRT, m_pRenderer->GetDepthStencilView());
+		_pDevice->OMSetRenderTargets(4, m_pMRT, m_pRenderer->GetDepthStencilView());
 
 		m_pDiffuseMRT->ClearRenderTarget(_pDevice, m_pRenderer->GetDepthStencilView(), m_pClearColour);
 		m_pNormalsMRT->ClearRenderTarget(_pDevice, m_pRenderer->GetDepthStencilView(), m_pClearColour);
 		m_pPositionMRT->ClearRenderTarget(_pDevice, m_pRenderer->GetDepthStencilView(), m_pClearColour);
+		m_pDepthMRT->ClearRenderTarget(_pDevice, m_pRenderer->GetDepthStencilView(), m_pClearColour);
 
 		// Render to MRT
 
@@ -700,9 +781,9 @@ CLevel::Draw(ID3D11DeviceContext* _pDevice)
 		m_pRenderTargets[RENDER_DEFERRED].ClearRenderTarget(_pDevice, m_pDiffuseMRT->GetDepthStencilView(), m_pClearColour);
 
 		//Send MRT texture data to shader
-		ID3D11ShaderResourceView* const texture[3] = { m_pDiffuseMRT->GetRenderShaderResource(),
-			m_pNormalsMRT->GetRenderShaderResource(),
-			m_pPositionMRT->GetRenderShaderResource() };
+		ID3D11ShaderResourceView* const texture[3] = {	m_pDiffuseMRT->GetRenderShaderResource(),
+														m_pNormalsMRT->GetRenderShaderResource(),
+														m_pPositionMRT->GetRenderShaderResource() };
 		_pDevice->PSSetShaderResources(0, 3, texture);
 
 
@@ -726,11 +807,18 @@ CLevel::Draw(ID3D11DeviceContext* _pDevice)
 		_pDevice->PSSetShader(m_pShaderCollection[SHADER_FINALOUTPUT].GetPixelShader(), NULL, 0);
 		DrawScene(_pDevice, m_pOrthoCamera, SCENE_FINAL);
 	}
+	_pDevice->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
+	_pDevice->IASetInputLayout(m_pVertexLayout[VERTEX_FONT]);
+	//Render debug lines to screen
+	_pDevice->VSSetShader(m_pShaderCollection[SHADER_FONT].GetVertexShader(), NULL, 0);
+	_pDevice->GSSetShader(m_pShaderCollection[SHADER_FONT].GetGeometryShader(), NULL, 0);
+	_pDevice->PSSetShader(m_pShaderCollection[SHADER_FONT].GetPixelShader(), NULL, 0);
+	DrawScene(_pDevice, m_pOrthoCamera, SCENE_FONT);
+
+	_pDevice->IASetInputLayout(m_pVertexLayout[VERTEX_POINT]);
 	if (m_eRenderState >= RENDERSTATE_DEBUG)
 	{
 		//Render debug lines to screen
-		_pDevice->IASetInputLayout(m_pVertexLayout[VERTEX_POINT]);
-		_pDevice->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
 		_pDevice->VSSetShader(m_pShaderCollection[SHADER_LINERENDERER].GetVertexShader(), NULL, 0);
 		_pDevice->GSSetShader(m_pShaderCollection[SHADER_LINERENDERER].GetGeometryShader(), NULL, 0);
 		_pDevice->PSSetShader(m_pShaderCollection[SHADER_LINERENDERER].GetPixelShader(), NULL, 0);
@@ -788,10 +876,13 @@ CLevel::CreateRenderTargets(ID3D11Device* _pDevice)
 	m_pNormalsMRT->Initialise(_pDevice, true, false, static_cast<int>(WINDOW_WIDTH), static_cast<int>(WINDOW_HEIGHT));
 	m_pPositionMRT = new CRenderToTexture();
 	m_pPositionMRT->Initialise(_pDevice, true, false, static_cast<int>(WINDOW_WIDTH), static_cast<int>(WINDOW_HEIGHT));
-	m_pMRT = new ID3D11RenderTargetView*[3];
+	m_pDepthMRT = new CRenderToTexture();
+	m_pDepthMRT->Initialise(_pDevice, true, false, static_cast<int>(WINDOW_WIDTH), static_cast<int>(WINDOW_HEIGHT));
+	m_pMRT = new ID3D11RenderTargetView*[4];
 	m_pMRT[0] = m_pDiffuseMRT->GetRenderTarget();
 	m_pMRT[1] = m_pNormalsMRT->GetRenderTarget();
 	m_pMRT[2] = m_pPositionMRT->GetRenderTarget();
+	m_pMRT[3] = m_pDepthMRT->GetRenderTarget();
 }
 /**
 *
@@ -846,6 +937,13 @@ CLevel::LoadShaderData(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	m_pShaderCollection[SHADERPOST_RADIALBLUR].Initialise(_pDevice);
 	m_pShaderCollection[SHADERPOST_RADIALBLUR].CompileVertexShader(_pDevice, L"Shaders/objectshader_vs.hlsl", "ObjectVS");
 	m_pShaderCollection[SHADERPOST_RADIALBLUR].CompilePixelShader(_pDevice, L"Shaders/postprocessing.hlsl", "RadialBlurPS");
+
+	m_pShaderCollection[SHADER_FONT].Initialise(_pDevice);
+	m_pShaderCollection[SHADER_FONT].CompileVertexShader(_pDevice, L"Shaders/fontshader_vs.hlsl", "FontVS");
+	m_pShaderCollection[SHADER_FONT].CompileGeometryShader(_pDevice, L"Shaders/fontshader_gs.hlsl", "FontGS");
+	m_pShaderCollection[SHADER_FONT].CompilePixelShader(_pDevice, L"Shaders/fontshader_ps.hlsl", "FontPS");
+
+
 }
 /**
 *
@@ -923,6 +1021,24 @@ CLevel::BuildLevelVertexLayouts(ID3D11Device* _pDevice, ID3D11DeviceContext* _pD
 										m_pShaderCollection[SHADER_POINTSPRITE].GetShaderBlob()->GetBufferSize(),
 										&m_pVertexLayout[VERTEX_POINT]),
 										L"Could not create point sprite input layout");
+
+	D3D11_INPUT_ELEMENT_DESC fontDesc[] =
+	{
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "SCALE", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "UVTOPLEFT", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "UVBOTTOMRIGHT", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+	};
+	iNumElements = 5;
+
+	// Create the input layout
+	HRCheck(_pDevice->CreateInputLayout(fontDesc,
+										iNumElements,
+										m_pShaderCollection[SHADER_FONT].GetShaderBlob()->GetBufferPointer(),
+										m_pShaderCollection[SHADER_FONT].GetShaderBlob()->GetBufferSize(), //CHANGE THIS!!!
+										&m_pVertexLayout[VERTEX_FONT]),
+										L"Could not create font input layout");
 
 	D3D11_RASTERIZER_DESC tRasterDesc;
 	D3D11_SAMPLER_DESC samplerDesc;

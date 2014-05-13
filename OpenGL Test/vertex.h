@@ -75,6 +75,30 @@ struct TPointSpriteVertex
 	float rotation;
 	int iTextureID;
 };
+struct TFontVertex
+{
+	TFontVertex()
+	{
+		pos *= 0.0f;
+		scale = D3DXVECTOR2(1.0f, 1.0f);
+		colour = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
+		uvTopLeft = D3DXVECTOR2(0.0f, 0.0f);
+		uvBottomRight = D3DXVECTOR2(0.0f, 0.0f);
+	}
+	TFontVertex(D3DXVECTOR3& _rPos, D3DXVECTOR2& _rScale, D3DXCOLOR& _rColour, D3DXVECTOR2& _uvTopLeft, D3DXVECTOR2& _uvBottomRight)
+	{
+		pos = _rPos;
+		scale = _rScale;
+		colour = _rColour;
+		uvTopLeft = _uvTopLeft;
+		uvBottomRight = _uvBottomRight;
+	}
+	D3DXVECTOR3 pos;
+	D3DXVECTOR2 scale;
+	D3DXCOLOR colour;
+	D3DXVECTOR2 uvTopLeft;
+	D3DXVECTOR2 uvBottomRight;
+};
 struct TAnimatedVertex
 {
 	TAnimatedVertex()

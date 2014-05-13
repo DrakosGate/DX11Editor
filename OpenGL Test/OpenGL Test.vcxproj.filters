@@ -55,6 +55,12 @@
     <Filter Include="Resource Files\OpenCL Kernels">
       <UniqueIdentifier>{7594ffa1-2b7f-4c36-8b45-c1045f358c4d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Networking">
+      <UniqueIdentifier>{35d89478-0fad-45f4-ba8e-7147d467fdd1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Networking">
+      <UniqueIdentifier>{c08b261f-602a-4140-bf78-6826b4c9f866}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="defines.h">
@@ -156,6 +162,9 @@
     <ClInclude Include="openclkernel.h">
       <Filter>Header Files\Parallel</Filter>
     </ClInclude>
+    <ClInclude Include="fontrenderer.h">
+      <Filter>Header Files\Rendering</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -209,9 +218,6 @@
     <ClCompile Include="openglrenderer.cpp">
       <Filter>Source Files\Rendering</Filter>
     </ClCompile>
-    <ClCompile Include="pointlight.cpp">
-      <Filter>Source Files\Rendering</Filter>
-    </ClCompile>
     <ClCompile Include="prefab.cpp">
       <Filter>Source Files\Rendering</Filter>
     </ClCompile>
@@ -233,9 +239,6 @@
     <ClCompile Include="lightmanager.cpp">
       <Filter>Source Files\Lighting</Filter>
     </ClCompile>
-    <ClCompile Include="pointsprite.cpp">
-      <Filter>Source Files\Lighting</Filter>
-    </ClCompile>
     <ClCompile Include="spotlight.cpp">
       <Filter>Source Files\Lighting</Filter>
     </ClCompile>
@@ -250,6 +253,15 @@
     </ClCompile>
     <ClCompile Include="openclkernel.cpp">
       <Filter>Source Files\Parallel</Filter>
+    </ClCompile>
+    <ClCompile Include="fontrenderer.cpp">
+      <Filter>Source Files\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="pointsprite.cpp">
+      <Filter>Source Files\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="pointlight.cpp">
+      <Filter>Source Files\Lighting</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -290,6 +302,15 @@
       <Filter>Resource Files\Shaders</Filter>
     </FxCompile>
     <FxCompile Include="..\Bin\Shaders\shaderdefines.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Bin\Shaders\fontshader_gs.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Bin\Shaders\fontshader_ps.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Bin\Shaders\fontshader_vs.hlsl">
       <Filter>Resource Files\Shaders</Filter>
     </FxCompile>
   </ItemGroup>

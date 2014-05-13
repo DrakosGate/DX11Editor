@@ -47,6 +47,7 @@ class CResourceManager;
 class CEditorInterface;
 class CThreadPool;
 class COpenCLKernel;
+class CFontRenderer;
 
 class CLevel
 {
@@ -76,6 +77,7 @@ private:
 	CResourceManager* m_pResourceManager;
 	CThreadPool* m_pThreadPool;
 	COpenCLKernel* m_pOpenCLKernel;
+	CFontRenderer* m_pFont;
 
 	CEntityManager* m_pEntityManager;
 	TInputStruct* m_pInput;
@@ -93,8 +95,11 @@ private:
 	//Editor
 	CEditorInterface* m_pEditor;
 	std::vector<CPrefab*> m_pNewEntities;
-	char* m_pcSelectedPrefab;
+	std::string m_sSelectedPrefab;
 	bool m_bCreateObject;
+
+	CRenderEntity* m_pSelectedObject;
+	bool m_bHasSelectedObject;
 
 	//CGrass* m_pGrass;
 	CRenderEntity** m_pGrassEntities;
@@ -114,6 +119,7 @@ private:
 	CRenderToTexture* m_pDiffuseMRT;
 	CRenderToTexture* m_pNormalsMRT;
 	CRenderToTexture* m_pPositionMRT;
+	CRenderToTexture* m_pDepthMRT;
 	ID3D11RenderTargetView** m_pMRT;
 	
 	bool bLastMouseState;

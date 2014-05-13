@@ -169,7 +169,7 @@ CCamera::ProcessInput(TInputStruct* _pKeys, D3DXVECTOR2& _vecMouseDirection, boo
 		{
 			m_vecCameraRotationOrigin = _pKeys->vecMouse;
 		}
-		D3DXVECTOR2 vecSensitivity = D3DXVECTOR2(0.5f, 0.5f);
+		D3DXVECTOR2 vecSensitivity = D3DXVECTOR2(0.1f, 0.1f);
 		D3DXVECTOR2 vecMouseOffset = _pKeys->vecMouse - m_vecCameraRotationOrigin;
 		m_vecTargetLook += m_vecRight * (-vecMouseOffset.x * vecSensitivity.x) * _fDT;
 		m_vecTargetLook += m_vecUp * (vecMouseOffset.y * vecSensitivity.y) * _fDT;
