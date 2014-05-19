@@ -379,7 +379,7 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	//Load font
 	m_pFont = new CFontRenderer();
 	m_pFont->Initialise("Something", 16, 6);
-	m_pFont->Write("This is a message", D3DXVECTOR3(10.0f, 10.0f, 0.0f), D3DXVECTOR2(15.0f, 20.0f));
+	m_pFont->Write("This is a message", D3DXVECTOR3(10.0f, 120.0f, 0.0f), D3DXVECTOR2(15.0f, 20.0f));
 	m_pFont->SetObjectShader(&m_pShaderCollection[SHADER_FONT]);
 	m_pFont->SetDiffuseMap(m_pResourceManager->GetTexture(std::string("font_arial")));
 	m_pEntityManager->AddEntity(m_pFont, SCENE_FONT);

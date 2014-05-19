@@ -14,6 +14,7 @@
 
 // Library Includes
 #include <D3D11.h>
+#include <ShObjIdl.h>
 #include <rapidxml_utils.hpp>
 
 // Local Includes
@@ -44,6 +45,8 @@ CEditorInterface::CEditorInterface()
 : m_bIsActive(false)
 , m_pWindowColours(0)
 , m_pDraggedWindow(0)
+, m_pFileOpenDialog(0)
+, m_pFileSaveDialog(0)
 {
 
 }
@@ -95,6 +98,20 @@ CEditorInterface::Initialise()
 	m_pWindowColours[WINDOWSTATE_CLOSED] = D3DXCOLOR(0.0f, 0.0f, 0.0f, 0.0f);
 	m_pWindowColours[WINDOWSTATE_MOUSEOVER] = D3DXCOLOR(0.5f, 0.7f, 0.8f, 1.0f);
 	return true;
+}
+void 
+CEditorInterface::Process(float _fDeltaTime)
+{
+	if (m_pFileSaveDialog)
+	{
+		IShellItem* pItem;
+		HRESULT hResult = m_pFileSaveDialog->GetResult(&pItem);
+		if (SUCCEEDED(hResult))
+		{
+			LPOLESTR pDisplayName;
+			//hResult pItem->get
+		}
+	}
 }
 bool
 CEditorInterface::ProcessInput(TInputStruct* _pKeys, float _fDT)
@@ -238,6 +255,38 @@ CEditorInterface::IsActive() const
 {
 	return m_bIsActive;
 }
+void
+CEditorInterface::LoadLevel()
+{
+	COMDLG_FILTERSPEC tFileType[] = 
+	{
+		{ L"Level File", L"*.xml" }
+	};
+	HRESULT hr = CoCreateInstance(	CLSID_FileOpenDialog,
+									NULL,
+									CLSCTX_INPROC_SERVER,
+									IID_PPV_ARGS(&m_pFileOpenDialog));
+	m_pFileOpenDialog->SetFileTypes(1, tFileType);
+	m_pFileOpenDialog->SetTitle(L"Open Level from File:");
+	m_pFileOpenDialog->Show(NULL);
+}
+void
+CEditorInterface::SaveLevel()
+{
+	IFileDialogEvents* pEvents = 0;
+	HRESULT hResult;
+	//Create dialog box
+	HRCheck(	CoCreateInstance(		CLSID_FileSaveDialog,
+										NULL,
+										CLSCTX_INPROC_SERVER,
+										IID_PPV_ARGS(&m_pFileSaveDialog)),
+										L"Could not create dialog box");
+	
+	//HRCheck(	CDialogeventha);
+	m_pFileSaveDialog->SetDefaultExtension(L"xml");
+	m_pFileSaveDialog->SetTitle(L"Save Level to File:");
+	m_pFileSaveDialog->Show(NULL);
+}
 void 
 CEditorInterface::RefreshBuffers(ID3D11Device* _pDevice)
 {
@@ -268,16 +317,24 @@ CEditorInterface::ProcessButtonPressed(TWindow* _pWindow, TButton* _pButton)
 		m_eEditorState = EDITOR_CLOSED;
 		_pWindow->SetIsActive(false, m_pWindowColours[WINDOWSTATE_CLOSED]);
 	}
-	if (strcmp(_pButton->sName.c_str(), "OpenPrefabWindow") == 0)
+	else if (strcmp(_pButton->sName.c_str(), "OpenPrefabWindow") == 0)
 	{
 		m_eEditorState = EDITOR_IDLE;
 		m_vecWindows[1]->SetIsActive(true, m_pWindowColours[WINDOWSTATE_OPEN]);
 	}
-	if (strcmp(_pButton->sName.c_str(), "Create") == 0)
+	else if (strcmp(_pButton->sName.c_str(), "Create") == 0)
 	{
 		m_eEditorState = EDITOR_SELECTED;
 		m_bCreateObject = true;
 		m_pcNextObjectCreated = _pButton->sOptions.c_str();
+	}
+	else if (strcmp(_pButton->sName.c_str(), "LoadLevel") == 0)
+	{
+		LoadLevel();
+	}
+	else if (strcmp(_pButton->sName.c_str(), "SaveLevel") == 0)
+	{
+		SaveLevel();
 	}
 }
 void
@@ -388,8 +445,8 @@ CEditorInterface::LoadFromXML(ID3D11Device* _pDevice, CResourceManager* _pResour
 	{
 		for (int iButton = static_cast<int>(m_vecWindows[iWindow]->vecButtons.size()) - 1; iButton >= 0; --iButton)
 		{
-			m_vecWindows[iWindow]->vecButtons[iButton]->pForegroundVertex = CreatePointSprite(_pDevice, m_vecWindows[iWindow]->vecButtons[iButton]->vecPosition, m_vecWindows[iWindow]->vecButtons[iButton]->vecScale, m_vecWindows[iWindow]->vecButtons[iButton]->colour, 0.0f, m_vecWindows[iWindow]->vecButtons[iButton]->iForegroundTexture);
 			m_vecWindows[iWindow]->vecButtons[iButton]->pBackgroundVertex = CreatePointSprite(_pDevice, m_vecWindows[iWindow]->vecButtons[iButton]->vecPosition + D3DXVECTOR3(0.0f, 0.0f, 0.1f), m_vecWindows[iWindow]->vecButtons[iButton]->vecScale, m_vecWindows[iWindow]->vecButtons[iButton]->colour, 0.0f, m_vecWindows[iWindow]->vecButtons[iButton]->iBackgroundTexture);
+			m_vecWindows[iWindow]->vecButtons[iButton]->pForegroundVertex = CreatePointSprite(_pDevice, m_vecWindows[iWindow]->vecButtons[iButton]->vecPosition, m_vecWindows[iWindow]->vecButtons[iButton]->vecScale, m_vecWindows[iWindow]->vecButtons[iButton]->colour, 0.0f, m_vecWindows[iWindow]->vecButtons[iButton]->iForegroundTexture);
 		}
 		m_vecWindows[iWindow]->pForegroundVertex = CreatePointSprite(_pDevice, m_vecWindows[iWindow]->vecPosition, m_vecWindows[iWindow]->vecScale, m_vecWindows[iWindow]->colour, 0.0f, m_vecWindows[iWindow]->iForegroundTexture);
 		m_vecWindows[iWindow]->pBackgroundVertex = CreatePointSprite(_pDevice, m_vecWindows[iWindow]->vecPosition + D3DXVECTOR3(0.0f, 0.0f, 0.1f), m_vecWindows[iWindow]->vecScale, m_vecWindows[iWindow]->colour, 0.0f, m_vecWindows[iWindow]->iBackgroundTexture);

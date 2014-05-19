@@ -13,6 +13,18 @@
 			<position x="0.02" y="0.02" z="0"></position>
 			<scale x="0.05" y="0.05"></scale>
 		</button>
+		<button id="LoadLevel">
+			<maintexture>menu_load</maintexture>
+			<bgtexture>menu_button</bgtexture>
+			<position x="0.075" y="0.02" z="0"></position>
+			<scale x="0.05" y="0.025"></scale>
+		</button>
+		<button id="SaveLevel">
+			<maintexture>menu_save</maintexture>
+			<bgtexture>menu_button</bgtexture>
+			<position x="0.075" y="0.45" z="0"></position>
+			<scale x="0.05" y="0.025"></scale>
+		</button>
 	</window>
 	<window id="PrefabWindow">
 		<foregroundtexture>menu_windowFG</foregroundtexture>

@@ -96,6 +96,8 @@ enum EEditorState
 
 // Prototypes
 struct ID3D11DeviceContext;
+struct IFileOpenDialog;
+struct IFileDialog;
 
 class CShader;
 class CEntityManager;
@@ -109,12 +111,16 @@ public:
 	virtual ~CEditorInterface();
 
 	virtual bool Initialise();
+	virtual void Process(float _fDeltaTime);
 	virtual bool ProcessInput(TInputStruct* _pKeys, float _fDT);
 	virtual EEditorState GetEditorState() const;
 	virtual std::string& GetSelectedPrefab();
 
 	virtual void ToggleEditor(bool _bIsActive);
 	virtual bool IsActive() const;
+
+	void LoadLevel();
+	void SaveLevel();
 
 	virtual void RefreshBuffers(ID3D11Device* _pDevice);
 	virtual bool HasCollided(D3DXVECTOR2& _rPoint, TButton* _pButton);
@@ -144,6 +150,10 @@ protected:
 
 	std::string m_pcNextObjectCreated;
 	bool m_bCreateObject;
+
+	//Saving and Loading files
+	IFileOpenDialog* m_pFileOpenDialog;
+	IFileDialog* m_pFileSaveDialog;
 };
 
 #endif //__EDITORINTERFACE_H__
