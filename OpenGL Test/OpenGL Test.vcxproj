@@ -122,6 +122,7 @@
     <ClInclude Include="level.h" />
     <ClInclude Include="light.h" />
     <ClInclude Include="lightmanager.h" />
+    <ClInclude Include="network.h" />
     <ClInclude Include="openclkernel.h" />
     <ClInclude Include="pointsprite.h" />
     <ClInclude Include="model.h" />
@@ -158,6 +159,7 @@
     <ClCompile Include="light.cpp" />
     <ClCompile Include="lightmanager.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="network.cpp" />
     <ClCompile Include="openclkernel.cpp" />
     <ClCompile Include="pointsprite.cpp" />
     <ClCompile Include="model.cpp" />
