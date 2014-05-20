@@ -13,6 +13,7 @@
 
 // Library Includes
 #include <vector>
+#include <ShObjIdl.h>
 
 // Local Includes
 #include "pointsprite.h"
@@ -96,8 +97,6 @@ enum EEditorState
 
 // Prototypes
 struct ID3D11DeviceContext;
-struct IFileOpenDialog;
-struct IFileDialog;
 
 class CShader;
 class CEntityManager;
@@ -121,6 +120,7 @@ public:
 
 	void LoadLevel();
 	void SaveLevel();
+	IFACEMETHODIMP OnSaveFileSelected(IFileDialogCustomize* _pFileDialog, DWORD _pIDControl);
 
 	virtual void RefreshBuffers(ID3D11Device* _pDevice);
 	virtual bool HasCollided(D3DXVECTOR2& _rPoint, TButton* _pButton);

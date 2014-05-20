@@ -14,7 +14,6 @@
 
 // Library Includes
 #include <D3D11.h>
-#include <ShObjIdl.h>
 #include <rapidxml_utils.hpp>
 
 // Local Includes
@@ -262,10 +261,15 @@ CEditorInterface::LoadLevel()
 	{
 		{ L"Level File", L"*.xml" }
 	};
-	HRESULT hr = CoCreateInstance(	CLSID_FileOpenDialog,
+	HRCheck(	CoCreateInstance(	CLSID_FileOpenDialog,
 									NULL,
 									CLSCTX_INPROC_SERVER,
-									IID_PPV_ARGS(&m_pFileOpenDialog));
+									IID_PPV_ARGS(&m_pFileOpenDialog)),
+									L"Could not create OPEN dialog box");
+	//http://weblogs.asp.net/kennykerr/archive/2006/11/10/Windows-Vista-for-Developers-_1320_-Part-6-_1320_-The-New-File-Dialogs.aspx
+	FILEOPENDIALOGOPTIONS tOpenOptions;
+	//tOpenOptions
+//	IFileDialogEvents* pEvents;
 	m_pFileOpenDialog->SetFileTypes(1, tFileType);
 	m_pFileOpenDialog->SetTitle(L"Open Level from File:");
 	m_pFileOpenDialog->Show(NULL);
@@ -274,18 +278,22 @@ void
 CEditorInterface::SaveLevel()
 {
 	IFileDialogEvents* pEvents = 0;
-	HRESULT hResult;
 	//Create dialog box
 	HRCheck(	CoCreateInstance(		CLSID_FileSaveDialog,
 										NULL,
 										CLSCTX_INPROC_SERVER,
 										IID_PPV_ARGS(&m_pFileSaveDialog)),
-										L"Could not create dialog box");
+										L"Could not create SAVE dialog box");
 	
 	//HRCheck(	CDialogeventha);
 	m_pFileSaveDialog->SetDefaultExtension(L"xml");
 	m_pFileSaveDialog->SetTitle(L"Save Level to File:");
 	m_pFileSaveDialog->Show(NULL);
+}
+IFACEMETHODIMP
+CEditorInterface::OnSaveFileSelected(IFileDialogCustomize* _pFileDialog, DWORD _pIDControl)
+{
+	int x = 0;
 }
 void 
 CEditorInterface::RefreshBuffers(ID3D11Device* _pDevice)

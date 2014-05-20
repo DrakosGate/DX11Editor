@@ -4,3 +4,5 @@
 /*.sdf
 /*.suo
 /Test
+/Obj/Release
+/Bin/Shaders/Output
