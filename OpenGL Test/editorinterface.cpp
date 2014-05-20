@@ -15,9 +15,11 @@
 // Library Includes
 #include <D3D11.h>
 #include <rapidxml_utils.hpp>
+#include <atlbase.h>
 
 // Local Includes
 #include "defines.h"
+#include "level.h"
 #include "shader.h"
 #include "resourcemanager.h"
 #include "entitymanager.h"
@@ -46,6 +48,7 @@ CEditorInterface::CEditorInterface()
 , m_pDraggedWindow(0)
 , m_pFileOpenDialog(0)
 , m_pFileSaveDialog(0)
+, m_pCurrentLevel(0)
 {
 
 }
@@ -90,12 +93,16 @@ CEditorInterface::~CEditorInterface()
 *
 */
 bool 
-CEditorInterface::Initialise()
+CEditorInterface::Initialise(HWND _hWindow, CLevel* _pLevel)
 {
 	m_pWindowColours = new D3DXCOLOR[WINDOWSTATE_MAX];
 	m_pWindowColours[WINDOWSTATE_OPEN] = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
 	m_pWindowColours[WINDOWSTATE_CLOSED] = D3DXCOLOR(0.0f, 0.0f, 0.0f, 0.0f);
 	m_pWindowColours[WINDOWSTATE_MOUSEOVER] = D3DXCOLOR(0.5f, 0.7f, 0.8f, 1.0f);
+
+	m_hWindow = _hWindow;
+	m_pCurrentLevel = _pLevel;
+
 	return true;
 }
 void 
@@ -257,43 +264,43 @@ CEditorInterface::IsActive() const
 void
 CEditorInterface::LoadLevel()
 {
-	COMDLG_FILTERSPEC tFileType[] = 
+	CComPtr<IFileOpenDialog> pDialog;
+	HRESULT hResult = pDialog.CoCreateInstance(__uuidof(FileOpenDialog));
+	
+	COMDLG_FILTERSPEC tFileType[] =
 	{
 		{ L"Level File", L"*.xml" }
 	};
-	HRCheck(	CoCreateInstance(	CLSID_FileOpenDialog,
-									NULL,
-									CLSCTX_INPROC_SERVER,
-									IID_PPV_ARGS(&m_pFileOpenDialog)),
-									L"Could not create OPEN dialog box");
-	//http://weblogs.asp.net/kennykerr/archive/2006/11/10/Windows-Vista-for-Developers-_1320_-Part-6-_1320_-The-New-File-Dialogs.aspx
-	FILEOPENDIALOGOPTIONS tOpenOptions;
-	//tOpenOptions
-//	IFileDialogEvents* pEvents;
-	m_pFileOpenDialog->SetFileTypes(1, tFileType);
-	m_pFileOpenDialog->SetTitle(L"Open Level from File:");
-	m_pFileOpenDialog->Show(NULL);
+	pDialog->SetFileTypes(1, tFileType);
+
+	//HRCheck(	CoCreateInstance(	CLSID_FileOpenDialog,
+	//								NULL,
+	//								CLSCTX_INPROC_SERVER,
+	//								IID_PPV_ARGS(&m_pFileOpenDialog)),
+	//								L"Could not create OPEN dialog box");
+	////http://weblogs.asp.net/kennykerr/archive/2006/11/10/Windows-Vista-for-Developers-_1320_-Part-6-_1320_-The-New-File-Dialogs.aspx
+	//FILEOPENDIALOGOPTIONS tOpenOptions;
+	////tOpenOptions
+	//	//IFileDialogEvents* pEvents;
+	//m_pFileOpenDialog->SetFileTypes(1, tFileType);
+	//m_pFileOpenDialog->SetTitle(L"Open Level from File:");
+	//m_pFileOpenDialog->Show(NULL);
 }
 void
 CEditorInterface::SaveLevel()
 {
-	IFileDialogEvents* pEvents = 0;
-	//Create dialog box
-	HRCheck(	CoCreateInstance(		CLSID_FileSaveDialog,
-										NULL,
-										CLSCTX_INPROC_SERVER,
-										IID_PPV_ARGS(&m_pFileSaveDialog)),
-										L"Could not create SAVE dialog box");
-	
-	//HRCheck(	CDialogeventha);
-	m_pFileSaveDialog->SetDefaultExtension(L"xml");
-	m_pFileSaveDialog->SetTitle(L"Save Level to File:");
-	m_pFileSaveDialog->Show(NULL);
-}
-IFACEMETHODIMP
-CEditorInterface::OnSaveFileSelected(IFileDialogCustomize* _pFileDialog, DWORD _pIDControl)
-{
-	int x = 0;
+	//IFileDialogEvents* pEvents = 0;
+	////Create dialog box
+	//HRCheck(	CoCreateInstance(		CLSID_FileSaveDialog,
+	//									NULL,
+	//									CLSCTX_INPROC_SERVER,
+	//									IID_PPV_ARGS(&m_pFileSaveDialog)),
+	//									L"Could not create SAVE dialog box");
+	//
+	////HRCheck(	CDialogeventha);
+	//m_pFileSaveDialog->SetDefaultExtension(L"xml");
+	//m_pFileSaveDialog->SetTitle(L"Save Level to File:");
+	//m_pFileSaveDialog->Show(NULL);
 }
 void 
 CEditorInterface::RefreshBuffers(ID3D11Device* _pDevice)

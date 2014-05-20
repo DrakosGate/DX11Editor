@@ -55,8 +55,8 @@ public:
 	CLevel();
 	virtual ~CLevel();
 
-	virtual bool Initialise(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext, CDirectXRenderer* _pRenderer, TInputStruct* _pInput, int _iScreenWidth, int _iScreenHeight);
-	virtual void CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext);
+	virtual bool Initialise(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext, CDirectXRenderer* _pRenderer, HWND _hWindow, TInputStruct* _pInput, int _iScreenWidth, int _iScreenHeight);
+	virtual void CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext, HWND _hWindow);
 	virtual void Process(ID3D11Device* _pDevice, float _fDeltaTime);
 	virtual bool ProcessInput(ID3D11Device* _pDevice, float _fDeltaTime);
 	virtual void Draw(ID3D11DeviceContext* _pDevice);

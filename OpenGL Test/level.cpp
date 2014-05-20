@@ -276,7 +276,7 @@ CLevel::~CLevel()
 *
 */
 bool
-CLevel::Initialise(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext, CDirectXRenderer* _pRenderer, TInputStruct* _pInput, int _iScreenWidth, int _iScreenHeight)
+CLevel::Initialise(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext, CDirectXRenderer* _pRenderer, HWND _hWindow, TInputStruct* _pInput, int _iScreenWidth, int _iScreenHeight)
 {
 	m_pRenderer = _pRenderer;
 	m_pInput = _pInput;
@@ -295,7 +295,7 @@ CLevel::Initialise(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext, CD
 	CreateRenderTargets(_pDevice);
 	
 	//Create renderable entities and add to entitymanager
-	CreateEntities(_pDevice, _pDevContext);
+	CreateEntities(_pDevice, _pDevContext, _hWindow);
 
 	float fAspectRatio = static_cast<float>(m_iScreenWidth) / static_cast<float>(m_iScreenHeight);
 	m_pCamera = new CCamera();
@@ -353,7 +353,7 @@ CLevel::Initialise(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext, CD
 *
 */
 void 
-CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext)
+CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext, HWND _hWindow)
 {	
 	printf("================= Creating Entities =================\n");
 	//Create entity manager to contain all objects
@@ -504,7 +504,7 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	}
 
 	m_pEditor = new CEditorInterface();
-	m_pEditor->Initialise();
+	m_pEditor->Initialise(_hWindow, this);
 	m_pEditor->LoadFromXML(_pDevice, m_pResourceManager, "Data/EditorLayout.xml");
 	m_pEditor->SetObjectShader(&m_pShaderCollection[SHADER_POINTSPRITE]);
 	m_pEditor->SetDiffuseMap(m_pResourceManager->GetTexture(std::string("menu_button")));

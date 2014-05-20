@@ -93,7 +93,7 @@ CDirectXRenderer::Initialise(HWND _hWnd, int _iWindowWidth, int _iWindowHeight, 
 	float fAspectRatio = static_cast<float>(_iWindowWidth) / static_cast<float>(_iWindowHeight);
 	
 	m_pLevel = new CLevel();
-	m_pLevel->Initialise(m_pDevice, m_pDeviceContext, this, _pInput, _iWindowWidth, _iWindowHeight);
+	m_pLevel->Initialise(m_pDevice, m_pDeviceContext, this, _hWnd, _pInput, _iWindowWidth, _iWindowHeight);
 	
 	m_pClearColour[0] = 0.01f;
 	m_pClearColour[1] = 0.01f;

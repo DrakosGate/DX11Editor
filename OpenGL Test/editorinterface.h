@@ -98,6 +98,7 @@ enum EEditorState
 // Prototypes
 struct ID3D11DeviceContext;
 
+class CLevel;
 class CShader;
 class CEntityManager;
 class CResourceManager;
@@ -109,7 +110,7 @@ public:
 	CEditorInterface();
 	virtual ~CEditorInterface();
 
-	virtual bool Initialise();
+	virtual bool Initialise(HWND _hWindow, CLevel* _pLevel);
 	virtual void Process(float _fDeltaTime);
 	virtual bool ProcessInput(TInputStruct* _pKeys, float _fDT);
 	virtual EEditorState GetEditorState() const;
@@ -120,8 +121,7 @@ public:
 
 	void LoadLevel();
 	void SaveLevel();
-	IFACEMETHODIMP OnSaveFileSelected(IFileDialogCustomize* _pFileDialog, DWORD _pIDControl);
-
+	
 	virtual void RefreshBuffers(ID3D11Device* _pDevice);
 	virtual bool HasCollided(D3DXVECTOR2& _rPoint, TButton* _pButton);
 	virtual void ProcessButtonPressed(TWindow* _pWindow, TButton* _pButton);
@@ -152,6 +152,8 @@ protected:
 	bool m_bCreateObject;
 
 	//Saving and Loading files
+	HWND m_hWindow;
+	CLevel* m_pCurrentLevel;
 	IFileOpenDialog* m_pFileOpenDialog;
 	IFileDialog* m_pFileSaveDialog;
 };
