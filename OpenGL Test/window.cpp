@@ -517,7 +517,7 @@ CWindow::InitialiseMainWindow()
 
 	//Initialise window
 	m_hMainWnd = CreateWindow(	cClassName, 
-								L"OpenGL Test", 
+								L"Level Editor - Christopher Howlett", 
 								WS_MINIMIZEBOX | WS_VISIBLE | WS_OVERLAPPEDWINDOW,
 								0,
 								0,

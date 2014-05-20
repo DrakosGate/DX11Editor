@@ -102,6 +102,8 @@ class CLevel;
 class CShader;
 class CEntityManager;
 class CResourceManager;
+class CEditorInterface;
+class CDialogEvent;
 
 class CEditorInterface : public CPointSprite
 {
@@ -121,7 +123,7 @@ public:
 
 	void LoadLevel();
 	void SaveLevel();
-	
+	void OnSave();
 	virtual void RefreshBuffers(ID3D11Device* _pDevice);
 	virtual bool HasCollided(D3DXVECTOR2& _rPoint, TButton* _pButton);
 	virtual void ProcessButtonPressed(TWindow* _pWindow, TButton* _pButton);
@@ -158,4 +160,19 @@ protected:
 	IFileDialog* m_pFileSaveDialog;
 };
 
+//class CDialogEvent : public IFileDialogEvents
+//{
+//public:
+//	void Initialise(CEditorInterface* _pEditor);
+//	virtual HRESULT OnFileOk(__RPC__in_opt IFileDialog *pfd){}
+//	virtual HRESULT OnFolderChange(__RPC__in_opt IFileDialog *pfd){}
+//	virtual HRESULT OnFolderChanging(__RPC__in_opt IFileDialog *pfd){}
+//	virtual HRESULT OnOverwrite(__RPC__in_opt IFileDialog *pfd){}
+//	virtual HRESULT OnSelectionChange(__RPC__in_opt IFileDialog *pfd){}
+//	virtual HRESULT OnShareViolation(__RPC__in_opt IFileDialog *pfd){}
+//	virtual HRESULT OnTypeChange(__RPC__in_opt IFileDialog *pfd){}
+//
+//private:
+//	CEditorInterface* m_pEditor;
+//};
 #endif //__EDITORINTERFACE_H__

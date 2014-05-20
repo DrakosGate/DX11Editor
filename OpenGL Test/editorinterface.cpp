@@ -103,21 +103,31 @@ CEditorInterface::Initialise(HWND _hWindow, CLevel* _pLevel)
 	m_hWindow = _hWindow;
 	m_pCurrentLevel = _pLevel;
 
+	COMDLG_FILTERSPEC tFileType[] =
+	{
+		{ L"Level File", L"*.xml" }
+	};
+	//pDialog->SetFileTypes(1, tFileType);
+	//pDialog->SetTitle(L"Load Level from File:");
+	//pDialog->Show(m_hWindow);
+	HRCheck(CoCreateInstance(CLSID_FileOpenDialog,
+		NULL,
+		CLSCTX_INPROC_SERVER,
+		IID_PPV_ARGS(&m_pFileOpenDialog)),
+		L"Could not create OPEN dialog box");
+	//http://weblogs.asp.net/kennykerr/archive/2006/11/10/Windows-Vista-for-Developers-_1320_-Part-6-_1320_-The-New-File-Dialogs.aspx
+	FILEOPENDIALOGOPTIONS tOpenOptions;
+	//tOpenOptions
+	//IFileDialogEvents* pEvents;
+	m_pFileOpenDialog->SetFileTypes(1, tFileType);
+	m_pFileOpenDialog->SetTitle(L"Open Level from File:");
+
 	return true;
 }
 void 
 CEditorInterface::Process(float _fDeltaTime)
 {
-	if (m_pFileSaveDialog)
-	{
-		IShellItem* pItem;
-		HRESULT hResult = m_pFileSaveDialog->GetResult(&pItem);
-		if (SUCCEEDED(hResult))
-		{
-			LPOLESTR pDisplayName;
-			//hResult pItem->get
-		}
-	}
+	
 }
 bool
 CEditorInterface::ProcessInput(TInputStruct* _pKeys, float _fDT)
@@ -264,38 +274,18 @@ CEditorInterface::IsActive() const
 void
 CEditorInterface::LoadLevel()
 {
-	CComPtr<IFileOpenDialog> pDialog;
-	HRESULT hResult = pDialog.CoCreateInstance(__uuidof(FileOpenDialog));
-	
-	COMDLG_FILTERSPEC tFileType[] =
-	{
-		{ L"Level File", L"*.xml" }
-	};
-	pDialog->SetFileTypes(1, tFileType);
-
-	//HRCheck(	CoCreateInstance(	CLSID_FileOpenDialog,
-	//								NULL,
-	//								CLSCTX_INPROC_SERVER,
-	//								IID_PPV_ARGS(&m_pFileOpenDialog)),
-	//								L"Could not create OPEN dialog box");
-	////http://weblogs.asp.net/kennykerr/archive/2006/11/10/Windows-Vista-for-Developers-_1320_-Part-6-_1320_-The-New-File-Dialogs.aspx
-	//FILEOPENDIALOGOPTIONS tOpenOptions;
-	////tOpenOptions
-	//	//IFileDialogEvents* pEvents;
-	//m_pFileOpenDialog->SetFileTypes(1, tFileType);
-	//m_pFileOpenDialog->SetTitle(L"Open Level from File:");
-	//m_pFileOpenDialog->Show(NULL);
+	m_pFileOpenDialog->Show(m_hWindow);
 }
 void
 CEditorInterface::SaveLevel()
 {
 	//IFileDialogEvents* pEvents = 0;
 	////Create dialog box
-	//HRCheck(	CoCreateInstance(		CLSID_FileSaveDialog,
-	//									NULL,
-	//									CLSCTX_INPROC_SERVER,
-	//									IID_PPV_ARGS(&m_pFileSaveDialog)),
-	//									L"Could not create SAVE dialog box");
+	//HRCheck(CoCreateInstance(CLSID_FileSaveDialog,
+	//	NULL,
+	//	CLSCTX_INPROC_SERVER,
+	//	IID_PPV_ARGS(&m_pFileSaveDialog)),
+	//	L"Could not create SAVE dialog box");
 	//
 	////HRCheck(	CDialogeventha);
 	//m_pFileSaveDialog->SetDefaultExtension(L"xml");
