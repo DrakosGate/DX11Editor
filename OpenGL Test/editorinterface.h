@@ -114,19 +114,19 @@ public:
 
 	virtual bool Initialise(HWND _hWindow, CLevel* _pLevel);
 	virtual void Process(float _fDeltaTime);
-	virtual bool ProcessInput(TInputStruct* _pKeys, float _fDT);
+	virtual bool ProcessInput(ID3D11Device* _pDevice, TInputStruct* _pKeys, float _fDT);
 	virtual EEditorState GetEditorState() const;
 	virtual std::string& GetSelectedPrefab();
 
 	virtual void ToggleEditor(bool _bIsActive);
 	virtual bool IsActive() const;
 
-	void LoadLevel();
-	void SaveLevel();
+	void LoadLevel(ID3D11Device* _pDevice);
+	void SaveLevel(ID3D11Device* _pDevice);
 	void OnSave();
 	virtual void RefreshBuffers(ID3D11Device* _pDevice);
 	virtual bool HasCollided(D3DXVECTOR2& _rPoint, TButton* _pButton);
-	virtual void ProcessButtonPressed(TWindow* _pWindow, TButton* _pButton);
+	virtual void ProcessButtonPressed(ID3D11Device* _pDevice, TWindow* _pWindow, TButton* _pButton);
 	virtual void CheckForNewObjects(ID3D11Device* _pDevice, CEntityManager* _pEntityManager, CShader* _pObjectShader, CRenderEntity* _pSpawnPos);
 
 	virtual void LoadFromXML(ID3D11Device* _pDevice, CResourceManager* _pResourceManager, char* _pcXMLFilename);
@@ -157,7 +157,7 @@ protected:
 	HWND m_hWindow;
 	CLevel* m_pCurrentLevel;
 	IFileOpenDialog* m_pFileOpenDialog;
-	IFileDialog* m_pFileSaveDialog;
+	IFileSaveDialog* m_pFileSaveDialog;
 };
 
 //class CDialogEvent : public IFileDialogEvents

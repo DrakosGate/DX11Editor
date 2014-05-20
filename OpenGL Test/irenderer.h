@@ -9,6 +9,8 @@
 
 #include "defines.h"
 
+class CClock;
+
 //Renderer interface
 class IRenderer
 {
@@ -18,7 +20,7 @@ public:
 
 	virtual bool Initialise(HWND _hWnd, int _iWindowWidth, int _iWindowHeight, TInputStruct* _pInput){ return true; };
 	virtual void CleanUp(){};
-	virtual void ExecuteOneFrame(float _fDeltaTick){};
+	virtual void ExecuteOneFrame(CClock* _pClock, float _fDeltaTick){};
 	virtual void SetFPSCount(int _iFramesPerSecond){};
 
 private:

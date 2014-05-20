@@ -49,12 +49,14 @@ public:
 	virtual D3DXVECTOR3& GetScale();
 	virtual D3DXVECTOR3& GetForward();
 	virtual D3DXMATRIX& GetWorld();
+	virtual std::string& GetEntityType();
 	virtual void SetRotation(D3DXVECTOR3& _rVecRotation);
 	virtual void SetPosition(D3DXVECTOR3& _rVecPosition);
 	virtual void SetForward(D3DXVECTOR3& _rVecForward);
 	virtual bool ProcessInput(TInputStruct& _pKeys, float _fDT);
 	virtual void SetWorldMatrix(D3DXMATRIX& _rWorld);
 	virtual void SetScale(D3DXVECTOR3& _rVecScale);
+	virtual void SetEntityType(std::string& _sType);
 
 	virtual ID3D11ShaderResourceView* GetDiffuseMap();
 	virtual ID3D11ShaderResourceView* GetNormalMap();
@@ -100,6 +102,7 @@ protected:
 	D3DXVECTOR3 m_vecUp;
 	D3DXVECTOR3 m_vecRight;
 	D3DXQUATERNION m_quatRot;
+	std::string m_sEntityType;
 
 	int m_iVertexCount;
 	int m_iIndexCount;

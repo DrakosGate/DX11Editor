@@ -105,7 +105,7 @@ CAIHiveMind::Initialise()
 	//Create AI descriptions
 	m_pAIDescriptions = new TAIDescription[AI_MAX];
 	m_pAIDescriptions[AI_HUMAN] = TAIDescription(1.0f, 1.0f);
-	m_pAIDescriptions[AI_CREATURE] = TAIDescription(0.3f, 0.1f);
+	m_pAIDescriptions[AI_CHICKEN] = TAIDescription(0.3f, 0.1f);
 	
 	return true;
 }

@@ -18,6 +18,7 @@
 #include "camera.h"
 #include "resourcemanager.h"
 #include "level.h"
+#include "clock.h"
 
 // This Include
 #include "directxrenderer.h"
@@ -103,9 +104,9 @@ CDirectXRenderer::Initialise(HWND _hWnd, int _iWindowWidth, int _iWindowHeight, 
 	return true;
 }
 void 
-CDirectXRenderer::ExecuteOneFrame(float _fDeltaTick)
+CDirectXRenderer::ExecuteOneFrame(CClock* _pClock, float _fDeltaTick)
 {
-	m_pLevel->Process(m_pDevice, _fDeltaTick);
+	m_pLevel->Process(m_pDevice, _pClock, _fDeltaTick);
 	
 	m_pLevel->Draw(m_pDeviceContext);
 	m_pSwapChain->Present(m_bVSyncEnabled, 0);

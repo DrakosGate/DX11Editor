@@ -1,0 +1,93 @@
+<level>
+	<prefab>
+		<type>chicken</type>
+		<position x="1.0" y="0.0" z="3.0"></position>
+		<scale x="1.0" y="1.0" z="1.0"></scale>
+		<rotation x="0.0" y="0.0" z="0.0"></rotation>
+		<colour r="1.0" g="1.0" b="1.0" a="1.0"></colour>
+	</prefab>
+	<prefab>
+		<type>chicken</type>
+		<position x="1.0" y="0.0" z="6.0"></position>
+		<scale x="1.0" y="1.0" z="1.0"></scale>
+		<rotation x="0.0" y="90.0" z="0.0"></rotation>
+		<colour r="1.0" g="1.0" b="1.0" a="1.0"></colour>
+	</prefab>
+	<prefab>
+		<type>chicken</type>
+		<position x="1.0" y="0.0" z="9.0"></position>
+		<scale x="1.0" y="1.0" z="1.0"></scale>
+		<rotation x="0.0" y="180.0" z="0.0"></rotation>
+		<colour r="1.0" g="1.0" b="1.0" a="1.0"></colour>
+	</prefab>
+	<prefab>
+		<type>chicken</type>
+		<position x="1.0" y="0.0" z="12.0"></position>
+		<scale x="1.0" y="1.0" z="1.0"></scale>
+		<rotation x="0.0" y="270.0" z="0.0"></rotation>
+		<colour r="1.0" g="1.0" b="1.0" a="1.0"></colour>
+	</prefab>
+	<prefab>
+		<type>chicken</type>
+		<position x="1.0" y="0.0" z="15.0"></position>
+		<scale x="1.0" y="1.0" z="1.0"></scale>
+		<rotation x="0.0" y="0.0" z="0.0"></rotation>
+		<colour r="1.0" g="1.0" b="1.0" a="1.0"></colour>
+	</prefab>
+	<prefab>
+		<type>human</type>
+		<position x="-5.0" y="0.0" z="0.0"></position>
+		<scale x="1.0" y="1.0" z="1.0"></scale>
+		<rotation x="0.0" y="0.0" z="0.0"></rotation>
+		<colour r="1.0" g="1.0" b="1.0" a="1.0"></colour>
+	</prefab>
+	<prefab>
+		<type>human</type>
+		<position x="0.0" y="0.0" z="0.0"></position>
+		<scale x="1.0" y="1.0" z="1.0"></scale>
+		<rotation x="0.0" y="30.0" z="0.0"></rotation>
+		<colour r="1.0" g="1.0" b="1.0" a="1.0"></colour>
+	</prefab>
+	<prefab>
+		<type>human</type>
+		<position x="5.0" y="0.0" z="0.0"></position>
+		<scale x="1.0" y="1.0" z="1.0"></scale>
+		<rotation x="0.0" y="60.0" z="0.0"></rotation>
+		<colour r="1.0" g="1.0" b="1.0" a="1.0"></colour>
+	</prefab>
+	<prefab>
+		<type>tree</type>
+		<position x="-10.0" y="0.0" z="5.0"></position>
+		<scale x="1.0" y="1.0" z="1.0"></scale>
+		<rotation x="0.0" y="60.0" z="0.0"></rotation>
+		<colour r="1.0" g="1.0" b="1.0" a="1.0"></colour>
+	</prefab>
+	<prefab>
+		<type>tree</type>
+		<position x="-5.0" y="0.0" z="5.0"></position>
+		<scale x="1.0" y="1.0" z="1.0"></scale>
+		<rotation x="0.0" y="60.0" z="0.0"></rotation>
+		<colour r="1.0" g="1.0" b="1.0" a="1.0"></colour>
+	</prefab>
+	<prefab>
+		<type>tree</type>
+		<position x="0.0" y="0.0" z="5.0"></position>
+		<scale x="1.0" y="1.0" z="1.0"></scale>
+		<rotation x="0.0" y="60.0" z="0.0"></rotation>
+		<colour r="1.0" g="1.0" b="1.0" a="1.0"></colour>
+	</prefab>
+	<prefab>
+		<type>tree</type>
+		<position x="5.0" y="0.0" z="5.0"></position>
+		<scale x="1.0" y="1.0" z="1.0"></scale>
+		<rotation x="0.0" y="60.0" z="0.0"></rotation>
+		<colour r="1.0" g="1.0" b="1.0" a="1.0"></colour>
+	</prefab>
+	<prefab>
+		<type>tree</type>
+		<position x="10.0" y="0.0" z="5.0"></position>
+		<scale x="1.0" y="1.0" z="1.0"></scale>
+		<rotation x="0.0" y="60.0" z="0.0"></rotation>
+		<colour r="1.0" g="1.0" b="1.0" a="1.0"></colour>
+	</prefab>
+</level>

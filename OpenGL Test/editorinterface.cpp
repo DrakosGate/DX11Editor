@@ -103,25 +103,6 @@ CEditorInterface::Initialise(HWND _hWindow, CLevel* _pLevel)
 	m_hWindow = _hWindow;
 	m_pCurrentLevel = _pLevel;
 
-	COMDLG_FILTERSPEC tFileType[] =
-	{
-		{ L"Level File", L"*.xml" }
-	};
-	//pDialog->SetFileTypes(1, tFileType);
-	//pDialog->SetTitle(L"Load Level from File:");
-	//pDialog->Show(m_hWindow);
-	HRCheck(CoCreateInstance(CLSID_FileOpenDialog,
-		NULL,
-		CLSCTX_INPROC_SERVER,
-		IID_PPV_ARGS(&m_pFileOpenDialog)),
-		L"Could not create OPEN dialog box");
-	//http://weblogs.asp.net/kennykerr/archive/2006/11/10/Windows-Vista-for-Developers-_1320_-Part-6-_1320_-The-New-File-Dialogs.aspx
-	FILEOPENDIALOGOPTIONS tOpenOptions;
-	//tOpenOptions
-	//IFileDialogEvents* pEvents;
-	m_pFileOpenDialog->SetFileTypes(1, tFileType);
-	m_pFileOpenDialog->SetTitle(L"Open Level from File:");
-
 	return true;
 }
 void 
@@ -130,7 +111,7 @@ CEditorInterface::Process(float _fDeltaTime)
 	
 }
 bool
-CEditorInterface::ProcessInput(TInputStruct* _pKeys, float _fDT)
+CEditorInterface::ProcessInput(ID3D11Device* _pDevice, TInputStruct* _pKeys, float _fDT)
 {
 	bool bHasReceivedInput = false;
 	m_bCreateObject = false;
@@ -175,7 +156,7 @@ CEditorInterface::ProcessInput(TInputStruct* _pKeys, float _fDT)
 							pCurrentButton->targetColour = m_pWindowColours[WINDOWSTATE_MOUSEOVER];
 							if (_pKeys->bLeftMouseClick.bPressed && _pKeys->bLeftMouseClick.bPreviousState == false)
 							{
-								ProcessButtonPressed(m_vecWindows[iWindow], pCurrentButton);
+								ProcessButtonPressed(_pDevice, m_vecWindows[iWindow], pCurrentButton);
 								break;
 							}
 						}
@@ -271,26 +252,65 @@ CEditorInterface::IsActive() const
 {
 	return m_bIsActive;
 }
+//http://weblogs.asp.net/kennykerr/archive/2006/11/10/Windows-Vista-for-Developers-_1320_-Part-6-_1320_-The-New-File-Dialogs.aspx
 void
-CEditorInterface::LoadLevel()
+CEditorInterface::LoadLevel(ID3D11Device* _pDevice)
 {
-	m_pFileOpenDialog->Show(m_hWindow);
+	COMDLG_FILTERSPEC tFileType[] =
+	{
+		{ L"Level File", L"*.xml" }
+	};
+	HRCheck( CoCreateInstance(	CLSID_FileOpenDialog,
+								NULL,
+								CLSCTX_INPROC_SERVER,
+								IID_PPV_ARGS(&m_pFileOpenDialog)),
+								L"Could not create OPEN dialog box");
+	
+	m_pFileOpenDialog->SetFileTypes(1, tFileType);
+	m_pFileOpenDialog->SetTitle(L"Open Level from File:");
+	HRESULT hr = m_pFileOpenDialog->Show(m_hWindow);
+	if (SUCCEEDED(hr))
+	{
+		IShellItem* pShellItem;
+		hr = m_pFileOpenDialog->GetResult(&pShellItem);
+		wchar_t* pName;
+		pShellItem->GetDisplayName(SIGDN_FILESYSPATH, &pName);
+
+		int iStrLength = lstrlenW(pName);
+		char* pcName = new char[iStrLength];
+		const wchar_t* pwName = pName;
+		wcsrtombs(pcName, &pwName, iStrLength, std::mbstate_t());
+		MessageBox(NULL, pName, L"File Chosen:", MB_OK);
+		//m_pCurrentLevel->LoadLevel(_pDevice, pcName);
+		pShellItem->Release();
+		delete[] pcName;
+	}
 }
 void
-CEditorInterface::SaveLevel()
+CEditorInterface::SaveLevel(ID3D11Device* _pDevice)
 {
-	//IFileDialogEvents* pEvents = 0;
-	////Create dialog box
-	//HRCheck(CoCreateInstance(CLSID_FileSaveDialog,
-	//	NULL,
-	//	CLSCTX_INPROC_SERVER,
-	//	IID_PPV_ARGS(&m_pFileSaveDialog)),
-	//	L"Could not create SAVE dialog box");
-	//
-	////HRCheck(	CDialogeventha);
-	//m_pFileSaveDialog->SetDefaultExtension(L"xml");
-	//m_pFileSaveDialog->SetTitle(L"Save Level to File:");
-	//m_pFileSaveDialog->Show(NULL);
+	COMDLG_FILTERSPEC tFileType[] =
+	{
+		{ L"Level File", L"*.xml" }
+	};
+	HRCheck(CoCreateInstance(CLSID_FileSaveDialog,
+		NULL,
+		CLSCTX_INPROC_SERVER,
+		IID_PPV_ARGS(&m_pFileSaveDialog)),
+		L"Could not create SAVE dialog box");
+
+	m_pFileSaveDialog->SetFileTypes(1, tFileType);
+	m_pFileSaveDialog->SetTitle(L"Open Level from File:");
+	HRESULT hr = m_pFileSaveDialog->Show(m_hWindow);
+	if (SUCCEEDED(hr))
+	{
+		IShellItem* pShellItem;
+		hr = m_pFileSaveDialog->GetResult(&pShellItem);
+		wchar_t* pName;
+		pShellItem->GetDisplayName(SIGDN_NORMALDISPLAY, &pName);
+		MessageBox(NULL, pName, L"File Chosen:", MB_OK);
+		pShellItem->Release();
+	}
 }
 void 
 CEditorInterface::RefreshBuffers(ID3D11Device* _pDevice)
@@ -314,7 +334,7 @@ CEditorInterface::HasCollided(D3DXVECTOR2& _rPoint, TButton* _pButton)
 			_rPoint.y > _pButton->vecPosition.y - _pButton->vecScale.y);
 }
 void
-CEditorInterface::ProcessButtonPressed(TWindow* _pWindow, TButton* _pButton)
+CEditorInterface::ProcessButtonPressed(ID3D11Device* _pDevice, TWindow* _pWindow, TButton* _pButton)
 {
 	CAudioPlayer::GetInstance().Play3DSound(SOUND_BUTTONPRESS, D3DXVECTOR3(0.0f, 0.0f, 0.0f));
 	if (strcmp(_pButton->sName.c_str(), "Close") == 0)
@@ -335,11 +355,11 @@ CEditorInterface::ProcessButtonPressed(TWindow* _pWindow, TButton* _pButton)
 	}
 	else if (strcmp(_pButton->sName.c_str(), "LoadLevel") == 0)
 	{
-		LoadLevel();
+		LoadLevel(_pDevice);
 	}
 	else if (strcmp(_pButton->sName.c_str(), "SaveLevel") == 0)
 	{
-		SaveLevel();
+		SaveLevel(_pDevice);
 	}
 }
 void

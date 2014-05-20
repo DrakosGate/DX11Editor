@@ -225,8 +225,20 @@ CResourceManager::LoadPrefabTypes(ID3D11Device* _pDevice, CEntityManager* _pEnti
 		{
 			bIsStatic = strcmp(pCurrentPrefab->first_node("static")->value(), "true") == 0;
 		}
+		EAIType eAIType = AI_INVALID;
+		if (pCurrentPrefab->first_node("aitype"))
+		{
+			if (strcmp(pCurrentPrefab->first_node("aitype")->value(), "human") == 0)
+			{
+				eAIType = AI_HUMAN;
+			}
+			if (strcmp(pCurrentPrefab->first_node("aitype")->value(), "chicken") == 0)
+			{
+				eAIType = AI_CHICKEN;
+			}
+		}
 
-		_pEntityManager->AddPrefab(new TPrefabOptions(sPrefabName, GetModel(sPrefabModel), GetTexture(sPrefabDiffuseTexture), vecScale, bIsAnimated, bIsStatic));
+		_pEntityManager->AddPrefab(new TPrefabOptions(sPrefabName, GetModel(sPrefabModel), GetTexture(sPrefabDiffuseTexture), vecScale, eAIType, bIsAnimated, bIsStatic));
 		printf("    = Prefab %s successfully loaded\n", sPrefabName.c_str());
 	}
 }

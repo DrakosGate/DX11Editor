@@ -116,7 +116,7 @@ CClock::Process()
 	if(m_fTimeElapsed > 1.0f)
 	{
 		m_iFramesPerSecond = m_iFrameCount;
-		m_fTimeElapsed = 0;
+		m_fTimeElapsed -= 1.0f;
 		m_iFrameCount = 0;
 	}
 	//Limit frames per second

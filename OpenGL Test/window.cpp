@@ -245,7 +245,7 @@ CWindow::ExecuteOneFrame()
 	m_pClock->Process();
 	float fTimeElapsed = m_pClock->GetDeltaTick();
 	m_pRenderer->SetFPSCount(m_pClock->GetFPS());
-	m_pRenderer->ExecuteOneFrame(fTimeElapsed);
+	m_pRenderer->ExecuteOneFrame(m_pClock, fTimeElapsed);
 	//Record this frames input for the next frame
 	m_tInput.RecordPreviousInput();
 }

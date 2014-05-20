@@ -89,7 +89,7 @@ enum EAIType
 {
 	AI_INVALID = -1,
 	AI_HUMAN,
-	AI_CREATURE,
+	AI_CHICKEN,
 	AI_MAX
 };
 enum ERenderTargetType
@@ -160,12 +160,13 @@ struct TRay
 };
 struct TPrefabOptions
 {
-	TPrefabOptions(std::string& _pcPrefabName, CModel* _pModel, ID3D11ShaderResourceView* _pTexture, D3DXVECTOR3& _rScale, bool _bIsAnimated, bool _bIsStatic)
+	TPrefabOptions(std::string& _pcPrefabName, CModel* _pModel, ID3D11ShaderResourceView* _pTexture, D3DXVECTOR3& _rScale, EAIType _eAIType, bool _bIsAnimated, bool _bIsStatic)
 	{
 		pcPrefabName = _pcPrefabName;
 		pModel = _pModel;
 		pTexture = _pTexture;
 		vecScale = _rScale;
+		eAIType = _eAIType;
 		bIsAnimated = _bIsAnimated;
 		bIsStatic = _bIsStatic;
 	}
@@ -173,6 +174,7 @@ struct TPrefabOptions
 	CModel* pModel;
 	ID3D11ShaderResourceView* pTexture;
 	D3DXVECTOR3 vecScale;
+	EAIType eAIType;
 	bool bIsAnimated;
 	bool bIsStatic;
 };

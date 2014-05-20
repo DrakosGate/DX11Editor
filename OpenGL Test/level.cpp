@@ -15,9 +15,11 @@
 // Library Includes
 #include <D3D11.h>
 #include <thread>
+#include <rapidxml_utils.hpp>
 
 // Local Includes
 #include "defines.h"
+#include "clock.h"
 #include "entitymanager.h"
 #include "model.h"
 #include "animatedmodel.h"
@@ -156,30 +158,12 @@ CLevel::~CLevel()
 		delete m_pHivemind;
 		m_pHivemind = 0;
 	}
-	for (unsigned int iTree = 0; iTree < m_pTrees.size(); ++iTree)
+	for (unsigned int iEntity = 0; iEntity < m_pLevelEntities.size(); ++iEntity)
 	{
-		delete m_pTrees[iTree];
-		m_pTrees[iTree] = 0;
+		delete m_pLevelEntities[iEntity];
+		m_pLevelEntities[iEntity] = 0;
 	}
-	m_pTrees.clear();
-	for (unsigned int iCreature = 0; iCreature < m_pCreatures.size(); ++iCreature)
-	{
-		delete m_pCreatures[iCreature];
-		m_pCreatures[iCreature] = 0;
-	}
-	m_pCreatures.clear();
-	for (unsigned int iHuman = 0; iHuman < m_pHumans.size(); ++iHuman)
-	{
-		delete m_pHumans[iHuman];
-		m_pHumans[iHuman] = 0;
-	}
-	m_pHumans.clear();
-	for (unsigned int iEntity = 0; iEntity < m_pNewEntities.size(); ++iEntity)
-	{
-		delete m_pNewEntities[iEntity];
-		m_pNewEntities[iEntity] = 0;
-	}
-	m_pHumans.clear();
+	m_pLevelEntities.clear();
 	if (m_pTerrain)
 	{
 		delete m_pTerrain;
@@ -323,7 +307,7 @@ CLevel::Initialise(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext, CD
 	//Directional
 	//m_pLightManager->AddDirectional(D3DXVECTOR3(0.0f, -0.2f, 1.0f), D3DXCOLOR(0.5f, 0.6f, 0.5f, 1.0f), 5.0f);
 	//Point
-	for(unsigned int i = 0; i < m_pHumans.size(); ++i)
+	for(unsigned int i = 0; i < 3; ++i)
 	{
 		m_pLightManager->AddPoint(D3DXVECTOR3(0.0f, 0.4f, 0.0f), D3DXCOLOR(0.7f, 0.7f, 0.3f, 1.0f), D3DXVECTOR3(0.15f, 0.02f, 5.0f), 1.0f);
 	}
@@ -379,7 +363,7 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	//Load font
 	m_pFont = new CFontRenderer();
 	m_pFont->Initialise("Something", 16, 6);
-	m_pFont->Write("This is a message", D3DXVECTOR3(10.0f, 120.0f, 0.0f), D3DXVECTOR2(15.0f, 20.0f));
+	m_pFont->Write("This is a message345", D3DXVECTOR3(10.0f, WINDOW_HEIGHT * 0.1f, 0.0f), D3DXVECTOR2(15.0f, 20.0f));
 	m_pFont->SetObjectShader(&m_pShaderCollection[SHADER_FONT]);
 	m_pFont->SetDiffuseMap(m_pResourceManager->GetTexture(std::string("font_arial")));
 	m_pEntityManager->AddEntity(m_pFont, SCENE_FONT);
@@ -444,64 +428,8 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	m_pHivemind->Initialise();
 	m_pHivemind->CreateNavigationGrid(_pDevice, m_pEntityManager, &m_pShaderCollection[SHADER_POINTSPRITE], 20.0f, 60, 60);
 
-	int iNumHumans = 5;
-	int iNumCreatures = 20;
-	int iNumTrees = 50;
-	
-	//Add all entities to the grass avoidance
-	m_iNumGrassEntities = 1 + iNumCreatures + iNumHumans; // + 1 for the cursor
-	m_pGrassEntities = new CRenderEntity*[m_iNumGrassEntities];
-	int iCurrentGrassEntity = 0;
-	m_pGrassEntities[iCurrentGrassEntity] = m_pCursor;
-	++iCurrentGrassEntity;
-
-	for (int iHuman = 0; iHuman < iNumHumans; ++iHuman)
-	{
-		m_pHumans.push_back(m_pEntityManager->InstantiatePrefab(_pDevice,
-																std::string("human"),
-																&m_pShaderCollection[SHADER_MRT],
-																SCENE_3DSCENE,
-																D3DXVECTOR3(D3DXVECTOR3(0.0f, 0.0f, 0.0f)),
-																D3DXVECTOR3(1.0f, 1.0f, 1.0f),
-																D3DXVECTOR3(0.0f, static_cast<float>(rand() % 360), 0.0f),
-																D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f)));
-		m_pHivemind->AddAI(m_pHumans[iHuman], AI_HUMAN);
-		m_pGrassEntities[iCurrentGrassEntity] = m_pHumans[iHuman];
-		++iCurrentGrassEntity;
-	}
-
-	for(int iCreature = 0; iCreature < iNumCreatures; ++iCreature)
-	{
-		m_pCreatures.push_back(m_pEntityManager->InstantiatePrefab(	_pDevice,
-																	std::string("chicken"),
-																	&m_pShaderCollection[SHADER_MRT],
-																	SCENE_3DSCENE,
-																	D3DXVECTOR3(D3DXVECTOR3(0.0f, 0.0f, 0.0f)),
-																	D3DXVECTOR3(1.0f, 1.0f, 1.0f),
-																	D3DXVECTOR3(0.0f, static_cast<float>(rand() % 360), 0.0f),
-																	D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f)));
-		m_pHivemind->AddAI(m_pCreatures[iCreature], AI_CREATURE);
-		m_pGrassEntities[iCurrentGrassEntity] = m_pCreatures[iCreature];
-		++iCurrentGrassEntity;
-	}
-
-	float fTreeRadius = 4.0f;
-	float fTreeDensity = 0.1f;
-	for(int iTree = 0; iTree < iNumTrees; ++iTree)
-	{
-		float fCurrentTreeRadius = fTreeRadius + (iTree * fTreeDensity);
-		D3DXVECTOR3 treePos = m_pHivemind->GetRandomWaypoint();
-		//treePos.y = 0.75f;
-		m_pTrees.push_back(m_pEntityManager->InstantiatePrefab(	_pDevice,
-																std::string("tree"),
-																&m_pShaderCollection[SHADER_MRT],
-																SCENE_3DSCENE,
-																treePos,
-																D3DXVECTOR3(1.0f, 1.0f, 1.0f),
-																D3DXVECTOR3(0.0f, static_cast<float>(rand() % 360), 0.0f),
-																D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f)));
-		m_pHivemind->AddStaticObject(_pDevice, m_pTrees[iTree]);
-	}
+	//Load Default level data
+	LoadLevel(_pDevice, "Data/Levels/level1.xml");
 
 	m_pEditor = new CEditorInterface();
 	m_pEditor->Initialise(_hWindow, this);
@@ -533,18 +461,18 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 *
 */
 void 
-CLevel::Process(ID3D11Device* _pDevice, float _fDeltaTime)
+CLevel::Process(ID3D11Device* _pDevice, CClock* _pClock, float _fDeltaTime)
 {
 	ProcessInput(_pDevice, _fDeltaTime);
 
 	m_pCamera->Process(_fDeltaTime);
 	m_pOrthoCamera->Process(_fDeltaTime);
 
-	for (unsigned int i = 0; i < m_pHumans.size(); ++i)
-	{
-		m_pLightManager->GetPoint(i)->SetPosition(m_pHumans[i]->GetPosition() + m_pHumans[i]->GetForward() * 0.5f);
-	}
-	m_pLightManager->GetPoint(m_pLightManager->GetLightCount(LIGHT_POINT) - 1)->SetPosition(m_pCursor->GetPosition() + D3DXVECTOR3(0.0f, 0.1f, 0.0f));
+	//for (unsigned int i = 0; i < m_pHumans.size(); ++i)
+	//{
+	//	m_pLightManager->GetPoint(i)->SetPosition(m_pHumans[i]->GetPosition() + m_pHumans[i]->GetForward() * 0.5f);
+	//}
+	//m_pLightManager->GetPoint(m_pLightManager->GetLightCount(LIGHT_POINT) - 1)->SetPosition(m_pCursor->GetPosition() + D3DXVECTOR3(0.0f, 0.1f, 0.0f));
 	
 	//Process camera and movement
 	//m_pPlayer->ProcessInput(_fDeltaTime);
@@ -591,6 +519,11 @@ CLevel::Process(ID3D11Device* _pDevice, float _fDeltaTime)
 	//Process audio
 	CAudioPlayer::GetInstance().SetListenerPosition(m_pCamera->GetPosition(), m_pCamera->GetLook(), D3DXVECTOR3(0.0f, 1.0f, 0.0f));
 	CAudioPlayer::GetInstance().Process();
+
+	//Print FPS
+	char cBuffer[32];
+	sprintf_s(cBuffer, 32, "Frame Time Elapsed: %f", _fDeltaTime);
+	m_pFont->Write(cBuffer, D3DXVECTOR3(10.0f, WINDOW_HEIGHT * 0.12f, 0.0f), D3DXVECTOR2(15.0f, 20.0f));
 }
 /**
 *
@@ -609,7 +542,7 @@ CLevel::ProcessInput(ID3D11Device* _pDevice, float _fDeltaTime)
 	{
 		m_pEditor->ToggleEditor(!m_pEditor->IsActive());
 	}
-	bool bMouseOverEditor = m_pEditor->ProcessInput(m_pInput, _fDeltaTime);
+	bool bMouseOverEditor = m_pEditor->ProcessInput(_pDevice, m_pInput, _fDeltaTime);
 	//Check if new objects are being created
 	if (m_pEditor->GetEditorState() == EDITOR_SELECTED)
 	{
@@ -627,7 +560,8 @@ CLevel::ProcessInput(ID3D11Device* _pDevice, float _fDeltaTime)
 		//Instantiate a new entity
 		if (m_pInput->bLeftMouseClick.bPressed && m_pInput->bLeftMouseClick.bPreviousState == false)
 		{
-			m_pNewEntities.push_back(m_pEntityManager->InstantiatePrefab(	_pDevice,
+			m_pLevelEntities.push_back(m_pEntityManager->InstantiatePrefab(	_pDevice,
+																			m_pHivemind,
 																			m_sSelectedPrefab,
 																			&m_pShaderCollection[SHADER_MRT],
 																			SCENE_3DSCENE,
@@ -650,39 +584,13 @@ CLevel::ProcessInput(ID3D11Device* _pDevice, float _fDeltaTime)
 		//Check if the cursor has collided with any objects
 		if (m_pInput->bLeftMouseClick.bPressed && m_pInput->bLeftMouseClick.bPreviousState == false)
 		{
-			for (unsigned int iHuman = 0; iHuman < m_pHumans.size(); ++iHuman)
+			for (unsigned int iObject = 0; iObject < m_pLevelEntities.size(); ++iObject)
 			{
-				if (m_pCursor->HasCollided(m_pHumans[iHuman]))
+				if (m_pCursor->HasCollided(m_pLevelEntities[iObject]))
 				{
+					m_pSelectionCursor->SetDoDraw(true);
 					m_bHasSelectedObject = true;
-					m_pSelectedObject = m_pHumans[iHuman];
-					break;
-				}
-			}
-			for (unsigned int iCreature = 0; iCreature < m_pCreatures.size(); ++iCreature)
-			{
-				if (m_pCursor->HasCollided(m_pCreatures[iCreature]))
-				{
-					m_bHasSelectedObject = true;
-					m_pSelectedObject = m_pCreatures[iCreature];
-					break;
-				}
-			}
-			for (unsigned int iTree = 0; iTree < m_pTrees.size(); ++iTree)
-			{
-				if (m_pCursor->HasCollided(m_pTrees[iTree]))
-				{
-					m_bHasSelectedObject = true;
-					m_pSelectedObject = m_pTrees[iTree];
-					break;
-				}
-			}
-			for (unsigned int iObject = 0; iObject < m_pNewEntities.size(); ++iObject)
-			{
-				if (m_pCursor->HasCollided(m_pNewEntities[iObject]))
-				{
-					m_bHasSelectedObject = true;
-					m_pSelectedObject = m_pNewEntities[iObject];
+					m_pSelectedObject = m_pLevelEntities[iObject];
 					break;
 				}
 			}
@@ -690,6 +598,7 @@ CLevel::ProcessInput(ID3D11Device* _pDevice, float _fDeltaTime)
 		//Cancel entity selection
 		if (m_pInput->bRightMouseClick.bPressed && m_pInput->bRightMouseClick.bPreviousState == false)
 		{
+			m_pSelectionCursor->SetDoDraw(false);
 			m_bHasSelectedObject = false;
 			m_pSelectedObject = 0;
 		}
@@ -1090,4 +999,63 @@ CLevel::OnResize(int _iWidth, int _iHeight)
 		m_pCamera->CreateProjectionMatrix(fAspectRatio);
 		m_pOrthoCamera->CreateProjectionMatrix(fAspectRatio);
 	}
+}
+void
+CLevel::LoadLevel(ID3D11Device* _pDevice, char* _pcLevelFilename)
+{
+	//Delete all current entities in the scene
+	for (unsigned int iEntity = 0; iEntity < m_pLevelEntities.size(); ++iEntity)
+	{
+		delete m_pLevelEntities[iEntity];
+		m_pLevelEntities[iEntity] = 0;
+	}
+	m_pLevelEntities.clear();
+
+	//Open file containing level information
+	rapidxml::file<> xmlFile(_pcLevelFilename);
+	rapidxml::xml_document<> xmlDoc;
+
+	//Parse file string
+	xmlDoc.parse<0>(xmlFile.data());
+	rapidxml::xml_node<>* pRoot = xmlDoc.first_node();
+
+	//Loop through models
+	printf("\n  == LOADING LEVEL FROM FILE: %s ==\n", _pcLevelFilename);
+	for (rapidxml::xml_node<>* pCurrentPrefab = pRoot->first_node("prefab"); pCurrentPrefab; pCurrentPrefab = pCurrentPrefab->next_sibling())
+	{
+		//Get prefab type
+		std::string sType = pCurrentPrefab->first_node("type")->value();
+
+		//Get Position Scale and Rotation data
+		D3DXVECTOR3 vecPosition(ReadFromString<float>(pCurrentPrefab->first_node("position")->first_attribute("x")->value()),
+								ReadFromString<float>(pCurrentPrefab->first_node("position")->first_attribute("y")->value()),
+								ReadFromString<float>(pCurrentPrefab->first_node("position")->first_attribute("z")->value()));
+		D3DXVECTOR3 vecScale(	ReadFromString<float>(pCurrentPrefab->first_node("scale")->first_attribute("x")->value()),
+								ReadFromString<float>(pCurrentPrefab->first_node("scale")->first_attribute("y")->value()),
+								ReadFromString<float>(pCurrentPrefab->first_node("scale")->first_attribute("z")->value()));
+		D3DXVECTOR3 vecRotation(ReadFromString<float>(pCurrentPrefab->first_node("rotation")->first_attribute("x")->value()),
+								ReadFromString<float>(pCurrentPrefab->first_node("rotation")->first_attribute("y")->value()),
+								ReadFromString<float>(pCurrentPrefab->first_node("rotation")->first_attribute("z")->value()));
+		//Get Prefab colour
+		D3DXCOLOR prefabColour(	ReadFromString<float>(pCurrentPrefab->first_node("colour")->first_attribute("r")->value()),
+								ReadFromString<float>(pCurrentPrefab->first_node("colour")->first_attribute("g")->value()),
+								ReadFromString<float>(pCurrentPrefab->first_node("colour")->first_attribute("b")->value()),
+								ReadFromString<float>(pCurrentPrefab->first_node("colour")->first_attribute("a")->value()));
+		
+		CPrefab* pNewPrefab = m_pEntityManager->InstantiatePrefab(	_pDevice,
+																	m_pHivemind,
+																	sType,
+																	&m_pShaderCollection[SHADER_MRT],
+																	SCENE_3DSCENE,
+																	vecPosition,
+																	vecScale,
+																	vecRotation,
+																	prefabColour);
+		m_pLevelEntities.push_back(pNewPrefab);
+	}
+}
+void
+CLevel::SaveLevel(ID3D11Device* _pDevice, char* _pcLevelFilename)
+{
+	
 }

@@ -30,6 +30,7 @@ class CCamera;
 class CShader;
 class CPrefab;
 class CBoundingBox;
+class CAIHiveMind;
 
 //Structure defined here due to forward declaration
 struct TTemporaryEntity
@@ -55,7 +56,7 @@ public:
 	void AddEntity(CRenderEntity* _pNewEntity, EGameScene _eScene);
 	void AddPrefab(TPrefabOptions* _pPrefab);
 	TPrefabOptions* GetPrefabOptions(std::string& _pcPrefabName);
-	CPrefab* InstantiatePrefab(ID3D11Device* _pDevice, std::string& _pcPrefabName, CShader* _pShader, EGameScene _eScene, D3DXVECTOR3& _rPos, D3DXVECTOR3& _rScale, D3DXVECTOR3& _rRotation, D3DXCOLOR& _rColour);
+	CPrefab* InstantiatePrefab(ID3D11Device* _pDevice, CAIHiveMind* _pHivemind, std::string& _pcPrefabName, CShader* _pShader, EGameScene _eScene, D3DXVECTOR3& _rPos, D3DXVECTOR3& _rScale, D3DXVECTOR3& _rRotation, D3DXCOLOR& _rColour);
 	
 	bool IsEntityInFrustum(CCamera* _pCamera, CBoundingBox* _pBoundingBox);
 
@@ -71,7 +72,7 @@ protected:
 
 	std::map<std::string, unsigned int> m_mapPrefabIndex;
 
-
+	CAIHiveMind* m_pAIHivemind;
 	float* m_pCameraDepths;
 	int m_iTotalTransparentCount;
 	

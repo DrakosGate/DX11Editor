@@ -20,6 +20,7 @@
 #include "camera.h"
 #include "shader.h"
 #include "prefab.h"
+#include "aihivemind.h"
 
 // This Include
 #include "entitymanager.h"
@@ -383,7 +384,7 @@ CEntityManager::GetPrefabOptions(std::string& _pcPrefabName)
 *
 */
 CPrefab*
-CEntityManager::InstantiatePrefab(ID3D11Device* _pDevice, std::string& _pcPrefabName, CShader* _pShader, EGameScene _eScene, D3DXVECTOR3& _rPos, D3DXVECTOR3& _rScale, D3DXVECTOR3& _rRotation, D3DXCOLOR& _rColour)
+CEntityManager::InstantiatePrefab(ID3D11Device* _pDevice, CAIHiveMind* _pHivemind, std::string& _pcPrefabName, CShader* _pShader, EGameScene _eScene, D3DXVECTOR3& _rPos, D3DXVECTOR3& _rScale, D3DXVECTOR3& _rRotation, D3DXCOLOR& _rColour)
 {
 	CPrefab* pNewEntity = new CPrefab();
 	TPrefabOptions* pPrefabOptions = GetPrefabOptions(_pcPrefabName);
@@ -396,6 +397,18 @@ CEntityManager::InstantiatePrefab(ID3D11Device* _pDevice, std::string& _pcPrefab
 	pNewEntity->SetPosition(_rPos + D3DXVECTOR3(0.0f, vecInstanceScale.y * 0.5f, 0.0f)); //Offset the position above the ground
 	pNewEntity->SetScale(vecInstanceScale);
 	pNewEntity->SetRotation(_rRotation);
+	pNewEntity->SetEntityType(_pcPrefabName);
+
+	//Check if this is a static obstacle in the scene
+	if (pPrefabOptions->bIsStatic)
+	{
+		_pHivemind->AddStaticObject(_pDevice, pNewEntity);
+	}
+	//Check if this is controlled by AI
+	else if (pPrefabOptions->eAIType != AI_INVALID)
+	{
+		_pHivemind->AddAI(pNewEntity, pPrefabOptions->eAIType);
+	}
 
 	AddEntity(pNewEntity, _eScene);
 	return pNewEntity;

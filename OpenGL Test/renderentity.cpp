@@ -64,6 +64,8 @@ CRenderEntity::CRenderEntity()
 	m_vecLook *= 0.0f;
 	m_vecUp *= 0.0f;
 	m_vecRight *= 0.0f;
+
+	m_sEntityType = "NONE";
 }
 
 /**
@@ -250,6 +252,20 @@ CRenderEntity::GetWorld()
 }
 /**
 *
+* CRenderEntity class GetEntityType
+* (Task ID: n/a)
+*
+* @author Christopher Howlett
+* @return Returns type of this entity
+*
+*/
+std::string&
+CRenderEntity::GetEntityType()
+{
+	return m_sEntityType;
+}
+/**
+*
 * CRenderEntity class SetRotation
 * (Task ID: n/a)
 *
@@ -289,6 +305,20 @@ void
 CRenderEntity::SetForward(D3DXVECTOR3& _rVecForward)
 {
 	m_vecLook = _rVecForward;
+}
+/**
+*
+* CRenderEntity class SetPosition
+* (Task ID: n/a)
+*
+* @author Christopher Howlett
+* @param _rVecPosition New position vector
+*
+*/
+void
+CRenderEntity::SetEntityType(std::string& _sType)
+{
+	m_sEntityType = _sType;
 }
 /**
 *

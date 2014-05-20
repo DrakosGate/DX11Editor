@@ -32,6 +32,7 @@ struct ID3D11InputLayout;
 struct ID3D11BlendState;
 struct IDXGISwapChain;
 
+class CClock;
 class CLevel;
 class CModel;
 class CCamera;
@@ -47,7 +48,7 @@ public:
 	virtual void SetupDirectX11(HWND _hWnd);
 	virtual void CleanUp();
 
-	virtual void ExecuteOneFrame(float _fDeltaTick);
+	virtual void ExecuteOneFrame(CClock* _pClock, float _fDeltaTick);
 	virtual void PrepareLastScene();
 
 	ID3D11RenderTargetView* GetRenderTargetView();
