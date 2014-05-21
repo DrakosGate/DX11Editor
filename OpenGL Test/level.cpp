@@ -401,7 +401,7 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	m_pTerrain->SetRotation(D3DXVECTOR3((static_cast<float>(D3DX_PI) * 0.5f), 0.0f, 0.0f));
 	m_pTerrain->SetObjectShader(&m_pShaderCollection[SHADER_MRT]);
 	m_pTerrain->SetDiffuseMap(m_pResourceManager->GetTexture(std::string("grass")));
-	m_pEntityManager->AddEntity(m_pTerrain, SCENE_3DSCENE);
+	m_pEntityManager->AddEntity(m_pTerrain, SCENE_PERMANENTSCENE);
 	m_pTerrain->SetRadius(FLT_MAX);
 
 	//m_fGrassScale = 15.0f;
@@ -421,7 +421,7 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	m_pCursor->SetPosition(D3DXVECTOR3(0.0f, 0.4f, 0.0f));
 	m_pCursor->SetScale(D3DXVECTOR3(0.5f, 0.5f, 0.5f));
 	m_pCursor->SetRotation(D3DXVECTOR3(0.0f, -0.5f, 0.0f));
-	m_pEntityManager->AddEntity(m_pCursor, SCENE_3DSCENE); 
+	m_pEntityManager->AddEntity(m_pCursor, SCENE_PERMANENTSCENE); 
 
 	//Setup AI
 	m_pHivemind = new CAIHiveMind();
@@ -445,7 +445,7 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	m_pSelectionCursor->SetObjectShader(&m_pShaderCollection[SHADER_MRT]);
 	m_pSelectionCursor->SetDiffuseMap(m_pResourceManager->GetTexture(std::string("selectionbox")));
 	m_pSelectionCursor->ToggleBillboarded(true);
-	m_pEntityManager->AddEntity(m_pSelectionCursor, SCENE_3DSCENE);
+	m_pEntityManager->AddEntity(m_pSelectionCursor, SCENE_PERMANENTSCENE);
 
 	_pDevContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	_pDevContext->IASetInputLayout(m_pVertexLayout[VERTEX_STATIC]);
@@ -500,6 +500,7 @@ CLevel::Process(ID3D11Device* _pDevice, CClock* _pClock, float _fDeltaTime)
 	//m_pResourceManager->GetAnimatedModel("chicken")->Process(_fDeltaTime);
 	m_pFont->ProcessFont(_pDevice);
 
+	m_pEntityManager->Process(_fDeltaTime, SCENE_PERMANENTSCENE, m_pCamera);
 	m_pEntityManager->Process(_fDeltaTime, SCENE_3DSCENE, m_pCamera);
 	m_pEntityManager->Process(_fDeltaTime, SCENE_3DANIM, m_pCamera);
 	m_pEntityManager->Process(_fDeltaTime, SCENE_UI, m_pCamera);
@@ -675,6 +676,7 @@ CLevel::Draw(ID3D11DeviceContext* _pDevice)
 		_pDevice->GSSetShader(NULL, NULL, 0);
 		_pDevice->PSSetShader(m_pShaderCollection[SHADER_MRT].GetPixelShader(), NULL, 0);
 		_pDevice->IASetInputLayout(m_pVertexLayout[VERTEX_STATIC]);
+		DrawScene(_pDevice, m_pCamera, SCENE_PERMANENTSCENE);
 		DrawScene(_pDevice, m_pCamera, SCENE_3DSCENE);
 
 		//=== DRAW GRASS ===
@@ -1003,6 +1005,8 @@ CLevel::OnResize(int _iWidth, int _iHeight)
 void
 CLevel::LoadLevel(ID3D11Device* _pDevice, char* _pcLevelFilename)
 {
+	m_pEntityManager->ClearScene(SCENE_3DSCENE);
+	m_pHivemind->ClearHivemind();
 	//Delete all current entities in the scene
 	for (unsigned int iEntity = 0; iEntity < m_pLevelEntities.size(); ++iEntity)
 	{
@@ -1052,6 +1056,7 @@ CLevel::LoadLevel(ID3D11Device* _pDevice, char* _pcLevelFilename)
 																	vecRotation,
 																	prefabColour);
 		m_pLevelEntities.push_back(pNewPrefab);
+		m_pEntityManager->AddEntity(pNewPrefab, SCENE_3DSCENE);
 	}
 }
 void

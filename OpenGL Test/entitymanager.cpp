@@ -435,3 +435,17 @@ CEntityManager::IsEntityInFrustum(CCamera* _pCamera, CBoundingBox* _pBoundingBox
 
 	return bIsInFrustum;
 }
+/**
+*
+* CEntityManager class Clears and deletes all objects in the current scene
+* (Task ID: n/a)
+*
+* @author Christopher Howlett
+* @param _eScene Scene to clear
+*
+*/
+void
+CEntityManager::ClearScene(EGameScene _eScene)
+{
+	m_pRenderEntities[_eScene].clear();
+}

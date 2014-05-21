@@ -59,6 +59,7 @@ public:
 	CPrefab* InstantiatePrefab(ID3D11Device* _pDevice, CAIHiveMind* _pHivemind, std::string& _pcPrefabName, CShader* _pShader, EGameScene _eScene, D3DXVECTOR3& _rPos, D3DXVECTOR3& _rScale, D3DXVECTOR3& _rRotation, D3DXCOLOR& _rColour);
 	
 	bool IsEntityInFrustum(CCamera* _pCamera, CBoundingBox* _pBoundingBox);
+	void ClearScene(EGameScene _eScene);
 
 private:
 	CEntityManager(const CEntityManager& _krInstanceToCopy);

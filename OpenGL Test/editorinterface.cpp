@@ -256,16 +256,16 @@ CEditorInterface::IsActive() const
 void
 CEditorInterface::LoadLevel(ID3D11Device* _pDevice)
 {
-	COMDLG_FILTERSPEC tFileType[] =
-	{
-		{ L"Level File", L"*.xml" }
-	};
 	HRCheck( CoCreateInstance(	CLSID_FileOpenDialog,
 								NULL,
 								CLSCTX_INPROC_SERVER,
 								IID_PPV_ARGS(&m_pFileOpenDialog)),
 								L"Could not create OPEN dialog box");
 	
+	COMDLG_FILTERSPEC tFileType[] =
+	{
+		{ L"Level File", L"*.xml" }
+	};
 	m_pFileOpenDialog->SetFileTypes(1, tFileType);
 	m_pFileOpenDialog->SetTitle(L"Open Level from File:");
 	HRESULT hr = m_pFileOpenDialog->Show(m_hWindow);
@@ -277,11 +277,13 @@ CEditorInterface::LoadLevel(ID3D11Device* _pDevice)
 		pShellItem->GetDisplayName(SIGDN_FILESYSPATH, &pName);
 
 		int iStrLength = lstrlenW(pName);
-		char* pcName = new char[iStrLength];
+		char* pcName = new char[iStrLength + 1];
 		const wchar_t* pwName = pName;
 		wcsrtombs(pcName, &pwName, iStrLength, std::mbstate_t());
+		pcName[iStrLength] = '\0';
 		MessageBox(NULL, pName, L"File Chosen:", MB_OK);
-		//m_pCurrentLevel->LoadLevel(_pDevice, pcName);
+		m_pCurrentLevel->LoadLevel(_pDevice, pcName);
+
 		pShellItem->Release();
 		delete[] pcName;
 	}

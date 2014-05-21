@@ -295,3 +295,19 @@ CAIHiveMind::GetNavigationGridSize() const
 {
 	return m_iGridSize;
 }
+void 
+CAIHiveMind::ClearHivemind()
+{
+	if (m_pAI)
+	{
+		for (int iAI = 0; iAI < m_iNumAI; ++iAI)
+		{
+			delete m_pAI[iAI];
+			m_pAI[iAI] = 0;
+		}
+		m_iNumAI = 0;
+		delete[] m_pAI;
+		m_pAI = 0;
+	}
+	m_vecStaticObstacles.clear();
+}

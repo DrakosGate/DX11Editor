@@ -80,6 +80,7 @@ public:
 	int GetNavigationGridSize() const;
 
 	TAIDescription& GetAIDesc(EAIType _eAIType);
+	void ClearHivemind();
 	
 private:
 	CAIHiveMind(const CAIHiveMind& _krInstanceToCopy);
