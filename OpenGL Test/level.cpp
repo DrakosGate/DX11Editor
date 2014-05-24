@@ -323,7 +323,7 @@ CLevel::Initialise(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext, CD
 	//Spot
 	//m_pLightManager->AddSpot(D3DXVECTOR3(0.0f, 15.0f, .0f), D3DXVECTOR3(0.0f, -1.0f, 0.0f), D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f), D3DXVECTOR3(1.0f, 0.5f, 0.02f), 1.5f, 5000.0f);
 
-	CAudioPlayer::GetInstance().Initialise(false);
+	CAudioPlayer::GetInstance().Initialise();
 	CAudioPlayer::GetInstance().Play3DSound(SOUND_BIRDCHIRP, D3DXVECTOR3(0.0f, 0.0f, 0.0f));
 
 	float fFieldOfView = static_cast<float>(D3DX_PI)* 0.25f;
