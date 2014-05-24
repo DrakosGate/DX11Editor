@@ -23,8 +23,10 @@ struct TRay;
 class CModel;
 
 //Program definitions
-#define WINDOW_WIDTH 1680
-#define WINDOW_HEIGHT 1050
+#define WINDOW_WIDTH 800
+#define WINDOW_HEIGHT 600
+//#define WINDOW_WIDTH 1680
+//#define WINDOW_HEIGHT 1050
 #define MAX_LIGHTS 50
 
 //Helpful defines / functions
@@ -138,7 +140,15 @@ enum ERenderState
 	RENDERSTATE_DEBUG,
 	RENDERSTATE_MAX
 };
-
+enum EProcessingMethod
+{
+	PROCESSING_INVALID = -1,
+	PROCESSING_SEQUENTIAL,
+	PROCESSING_THREADPOOL,
+	PROCESSING_OPENCL,
+	PROCESSING_DISTRIBUTED,
+	PROCESSING_MAX
+};
 //Data Structures
 struct TButtonState
 {
@@ -195,6 +205,7 @@ struct TInputStruct
 		b1.bPressed = false;
 		b2.bPressed = false;
 		b3.bPressed = false;
+		b4.bPressed = false;
 		bReset.bPressed = false;
 		bShift.bPressed = false;
 		bTilde.bPressed = false;
@@ -219,6 +230,7 @@ struct TInputStruct
 		b1.RecordPreviousState();
 		b2.RecordPreviousState();
 		b3.RecordPreviousState();
+		b4.RecordPreviousState();
 		bReset.RecordPreviousState();
 		bShift.RecordPreviousState();
 		bTilde.RecordPreviousState();
@@ -239,6 +251,7 @@ struct TInputStruct
 	TButtonState b1;
 	TButtonState b2;
 	TButtonState b3;
+	TButtonState b4;
 	TButtonState bLeftMouseClick;
 	TButtonState bRightMouseClick;
 	TButtonState bReset;

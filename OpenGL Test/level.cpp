@@ -63,6 +63,7 @@ CLevel::CLevel()
 : m_pInput(0)
 , m_pRenderer(0)
 , m_eGameScene(SCENE_3DSCENE)
+, m_eProcessingMethod(PROCESSING_SEQUENTIAL)
 , m_pEntityManager(0)
 //, m_pPlayer(0)
 , m_pCursor(0)
@@ -94,6 +95,7 @@ CLevel::CLevel()
 , m_pOpenCLKernel(0)
 , m_pSelectedObject(0)
 , m_pFont(0)
+, m_pcProcessingMethodName(0)
 , m_bCreateObject(false)
 , m_bHasSelectedObject(false)
 {
@@ -116,6 +118,11 @@ CLevel::~CLevel()
 	//	delete m_pPlayer;
 	//	m_pPlayer = 0;
 	//}
+	if (m_pcProcessingMethodName)
+	{
+		delete[] m_pcProcessingMethodName;
+		m_pcProcessingMethodName = 0;
+	}
 	if (m_pFont)
 	{
 		delete m_pFont;
@@ -325,6 +332,11 @@ CLevel::Initialise(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext, CD
 	D3DXMatrixIdentity(&m_matWorld);
 
 	m_eRenderState = RENDERSTATE_DEBUG;
+	m_pcProcessingMethodName = new std::string[PROCESSING_MAX];
+	m_pcProcessingMethodName[PROCESSING_SEQUENTIAL] = "Sequential";
+	m_pcProcessingMethodName[PROCESSING_THREADPOOL] = "Thread Pool";
+	m_pcProcessingMethodName[PROCESSING_OPENCL] = "GPU [OpenCL]";
+	m_pcProcessingMethodName[PROCESSING_DISTRIBUTED] = "Distributed";
 
 	return true;
 }
@@ -362,8 +374,8 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	
 	//Load font
 	m_pFont = new CFontRenderer();
-	m_pFont->Initialise("Something", 16, 6);
-	m_pFont->Write("This is a message345", D3DXVECTOR3(10.0f, WINDOW_HEIGHT * 0.1f, 0.0f), D3DXVECTOR2(15.0f, 20.0f));
+	m_pFont->Initialise("Something", 16, 6, D3DXVECTOR3(10.0f, WINDOW_HEIGHT * 0.1f, 0.0f), D3DXVECTOR2(12.0f, 15.0f));
+	m_pFont->Write("This is a message345", 0);
 	m_pFont->SetObjectShader(&m_pShaderCollection[SHADER_FONT]);
 	m_pFont->SetDiffuseMap(m_pResourceManager->GetTexture(std::string("font_arial")));
 	m_pEntityManager->AddEntity(m_pFont, SCENE_FONT);
@@ -522,9 +534,11 @@ CLevel::Process(ID3D11Device* _pDevice, CClock* _pClock, float _fDeltaTime)
 	CAudioPlayer::GetInstance().Process();
 
 	//Print FPS
-	char cBuffer[32];
+	char cBuffer[64];
 	sprintf_s(cBuffer, 32, "Frame Time Elapsed: %f", _fDeltaTime);
-	m_pFont->Write(cBuffer, D3DXVECTOR3(10.0f, WINDOW_HEIGHT * 0.12f, 0.0f), D3DXVECTOR2(15.0f, 20.0f));
+	m_pFont->Write(cBuffer, 1);
+	sprintf_s(cBuffer, 32, "Processing Method: %s", m_pcProcessingMethodName[m_eProcessingMethod].c_str());
+	m_pFont->Write(cBuffer, 2);
 }
 /**
 *
@@ -538,6 +552,23 @@ CLevel::Process(ID3D11Device* _pDevice, CClock* _pClock, float _fDeltaTime)
 bool
 CLevel::ProcessInput(ID3D11Device* _pDevice, float _fDeltaTime)
 {
+	//Toggle processing method
+	if (m_pInput->b1.bPressed)
+	{
+		ChangeProcessingMethod(PROCESSING_SEQUENTIAL);
+	}
+	if (m_pInput->b2.bPressed)
+	{
+		ChangeProcessingMethod(PROCESSING_THREADPOOL);
+	}
+	if (m_pInput->b3.bPressed)
+	{
+		ChangeProcessingMethod(PROCESSING_OPENCL);
+	}
+	if (m_pInput->b4.bPressed)
+	{
+		ChangeProcessingMethod(PROCESSING_DISTRIBUTED);
+	}
 	//Toggle level editor
 	if (m_pInput->bTilde.bPressed && m_pInput->bTilde.bPreviousState == false)
 	{
@@ -1063,4 +1094,10 @@ void
 CLevel::SaveLevel(ID3D11Device* _pDevice, char* _pcLevelFilename)
 {
 	
+}
+void
+CLevel::ChangeProcessingMethod(EProcessingMethod _eProcessingMethod)
+{
+	m_eProcessingMethod = _eProcessingMethod;
+	m_pHivemind->ChangeProcessingMethod(_eProcessingMethod);
 }

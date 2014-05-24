@@ -69,14 +69,19 @@ public:
 	void LoadLevel(ID3D11Device* _pDevice, char* _pcLevelFilename);
 	void SaveLevel(ID3D11Device* _pDevice, char* _pcLevelFilename);
 
+	void ChangeProcessingMethod(EProcessingMethod _eProcessingMethod);
+
 private:
 	void LoadShaderData(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext);
 	void BuildLevelVertexLayouts(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext);
  
 private:
-	CDirectXRenderer* m_pRenderer;
 	EGameScene m_eGameScene;
 	ERenderState m_eRenderState;
+	EProcessingMethod m_eProcessingMethod;
+	std::string* m_pcProcessingMethodName;
+	
+	CDirectXRenderer* m_pRenderer;
 	CResourceManager* m_pResourceManager;
 	CThreadPool* m_pThreadPool;
 	COpenCLKernel* m_pOpenCLKernel;

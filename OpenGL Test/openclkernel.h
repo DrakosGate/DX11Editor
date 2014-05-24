@@ -18,15 +18,16 @@ public:
 	void LoadProgram(char* _pcCLProgram);
 	void SendDataToGPU();
 	void Run();
+	void RetrieveOpenCLResults();
 
-private:
+protected:
 	void BuildExecutable();
 	cl_int GetPlatformID(cl_platform_id* _pPlatformID);
 	char* GetCLFileContents(const char* _pcFilename, int& _iLength);
 	const char* GetErrorString(cl_int _iError);
 
 //Member variables
-private:	
+protected:	
 	cl_context m_clContext;
 	cl_command_queue m_clCommandQueue;
 	cl_program m_clProgram;

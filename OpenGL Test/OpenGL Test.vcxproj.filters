@@ -168,6 +168,9 @@
     <ClInclude Include="network.h">
       <Filter>Header Files\Networking</Filter>
     </ClInclude>
+    <ClInclude Include="aiclkernel.h">
+      <Filter>Header Files\Parallel</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -269,6 +272,9 @@
     <ClCompile Include="network.cpp">
       <Filter>Source Files\Networking</Filter>
     </ClCompile>
+    <ClCompile Include="aiclkernel.cpp">
+      <Filter>Source Files\Parallel</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\Bin\Shaders\animatedobject_vs.hlsl">
@@ -322,6 +328,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Bin\OpenCLKernels\test.cl">
+      <Filter>Resource Files\OpenCL Kernels</Filter>
+    </None>
+    <None Include="..\Bin\OpenCLKernels\ai.cl">
       <Filter>Resource Files\OpenCL Kernels</Filter>
     </None>
   </ItemGroup>

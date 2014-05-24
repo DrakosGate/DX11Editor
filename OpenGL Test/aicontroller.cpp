@@ -88,23 +88,56 @@ CAIController::Initialise(CAIHiveMind* _pHivemind, CRenderEntity* _pEntity, floa
 void 
 CAIController::Process(float _fDeltaTime, D3DXVECTOR3& _rAvoidance)
 {
+	CheckWaypointReached();
+	//Avoid obstacles
+	D3DXVECTOR3 vecCurrentPos = m_pEntity->GetPosition();
+	vecCurrentPos += _rAvoidance * m_fMovementSpeed * 5.0f * _fDeltaTime;
+	m_pEntity->SetPosition(vecCurrentPos);
+	//Rotate model towards look direction
+	D3DXVECTOR3 vecForward = m_pEntity->GetForward();
+	m_pEntity->SetRotation(D3DXVECTOR3(0.0f, atan2(vecForward.x, vecForward.z), 0.0f));
+}
+/**
+*
+* CAIController class ProcessWaypointMovement Moves AI towards its current waypoint
+* (Task ID: n/a)
+*
+* @author Christopher Howlett
+* @param _fDeltaTime Game time elapsed
+*
+*/
+void 
+CAIController::ProcessWaypointMovement(float _fDeltaTime)
+{
+	D3DXVECTOR3 vecForward = m_pEntity->GetForward();
 	D3DXVECTOR3 vecCurrentPos = m_pEntity->GetPosition();
 	D3DXVECTOR3 vecToWaypoint = m_vecWaypoint - vecCurrentPos;
-	D3DXVECTOR3 vecForward = m_pEntity->GetForward();
 	vecToWaypoint.y = 0.0f;
 	vecForward += vecToWaypoint * m_fRotationSpeed * _fDeltaTime;
 	D3DXVec3Normalize(&vecForward, &vecForward);
-	//Generate a new waypoint
+	
+	vecCurrentPos += vecForward * m_fMovementSpeed * _fDeltaTime;
+	m_pEntity->SetPosition(vecCurrentPos);
+	m_pEntity->SetForward(vecForward);
+}
+/**
+*
+* CAIController class Checks if this controller has reached its waypoint. If so, get a new one
+* (Task ID: n/a)
+*
+* @author Christopher Howlett
+*
+*/
+void 
+CAIController::CheckWaypointReached()
+{
+	D3DXVECTOR3 vecCurrentPos = m_pEntity->GetPosition();
+	D3DXVECTOR3 vecToWaypoint = m_vecWaypoint - vecCurrentPos;
 	float fDistanceToWaypoint = D3DXVec3LengthSq(&vecToWaypoint);
-	if(fDistanceToWaypoint < 0.5f)
+	if (fDistanceToWaypoint < 0.5f)
 	{
 		m_vecWaypoint = m_pHivemind->GetRandomWaypoint();
 	}
-	vecCurrentPos += vecForward * m_fMovementSpeed * _fDeltaTime;
-	vecCurrentPos += _rAvoidance * m_fMovementSpeed * 5.0f * _fDeltaTime;
-	m_pEntity->SetPosition(vecCurrentPos);
-	m_pEntity->SetForward(vecForward);
-	m_pEntity->SetRotation(D3DXVECTOR3(0.0f, atan2(vecForward.x, vecForward.z), 0.0f));
 }
 /**
 *
@@ -114,12 +147,25 @@ CAIController::Process(float _fDeltaTime, D3DXVECTOR3& _rAvoidance)
 * @author Christopher Howlett
 *
 */
-D3DXVECTOR3 
+D3DXVECTOR3&
 CAIController::GetRandomVector(D3DXVECTOR3& _rMin, D3DXVECTOR3& _rMax)
 {
 	return (D3DXVECTOR3(	_rMin.x + (rand() % static_cast<int>((_rMax.x - _rMin.x) * 100.0f) * 0.01f), 
 							_rMin.y + (rand() % static_cast<int>((_rMax.y - _rMin.y) * 100.0f) * 0.01f),
 							_rMin.z + (rand() % static_cast<int>((_rMax.z - _rMin.z) * 100.0f) * 0.01f)) );
+}
+/**
+*
+* CAIController class GetCurrentWaypoint Returns the current waypoint for this controller
+* (Task ID: n/a)
+*
+* @author Christopher Howlett
+*
+*/
+D3DXVECTOR3&
+CAIController::GetCurrentWaypoint()
+{
+	return m_vecWaypoint;
 }
 /**
 *

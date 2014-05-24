@@ -110,16 +110,20 @@ COpenCLKernel::SendDataToGPU()
 void
 COpenCLKernel::Run()
 {
+	//Run Kernel
 	cl_int iError = 0;
 	iError = clEnqueueNDRangeKernel(m_clCommandQueue, m_clKernel, 1, NULL, workGroupSize, NULL, 0, NULL, &m_clEvent);
-	printf("-\tRunning OpenCL Kernel: %s\n", GetErrorString(iError));
+	
 	clReleaseEvent(m_clEvent);
 	//Wait for this to finish
 	clFinish(m_clCommandQueue);
-
+}
+void 
+COpenCLKernel::RetrieveOpenCLResults()
+{
 	//Retrieve data from calculations
 	float* pResult = new float[m_iArraySize];
-	iError = clEnqueueReadBuffer(m_clCommandQueue, m_clArrayOut, CL_TRUE, 0, sizeof(float)* m_iArraySize, pResult, 0, NULL, &m_clEvent);
+	cl_int iError = clEnqueueReadBuffer(m_clCommandQueue, m_clArrayOut, CL_TRUE, 0, sizeof(float)* m_iArraySize, pResult, 0, NULL, &m_clEvent);
 	printf("-\tReading from buffer: %s\n", GetErrorString(iError));
 	clReleaseEvent(m_clEvent);
 	printf("Result:\n");

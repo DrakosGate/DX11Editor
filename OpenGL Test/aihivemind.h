@@ -50,6 +50,7 @@ struct TAIThreadData
 	int iAIIndex;
 	float fDeltaTime;
 };
+
 // Constants
 
 // Prototypes
@@ -61,6 +62,7 @@ class CAIController;
 class CPointSprite;
 class CEntityManager;
 class CThreadPool;
+class CAICLKernel;
 
 class CAIHiveMind
 {
@@ -71,22 +73,29 @@ public:
 	virtual bool Initialise();
 	void Process(CThreadPool* _pCThreadPool, float _fDeltaTime);
 	void ProcessIndividualAIController(int _iAIIndex, float _fDeltaTime);
+	void ProcessOpenCLKernel(float _fDeltaTime);
 	void AddAI(CRenderEntity* _pEntity, EAIType _eAIType);
 	void AddStaticObject(ID3D11Device* _pDevice, CRenderEntity* _pObject);
 
 	void CreateNavigationGrid(ID3D11Device* _pDevice, CEntityManager* _pEntityManager, CShader* _pShader, float _fGridScale, int _iWidth, int _iHeight);
 	D3DXVECTOR3& GetRandomWaypoint() const;
 	TGridNode* GetNavigationGrid();
+	CAIController* GetAI(int _iIndex) const;
 	int GetNavigationGridSize() const;
+	int GetAICount() const;
 
 	TAIDescription& GetAIDesc(EAIType _eAIType);
 	void ClearHivemind();
-	
+	void ChangeProcessingMethod(EProcessingMethod _eProcessingMethod);
+
 private:
 	CAIHiveMind(const CAIHiveMind& _krInstanceToCopy);
 	const CAIHiveMind& operator =(const CAIHiveMind& _krInstanceToCopy);
 
 private:
+	EProcessingMethod m_eProcessingMethod;
+
+	CAICLKernel* m_pCLKernel;
 	CAIController** m_pAI;
 	std::vector<CRenderEntity*> m_vecStaticObstacles;
 	int m_iNumAI;

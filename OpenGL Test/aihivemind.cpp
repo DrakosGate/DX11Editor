@@ -1,11 +1,4 @@
 //
-// Bachelor of Software Engineering - Year 2
-// Media Design School
-// Auckland 
-// New Zealand
-//
-// (c) 2013 Media Design School
-//
 //  File Name   :   AIHiveMind.cpp
 //  Description :   Code for CAIHiveMind 
 //  Author      :   Christopher Howlett
@@ -21,6 +14,7 @@
 #include "pointsprite.h"
 #include "entitymanager.h"
 #include "threadpool.h"
+#include "aiclkernel.h"
 
 // This Include
 #include "aihivemind.h"
@@ -45,7 +39,8 @@ void ThreadedAI(void* _pParameters)
 *
 */
 CAIHiveMind::CAIHiveMind()
-: m_pAI(0)
+: m_eProcessingMethod(PROCESSING_SEQUENTIAL)
+, m_pAI(0)
 , m_iNumAI(0)
 , m_pAIDescriptions(0)
 , m_pNavigationGrid(0)
@@ -65,6 +60,11 @@ CAIHiveMind::CAIHiveMind()
 CAIHiveMind::~CAIHiveMind()
 {
 	m_vecStaticObstacles.clear();
+	if (m_pCLKernel)
+	{
+		delete m_pCLKernel;
+		m_pCLKernel = 0;
+	}
 	if (m_pNavigationGrid)
 	{
 		delete[] m_pNavigationGrid;
@@ -106,6 +106,10 @@ CAIHiveMind::Initialise()
 	m_pAIDescriptions = new TAIDescription[AI_MAX];
 	m_pAIDescriptions[AI_HUMAN] = TAIDescription(1.0f, 1.0f);
 	m_pAIDescriptions[AI_CHICKEN] = TAIDescription(0.3f, 0.1f);
+
+	m_pCLKernel = new CAICLKernel();
+	m_pCLKernel->InitialiseOpenCL();
+	m_pCLKernel->LoadProgram("OpenCLKernels/ai.cl");
 	
 	return true;
 }
@@ -121,15 +125,39 @@ CAIHiveMind::Initialise()
 void 
 CAIHiveMind::Process(CThreadPool* _pThreadPool, float _fDeltaTime)
 {
-	std::function<void(void*)> aiFunction = ThreadedAI;
-	//std::function<void(CAIHiveMind&, int, float)> aiFunction = &CAIHiveMind::ProcessIndividualAIController;
-	for(int iAI = 0; iAI < m_iNumAI; ++iAI)
+	switch (m_eProcessingMethod)
 	{
-		//aiFunction = std::function<void(int, float)>(ProcessIndividualAIController(iAI, _fDeltaTime));
-		//Add AI processing to thread pool
-		ProcessIndividualAIController(iAI, _fDeltaTime);
-		//_pThreadPool->AddJobToPool(aiFunction, &TAIThreadData(this, iAI, _fDeltaTime));
-	}
+	case PROCESSING_SEQUENTIAL:
+		{
+			for (int iAI = 0; iAI < m_iNumAI; ++iAI)
+			{
+				m_pAI[iAI]->ProcessWaypointMovement(_fDeltaTime);
+				ProcessIndividualAIController(iAI, _fDeltaTime);
+			}					 
+			break;
+		}
+	case PROCESSING_OPENCL:
+		{
+			ProcessOpenCLKernel(_fDeltaTime);
+			for (int iAI = 0; iAI < m_iNumAI; ++iAI)
+			{
+				ProcessIndividualAIController(iAI, _fDeltaTime);
+			}
+			break;
+		}
+	default:
+		break;
+	};
+	//std::function<void(void*)> aiFunction = ThreadedAI;
+	//ProcessOpenCLKernel(_fDeltaTime);
+	////	std::function<void(CAIHiveMind&, int, float)> aiFunction = &CAIHiveMind::ProcessIndividualAIController;
+	//for (int iAI = 0; iAI < m_iNumAI; ++iAI)
+	//{
+	//	//	//aiFunction = std::function<void(int, float)>(ProcessIndividualAIController(iAI, _fDeltaTime));
+	//	//	//Add AI processing to thread pool
+	//	ProcessIndividualAIController(iAI, _fDeltaTime);
+	//	//	//_pThreadPool->AddJobToPool(aiFunction, &TAIThreadData(this, iAI, _fDeltaTime));
+	//}
 }
 /**
 *
@@ -143,7 +171,6 @@ CAIHiveMind::Process(CThreadPool* _pThreadPool, float _fDeltaTime)
 void
 CAIHiveMind::ProcessIndividualAIController(int _iAIIndex, float _fDeltaTime)
 {
-	//printf("Processing AI %i\n", _iAIIndex);
 	D3DXVECTOR3 vecAvoidance;
 	vecAvoidance *= 0.0f;
 	for (int iOther = _iAIIndex; iOther < m_iNumAI; ++iOther)
@@ -162,6 +189,13 @@ CAIHiveMind::ProcessIndividualAIController(int _iAIIndex, float _fDeltaTime)
 	}
 	vecAvoidance.y = 0.0f;
 	m_pAI[_iAIIndex]->Process(_fDeltaTime, vecAvoidance);
+}
+void
+CAIHiveMind::ProcessOpenCLKernel(float _fDeltaTime)
+{
+	m_pCLKernel->SendDataToGPU(this, _fDeltaTime);
+	m_pCLKernel->Run();
+	m_pCLKernel->RetrieveOpenCLResults(this);
 }
 /**
 *
@@ -290,10 +324,25 @@ CAIHiveMind::GetNavigationGrid()
 {
 	return m_pNavigationGrid;
 }
+CAIController* 
+CAIHiveMind::GetAI(int _iIndex) const
+{
+	return m_pAI[_iIndex];
+}
 int
 CAIHiveMind::GetNavigationGridSize() const
 {
 	return m_iGridSize;
+}
+int 
+CAIHiveMind::GetAICount() const
+{
+	return m_iNumAI;
+}
+TAIDescription& 
+CAIHiveMind::GetAIDesc(EAIType _eAIType)
+{
+	return m_pAIDescriptions[_eAIType];
 }
 void 
 CAIHiveMind::ClearHivemind()
@@ -310,4 +359,9 @@ CAIHiveMind::ClearHivemind()
 		m_pAI = 0;
 	}
 	m_vecStaticObstacles.clear();
+}
+void
+CAIHiveMind::ChangeProcessingMethod(EProcessingMethod _eProcessingMethod)
+{
+	m_eProcessingMethod = _eProcessingMethod;
 }

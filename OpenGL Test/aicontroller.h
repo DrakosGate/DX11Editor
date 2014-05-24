@@ -31,8 +31,11 @@ public:
 
 	virtual bool Initialise(CAIHiveMind* _pHivemind, CRenderEntity* _pEntity, float _fMovementSpeed, float _fRotationSpeed);
 	void Process(float _fDeltaTime, D3DXVECTOR3& _rAvoidance);
+	void ProcessWaypointMovement(float _fDeltaTime);
+	void CheckWaypointReached();
 	
-	D3DXVECTOR3 GetRandomVector(D3DXVECTOR3& _rMin, D3DXVECTOR3& _rMax);
+	D3DXVECTOR3& GetRandomVector(D3DXVECTOR3& _rMin, D3DXVECTOR3& _rMax);
+	D3DXVECTOR3& GetCurrentWaypoint();
 	void SetAIType(EAIType _eAIType);
 	CRenderEntity* GetEntity() const;
 	EAIType GetAIType() const;

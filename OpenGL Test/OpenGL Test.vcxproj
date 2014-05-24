@@ -103,6 +103,7 @@
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="aiclkernel.h" />
     <ClInclude Include="aicontroller.h" />
     <ClInclude Include="aihivemind.h" />
     <ClInclude Include="animatedmodel.h" />
@@ -140,6 +141,7 @@
     <ClInclude Include="window.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="aiclkernel.cpp" />
     <ClCompile Include="aicontroller.cpp" />
     <ClCompile Include="aihivemind.cpp" />
     <ClCompile Include="animatedmodel.cpp" />
@@ -193,6 +195,7 @@
     <FxCompile Include="..\Bin\Shaders\shaderdefines.hlsl" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\Bin\OpenCLKernels\ai.cl" />
     <None Include="..\Bin\OpenCLKernels\test.cl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

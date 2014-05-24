@@ -376,6 +376,11 @@ CWindow::msgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			m_tInput.b3.bPressed = true;
 		}
 			break;
+		case '4':
+		{
+			m_tInput.b4.bPressed = true;
+		}
+			break;
 		case 'T':
 		{
 			m_tInput.bReset.bPressed = true;
@@ -438,43 +443,48 @@ CWindow::msgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		case 'D':
 		{
 			m_tInput.bD.bPressed = false;
-		}
 			break;
+		}
 		case 'R':
 		{
 			m_tInput.bToggleRender.bPressed = false;
-		}
 			break;
+		}
 		case '1':
 		{
 			m_tInput.b1.bPressed = false;
-		}
 			break;
+		}
 		case '2':
 		{
 			m_tInput.b2.bPressed = false;
-		}
 			break;
+		}
 		case '3':
 		{
 			m_tInput.b3.bPressed = false;
-		}
 			break;
+		}
+		case '4':
+		{
+			m_tInput.b4.bPressed = false;
+			break;
+		}
 		case 'T':
 		{
 			m_tInput.bReset.bPressed = false;
-		}
 			break;
+		}
 		case VK_SHIFT:
 		{
 			m_tInput.bShift.bPressed = false;
-		}
 			break;
+		}
 		case VK_OEM_3:	//TILDE
 		{
 			m_tInput.bTilde.bPressed = false;
-		}
 			break;
+		}
 		default:
 			break;
 			}
