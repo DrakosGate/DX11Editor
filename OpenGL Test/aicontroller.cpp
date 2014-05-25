@@ -94,8 +94,8 @@ CAIController::Process(float _fDeltaTime, D3DXVECTOR3& _rAvoidance)
 	vecCurrentPos += _rAvoidance * m_fMovementSpeed * 5.0f * _fDeltaTime;
 	m_pEntity->SetPosition(vecCurrentPos);
 	//Rotate model towards look direction
-	D3DXVECTOR3 vecForward = m_pEntity->GetForward();
-	m_pEntity->SetRotation(D3DXVECTOR3(0.0f, atan2(vecForward.x, vecForward.z), 0.0f));
+	//D3DXVECTOR3 vecForward = m_pEntity->GetForward();
+	//m_pEntity->SetRotation(D3DXVECTOR3(0.0f, atan2(vecForward.x, vecForward.z), 0.0f));
 }
 /**
 *

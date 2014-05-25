@@ -14,6 +14,12 @@
 		<model id="chicken">
 			<filename>chicken.obj</filename>
 		</model>
+		<model id="lantern">
+			<filename>lantern.obj</filename>
+		</model>
+		<model id="lamppost">
+			<filename>lamppost.obj</filename>
+		</model>
 	</models>
 	<animations>
 		<fileprefix>Assets/Animations/</fileprefix>
@@ -37,6 +43,12 @@
 		</texture>
 		<texture id="chicken">
 			<filename>chickenModel.png</filename>
+		</texture>
+		<texture id="lantern">
+			<filename>lantern.png</filename>
+		</texture>
+		<texture id="lamppost">
+			<filename>lamppost.png</filename>
 		</texture>
 		<texture id="cursor">
 			<filename>arrow.png</filename>

@@ -24,6 +24,57 @@
 		<colour r="1.0" g="1.0" b="1.0" a="1.0"></colour>
 	</child>
 	<child>
+		<type>lamppost</type>
+		<position x="1.0" y="0.0" z="0.0"></position>
+		<scale x="1.0" y="1.0" z="1.0"></scale>
+		<rotation x="0.0" y="90.0" z="0.0"></rotation>
+		<colour r="1.0" g="1.0" b="1.0" a="1.0"></colour>
+		<child>
+			<type>lantern</type>
+			<position x="0.0" y="0.15" z="0.15"></position>
+			<scale x="1.0" y="1.0" z="1.0"></scale>
+			<rotation x="0.0" y="0.0" z="0.0"></rotation>
+			<colour r="1.0" g="1.0" b="1.0" a="1.0"></colour>
+		</child>
+		<light>
+			<type>point</type>
+		</light>
+	</child>
+	<child>
+		<type>lamppost</type>
+		<position x="1.0" y="0.0" z="1.5"></position>
+		<scale x="1.0" y="1.0" z="1.0"></scale>
+		<rotation x="0.0" y="90.0" z="0.0"></rotation>
+		<colour r="1.0" g="1.0" b="1.0" a="1.0"></colour>
+		<child>
+			<type>lantern</type>
+			<position x="0.0" y="0.15" z="0.15"></position>
+			<scale x="1.0" y="1.0" z="1.0"></scale>
+			<rotation x="0.0" y="0.0" z="0.0"></rotation>
+			<colour r="1.0" g="1.0" b="1.0" a="1.0"></colour>
+		</child>
+		<light>
+			<type>point</type>
+		</light>
+	</child>
+	<child>
+		<type>lamppost</type>
+		<position x="1.0" y="0.0" z="3.0"></position>
+		<scale x="1.0" y="1.0" z="1.0"></scale>
+		<rotation x="0.0" y="90.0" z="0.0"></rotation>
+		<colour r="1.0" g="1.0" b="1.0" a="1.0"></colour>
+		<child>
+			<type>lantern</type>
+			<position x="0.0" y="0.15" z="0.15"></position>
+			<scale x="1.0" y="1.0" z="1.0"></scale>
+			<rotation x="0.0" y="0.0" z="0.0"></rotation>
+			<colour r="1.0" g="1.0" b="1.0" a="1.0"></colour>
+		</child>
+		<light>
+			<type>point</type>
+		</light>
+	</child>
+	<child>
 		<type>chicken</type>
 		<position x="1.0" y="0.0" z="9.0"></position>
 		<scale x="1.0" y="1.0" z="1.0"></scale>

@@ -308,16 +308,6 @@ CLevel::Initialise(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext, CD
 	//m_pPlayer = new CPlayer();
 	//m_pPlayer->Initialise(m_pInput, m_pCamera, m_pCursor);
 	
-	//Directional
-	//m_pLightManager->AddDirectional(D3DXVECTOR3(0.0f, -0.2f, 1.0f), D3DXCOLOR(0.5f, 0.6f, 0.5f, 1.0f), 5.0f);
-	//Point
-	m_pLightManager->AddPoint(D3DXVECTOR3(0.0f, 0.4f, 0.0f), D3DXCOLOR(0.7f, 0.7f, 0.3f, 1.0f), D3DXVECTOR3(0.15f, 0.02f, 5.0f), 1.0f);
-	
-	//Cursor light
-	m_pLightManager->AddPoint(D3DXVECTOR3(0.0f, 0.4f, 0.0f), D3DXCOLOR(0.1f, 0.1f, 0.5f, 1.0f), D3DXVECTOR3(0.05f, 0.2f, 4.0f), 1.0f);
-	//Spot
-	m_pLightManager->AddSpot(D3DXVECTOR3(0.0f, 15.0f, .0f), D3DXVECTOR3(0.0f, -1.0f, 0.0f), D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f), D3DXVECTOR3(1.0f, 0.5f, 0.02f), 1.5f, 5000.0f);
-
 	CAudioPlayer::GetInstance().Initialise();
 	CAudioPlayer::GetInstance().Play3DSound(SOUND_BIRDCHIRP, D3DXVECTOR3(0.0f, 0.0f, 0.0f));
 
@@ -443,6 +433,9 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	m_pCursor->SetPosition(D3DXVECTOR3(0.0f, 0.4f, 0.0f));
 	m_pCursor->SetScale(D3DXVECTOR3(0.5f, 0.5f, 0.5f));
 	m_pCursor->SetRotation(D3DXVECTOR3(0.0f, -0.5f, 0.0f));
+	m_pCursor->CreateNode(m_pRootNode);	
+	m_pCursor->GetNode()->vecLights.push_back(m_pLightManager->AddPoint(D3DXVECTOR3(0.0f, 0.4f, 0.0f), D3DXCOLOR(0.3f, 0.3f, 0.8f, 1.0f), D3DXVECTOR3(0.05f, 0.2f, 4.0f), 1.0f));
+
 	m_pEntityManager->AddEntity(m_pCursor, SCENE_PERMANENTSCENE); 
 
 	//Load Default level data
@@ -500,9 +493,19 @@ CLevel::Process(ID3D11Device* _pDevice, CClock* _pClock, float _fDeltaTime)
 	{
 		if (m_pInput->bLeftMouseClick.bPressed)
 		{
-			D3DXVECTOR3 vecCursor = m_pCursor->GetPosition();
-			vecCursor.y = m_pSelectedObject->GetScale().y * 0.5f;
-			m_pSelectedObject->SetPosition(vecCursor);
+			if (m_pInput->bShift.bPressed)
+			{
+				D3DXVECTOR3 vecToCursor = m_pCursor->GetPosition() - m_pSelectedObject->GetPosition();
+				vecToCursor.y = 0.0f;
+				D3DXVec3Normalize(&vecToCursor, &vecToCursor);
+				m_pSelectedObject->SetForward(vecToCursor);
+			}
+			else
+			{
+				D3DXVECTOR3 vecCursor = m_pCursor->GetPosition();
+				vecCursor.y = m_pSelectedObject->GetScale().y * 0.5f;
+				m_pSelectedObject->SetPosition(vecCursor);
+			}
 		}
 		m_pSelectionCursor->SetPosition(m_pSelectedObject->GetPosition());
 		m_pSelectionCursor->SetScale(m_pSelectedObject->GetScale());
@@ -705,8 +708,8 @@ CLevel::Draw(ID3D11DeviceContext* _pDevice)
 		_pDevice->GSSetShader(NULL, NULL, 0);
 		_pDevice->PSSetShader(m_pShaderCollection[SHADER_MRT].GetPixelShader(), NULL, 0);
 		_pDevice->IASetInputLayout(m_pVertexLayout[VERTEX_STATIC]);
-		DrawScene(_pDevice, m_pCamera, SCENE_PERMANENTSCENE);
 		DrawScene(_pDevice, m_pCamera, SCENE_3DSCENE);
+		DrawScene(_pDevice, m_pCamera, SCENE_PERMANENTSCENE);
 
 		//=== DRAW GRASS ===
 		//_pDevice->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_POINTLIST);

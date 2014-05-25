@@ -386,6 +386,7 @@ CRenderEntity::SetPosition(D3DXVECTOR3& _rVecPosition)
 void
 CRenderEntity::SetForward(D3DXVECTOR3& _rVecForward)
 {
+	m_vecRotation.y = atan2(_rVecForward.x, _rVecForward.z);
 	m_vecLook = _rVecForward;
 }
 /**

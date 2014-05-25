@@ -57,6 +57,18 @@
 			<bgtexture>menu_button</bgtexture>
 			<scale x="0.1" y="0.1"></scale>
 		</button>
+		<button id="Create">
+			<options>lamppost</options>
+			<maintexture>lamppost</maintexture>
+			<bgtexture>menu_button</bgtexture>
+			<scale x="0.1" y="0.1"></scale>
+		</button>
+		<button id="Create">
+			<options>lantern</options>
+			<maintexture>lantern</maintexture>
+			<bgtexture>menu_button</bgtexture>
+			<scale x="0.1" y="0.1"></scale>
+		</button>
 		<button id="Close">
 			<maintexture>menu_button</maintexture>
 			<bgtexture>menu_button</bgtexture>
