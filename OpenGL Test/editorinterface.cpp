@@ -230,6 +230,15 @@ CEditorInterface::GetSelectedPrefab()
 {
 	return m_pcNextObjectCreated;
 }
+/**
+*
+* CEditorInterface class Switches the editor interface on and off
+* (Task ID: n/a)
+*
+* @author Christopher Howlett
+* @param _bIsActive Editor state
+*
+*/
 void
 CEditorInterface::ToggleEditor(bool _bIsActive)
 {
@@ -247,11 +256,27 @@ CEditorInterface::ToggleEditor(bool _bIsActive)
 		}
 	}
 }
+/**
+*
+* CEditorInterface class Returns whether the editor is active or not
+* (Task ID: n/a)
+*
+* @author Christopher Howlett
+*
+*/
 bool 
 CEditorInterface::IsActive() const
 {
 	return m_bIsActive;
 }
+/**
+*
+* CEditorInterface class Opens the "Load level" dialog box and tells the Level class to load the selected level from file
+* (Task ID: n/a)
+*
+* @author Christopher Howlett
+*
+*/
 //http://weblogs.asp.net/kennykerr/archive/2006/11/10/Windows-Vista-for-Developers-_1320_-Part-6-_1320_-The-New-File-Dialogs.aspx
 void
 CEditorInterface::LoadLevel(ID3D11Device* _pDevice)
@@ -288,6 +313,14 @@ CEditorInterface::LoadLevel(ID3D11Device* _pDevice)
 		delete[] pcName;
 	}
 }
+/**
+*
+* CEditorInterface class Opens the "Save level" dialog box and tells the Level class to save the current level to file
+* (Task ID: n/a)
+*
+* @author Christopher Howlett
+*
+*/
 void
 CEditorInterface::SaveLevel(ID3D11Device* _pDevice)
 {
@@ -314,6 +347,14 @@ CEditorInterface::SaveLevel(ID3D11Device* _pDevice)
 		pShellItem->Release();
 	}
 }
+/**
+*
+* CEditorInterface class Recreates the vertex and index buffers of the editor interface
+* (Task ID: n/a)
+*
+* @author Christopher Howlett
+*
+*/
 void 
 CEditorInterface::RefreshBuffers(ID3D11Device* _pDevice)
 {
@@ -326,6 +367,14 @@ CEditorInterface::RefreshBuffers(ID3D11Device* _pDevice)
 		CreateIndexBuffer(_pDevice);
 	}
 }
+/**
+*
+* CEditorInterface class Returns true if the mouse position is within the bounds of a button (or window)
+* (Task ID: n/a)
+*
+* @author Christopher Howlett
+*
+*/
 bool
 CEditorInterface::HasCollided(D3DXVECTOR2& _rPoint, TButton* _pButton)
 {
@@ -335,6 +384,14 @@ CEditorInterface::HasCollided(D3DXVECTOR2& _rPoint, TButton* _pButton)
 			_rPoint.y < _pButton->vecPosition.y &&
 			_rPoint.y > _pButton->vecPosition.y - _pButton->vecScale.y);
 }
+/**
+*
+* CEditorInterface class Processes a button pressed according to the buttons name
+* (Task ID: n/a)
+*
+* @author Christopher Howlett
+*
+*/
 void
 CEditorInterface::ProcessButtonPressed(ID3D11Device* _pDevice, TWindow* _pWindow, TButton* _pButton)
 {
@@ -362,14 +419,6 @@ CEditorInterface::ProcessButtonPressed(ID3D11Device* _pDevice, TWindow* _pWindow
 	else if (strcmp(_pButton->sName.c_str(), "SaveLevel") == 0)
 	{
 		SaveLevel(_pDevice);
-	}
-}
-void
-CEditorInterface::CheckForNewObjects(ID3D11Device* _pDevice, CEntityManager* _pEntityManager, CShader* _pObjectShader, CRenderEntity* _pSpawnPos)
-{
-	if (m_bCreateObject)
-	{
-		//_pEntityManager->InstantiatePrefab(_pDevice, m_sNextObjectCreated.c_str(), _pObjectShader, )
 	}
 }
 /**
@@ -515,18 +564,4 @@ CEditorInterface::CreatePointSprite(ID3D11Device* _pDevice, D3DXVECTOR3& _rPosit
 
 	//Return the latest point sprite created
 	return pNewVertex;
-}
-/**
-*
-* CEditorInterface class AddPointSprite
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-*
-*/
-void
-CEditorInterface::SendTextureDataToShader(ID3D11DeviceContext* _pDevContext)
-{
-	//ID3D11ShaderResourceView* const texture[1] = { GetDiffuseMap() };
-	//_pDevContext->PSSetShaderResources(0, 1, texture);
 }

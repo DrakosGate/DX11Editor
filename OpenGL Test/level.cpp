@@ -291,7 +291,7 @@ CLevel::Initialise(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext, CD
 
 	float fAspectRatio = static_cast<float>(m_iScreenWidth) / static_cast<float>(m_iScreenHeight);
 	m_pCamera = new CCamera();
-	m_pCamera->Initialise(20.0f, 0.1f, 10.0f, m_iScreenWidth, m_iScreenHeight, true);
+	m_pCamera->Initialise(50.0f, 0.5f, 10.0f, m_iScreenWidth, m_iScreenHeight, true);
 	m_pCamera->SetPosition(D3DXVECTOR3(0.0f, 2.0f, -15.0f));
 	D3DXVECTOR3 vecCameraLook;
 	D3DXVec3Normalize(&vecCameraLook, &(D3DXVECTOR3(0.0f, 0.0f, 0.0f) - m_pCamera->GetPosition()));
@@ -536,9 +536,9 @@ CLevel::Process(ID3D11Device* _pDevice, CClock* _pClock, float _fDeltaTime)
 
 	//Print FPS
 	char cBuffer[64];
-	sprintf_s(cBuffer, 32, "Frame Time Elapsed: %f", _fDeltaTime);
+	sprintf_s(cBuffer, 64, "FPS: %i\tFrame Time Elapsed: %f", _pClock->GetFPS(), _fDeltaTime);
 	m_pFont->Write(cBuffer, 1);
-	sprintf_s(cBuffer, 32, "Processing Method: %s", m_pcProcessingMethodName[m_eProcessingMethod].c_str());
+	sprintf_s(cBuffer, 64, "Processing Method: %s", m_pcProcessingMethodName[m_eProcessingMethod].c_str());
 	m_pFont->Write(cBuffer, 2);
 }
 /**

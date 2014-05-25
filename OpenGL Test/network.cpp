@@ -70,31 +70,31 @@ CNetwork::Initialise()
 void
 CNetwork::CreateServer()
 {
-	//WSADATA wsaData;
-	////Start WSA
-	//printf("-\tStarting WSA\n");
-	//if (WSAStartup(0x0101, &wsaData) != 0)
-	//{
-	//	printf("COULD NOT START WSA\n");
-	//}
-	////Create datagram socket
-	//printf("-\tCreating datagram socket\n");
-	//SOCKET tSocket = socket(AF_INET, SOCK_DGRAM, 0);
-	//if (tSocket == INVALID_SOCKET)
-	//{
-	//	printf("FAILED TO CREATE SOCKET\n");
-	//	WSACleanup();
-	//}
-	//sockaddr_in tServerData;
-	//ZeroMemory(&tServerData, sizeof(sockaddr_in));
+	WSADATA wsaData;
+	//Start WSA
+	printf("-\tStarting WSA\n");
+	if (WSAStartup(0x0101, &wsaData) != 0)
+	{
+		printf("COULD NOT START WSA\n");
+	}
+	//Create datagram socket
+	printf("-\tCreating datagram socket\n");
+	SOCKET tSocket = socket(AF_INET, SOCK_DGRAM, 0);
+	if (tSocket == INVALID_SOCKET)
+	{
+		printf("FAILED TO CREATE SOCKET\n");
+		WSACleanup();
+	}
+	sockaddr_in tServerData;
+	ZeroMemory(&tServerData, sizeof(sockaddr_in));
 
-	//tServerData.sin_family = AF_INET;
-	//tServerData.sin_port = htons(27890);
+	tServerData.sin_family = AF_INET;
+	tServerData.sin_port = htons(27890);
 
-	////Set address automatically
-	//char* pcHostName = new char[64];
-	//gethostname(pcHostName, 64);
-	//HOSTENT* pHostData = gethostbyname(pcHostName);
+	//Set address automatically
+	char* pcHostName = new char[64];
+	gethostname(pcHostName, 64);
+	HOSTENT* pHostData = gethostbyname(pcHostName);
 }
 void
 CNetwork::CreateClient()
