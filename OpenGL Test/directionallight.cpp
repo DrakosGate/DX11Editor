@@ -57,6 +57,6 @@ CDirectionalLight::~CDirectionalLight()
 TLightInfo& 
 CDirectionalLight::GetLightInfo()
 {
-	m_tLightInfo = TLightInfo(m_vecPosition, m_vecDirection, D3DXCOLOR(0.1f, 0.1f, 0.1f, 0.1f), m_vecColour, m_vecColour, D3DXVECTOR3(1.0f, 0.2f, 0.05f), m_fSpecularPower, 1000.0f, m_eLightType); 
+	m_tLightInfo = TLightInfo(m_vecWorldPosition, m_vecDirection, D3DXCOLOR(0.1f, 0.1f, 0.1f, 0.1f), m_vecColour, m_vecColour, D3DXVECTOR3(1.0f, 0.2f, 0.05f), m_fSpecularPower, 1000.0f, m_eLightType); 
 	return m_tLightInfo;
 }

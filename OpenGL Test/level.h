@@ -11,6 +11,7 @@
 #define __LEVEL_H__
 
 // Library Includes
+#include <rapidxml_utils.hpp>
 
 // Local Includes
 #include "defines.h"
@@ -28,6 +29,7 @@ struct TUCHARColour
 // Prototypes
 struct ID3D11RasterizerState;
 struct ID3D11SamplerState;
+struct TEntityNode;
 
 class CClock;
 class CModel;
@@ -38,8 +40,8 @@ class CPrefab;
 class CAIHiveMind;
 class CLightManager;
 class CPlayer;
-class CRenderToTexture;
 class CRenderEntity;
+class CRenderToTexture;
 class CEntityManager;
 class CShader;
 class CCamera;
@@ -66,6 +68,7 @@ public:
 	virtual void CreateRenderTargets(ID3D11Device* _pDevice);
 	
 	void OnResize(int _iWidth, int _iHeight);	
+	CPrefab* CreateObject(ID3D11Device* _pDevice, rapidxml::xml_node<>* _pNode, TEntityNode* _pParentNode);
 	void LoadLevel(ID3D11Device* _pDevice, char* _pcLevelFilename);
 	void SaveLevel(ID3D11Device* _pDevice, char* _pcLevelFilename);
 
@@ -88,6 +91,7 @@ private:
 	CFontRenderer* m_pFont;
 
 	CEntityManager* m_pEntityManager;
+	TEntityNode* m_pRootNode;
 	TInputStruct* m_pInput;
 	float m_fGameTimeElapsed;
 

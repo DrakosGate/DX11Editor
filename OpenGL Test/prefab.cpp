@@ -81,29 +81,6 @@ CPrefab::Draw(ID3D11DeviceContext* _pDevice)
 {
 	m_pModel->Draw(_pDevice);
 }
-/**
-*
-* CPrefab class Process
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-* @param _fDeltaTime Game Time elapsed
-*
-*/
-void 
-CPrefab::Process(float _fDeltaTime)
-{
-	//Calculate world matrix
-	D3DXQuaternionRotationYawPitchRoll(&m_quatRot, m_vecRotation.y, m_vecRotation.x, m_vecRotation.z);
-	D3DXMatrixTransformation(	&m_matWorld,
-								NULL,
-								NULL,
-								&m_vecScale,
-								NULL,
-								&m_quatRot,
-								&m_vecPosition);							
-}
-
 void 
 CPrefab::SetModel(CModel* _pModel)
 {

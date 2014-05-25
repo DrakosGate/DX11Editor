@@ -48,7 +48,7 @@ COpenCLKernel::InitialiseOpenCL()
 	m_clArrayOut = 0;
 }
 void
-COpenCLKernel::LoadProgram(char* _pcCLProgram)
+COpenCLKernel::LoadProgram(char* _pcCLProgram, char* _pcFunctionName)
 {
 	cl_int iError = 0;
 	printf("-\tLoading OpenCL Program: %s\n", _pcCLProgram);
@@ -63,6 +63,9 @@ COpenCLKernel::LoadProgram(char* _pcCLProgram)
 
 	BuildExecutable();
 
+	m_clKernel = clCreateKernel(m_clProgram, _pcFunctionName, &iError);
+	printf("-\tCreating OpenCL Kernel %s: %s\n", _pcFunctionName, GetErrorString(iError));
+
 	delete[] pCLSource;
 	pCLSource = 0;
 }
@@ -70,9 +73,6 @@ void
 COpenCLKernel::SendDataToGPU()
 {
 	cl_int iError = 0;
-	m_clKernel = clCreateKernel(m_clProgram, "ArrayAdd", &iError);
-	printf("-\tCreating OpenCL Kernel %s: %s\n", "ArrayAdd", GetErrorString(iError));
-
 	m_iArraySize = 20;
 	float* pArrayA = new float[m_iArraySize];
 	float* pArrayB = new float[m_iArraySize];

@@ -137,7 +137,7 @@ CFontRenderer::ProcessFont(ID3D11Device* _pDevice)
 		m_Vertices.clear();
 		for (unsigned int iRow = 0; iRow < m_Messages.size(); ++iRow)
 		{
-			for (int iLetter = 0; iLetter < m_Messages[iRow].size(); ++iLetter)
+			for (unsigned int iLetter = 0; iLetter < m_Messages[iRow].size(); ++iLetter)
 			{
 				int iLetterIndex = m_Messages[iRow][iLetter] - 32;
 				D3DXVECTOR3 vecCurrentLetterPos(iLetter * m_vecCharacterSize.x, iRow * -m_vecCharacterSize.y, 0.0f);
@@ -198,7 +198,7 @@ void
 CFontRenderer::Write(char* _pcMessage, int _iIndex)
 {
 	//Adjust message buffer to size of this index
-	while(_iIndex >= m_Messages.size())
+	while(static_cast<unsigned int>(_iIndex) >= m_Messages.size())
 	{
 		m_Messages.push_back("");
 	}

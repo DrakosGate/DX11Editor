@@ -21,6 +21,7 @@
 #include "shader.h"
 #include "prefab.h"
 #include "aihivemind.h"
+#include "lightmanager.h"
 
 // This Include
 #include "entitymanager.h"
@@ -116,6 +117,22 @@ CEntityManager::Initialise(ID3D11Device* _pDevice)
 }
 /**
 *
+* CEntityManager class SetLevelInformation Passes necessary level information to the entity manager
+* (Task ID: n/a)
+*
+* @author Christopher Howlett
+* @param _pHivemind AI Hivemind used for adding AI
+* @param _pLightManager Light Manager used for adding lights
+*
+*/
+void
+CEntityManager::SetLevelInformation(CAIHiveMind* _pHivemind, CLightManager* _pLightManager)
+{
+	m_pAIHivemind = _pHivemind;
+	m_pLightManager = _pLightManager;
+}
+/**
+*
 * CEntityManager class Process
 * (Task ID: n/a)
 *
@@ -124,13 +141,17 @@ CEntityManager::Initialise(ID3D11Device* _pDevice)
 *
 */
 void 
-CEntityManager::Process(float _fDeltaTime, EGameScene _eGameScene, CCamera* _pCurrentCamera)
+CEntityManager::Process(float _fDeltaTime, EGameScene _eGameScene)
 {
-	for(unsigned int iEntity = 0; iEntity < m_pRenderEntities[_eGameScene].size(); ++iEntity)
+	//_pRootNode->pEntity->Process(_fDeltaTime, NULL);
+	for (int iScene = 0; iScene < SCENE_MAX; ++iScene)
 	{
-		if(m_pRenderEntities[_eGameScene][iEntity]->DoDraw())
+		for (unsigned int iEntity = 0; iEntity < m_pRenderEntities[iScene].size(); ++iEntity)
 		{
-			m_pRenderEntities[_eGameScene][iEntity]->Process(_fDeltaTime);
+			if (m_pRenderEntities[iScene][iEntity]->DoDraw())
+			{
+				m_pRenderEntities[iScene][iEntity]->Process(_fDeltaTime, NULL);
+			}
 		}
 	}
 }
@@ -384,7 +405,15 @@ CEntityManager::GetPrefabOptions(std::string& _pcPrefabName)
 *
 */
 CPrefab*
-CEntityManager::InstantiatePrefab(ID3D11Device* _pDevice, CAIHiveMind* _pHivemind, std::string& _pcPrefabName, CShader* _pShader, EGameScene _eScene, D3DXVECTOR3& _rPos, D3DXVECTOR3& _rScale, D3DXVECTOR3& _rRotation, D3DXCOLOR& _rColour)
+CEntityManager::InstantiatePrefab(	ID3D11Device* _pDevice, 
+									TEntityNode* _pParentNode, 
+									std::string& _pcPrefabName, 
+									CShader* _pShader, 
+									EGameScene _eScene, 
+									D3DXVECTOR3& _rPos, 
+									D3DXVECTOR3& _rScale, 
+									D3DXVECTOR3& _rRotation, 
+									D3DXCOLOR& _rColour)
 {
 	CPrefab* pNewEntity = new CPrefab();
 	TPrefabOptions* pPrefabOptions = GetPrefabOptions(_pcPrefabName);
@@ -398,16 +427,21 @@ CEntityManager::InstantiatePrefab(ID3D11Device* _pDevice, CAIHiveMind* _pHivemin
 	pNewEntity->SetScale(vecInstanceScale);
 	pNewEntity->SetRotation(_rRotation);
 	pNewEntity->SetEntityType(_pcPrefabName);
+	pNewEntity->CreateNode(_pParentNode);
 
 	//Check if this is a static obstacle in the scene
 	if (pPrefabOptions->bIsStatic)
 	{
-		_pHivemind->AddStaticObject(_pDevice, pNewEntity);
+		m_pAIHivemind->AddStaticObject(_pDevice, pNewEntity);
 	}
 	//Check if this is controlled by AI
 	else if (pPrefabOptions->eAIType != AI_INVALID)
 	{
-		_pHivemind->AddAI(pNewEntity, pPrefabOptions->eAIType);
+		//Only add AI to children of the root node
+		if (_pParentNode->pParent == NULL)
+		{
+			m_pAIHivemind->AddAI(pNewEntity, pPrefabOptions->eAIType);
+		}
 	}
 
 	AddEntity(pNewEntity, _eScene);

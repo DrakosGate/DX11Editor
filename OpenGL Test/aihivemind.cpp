@@ -109,7 +109,7 @@ CAIHiveMind::Initialise()
 
 	m_pCLKernel = new CAICLKernel();
 	m_pCLKernel->InitialiseOpenCL();
-	m_pCLKernel->LoadProgram("OpenCLKernels/ai.cl");
+	m_pCLKernel->LoadProgram("OpenCLKernels/ai.cl", "ProcessAI");
 	
 	return true;
 }

@@ -32,8 +32,7 @@ public:
 	
 	virtual bool Initialise(ID3D11Device* _pDevice, float _fScale);
 	virtual void Draw(ID3D11DeviceContext* _pDevice);
-	virtual void Process(float _fDeltaTime);
-
+	
 	virtual void SetModel(CModel* _pModel);
 	
 	void SetTileType(ETileType _eTileType);

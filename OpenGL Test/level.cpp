@@ -15,7 +15,6 @@
 // Library Includes
 #include <D3D11.h>
 #include <thread>
-#include <rapidxml_utils.hpp>
 
 // Local Includes
 #include "defines.h"
@@ -269,6 +268,8 @@ CLevel::~CLevel()
 bool
 CLevel::Initialise(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext, CDirectXRenderer* _pRenderer, HWND _hWindow, TInputStruct* _pInput, int _iScreenWidth, int _iScreenHeight)
 {
+	SetFocus(GetConsoleWindow());
+
 	m_pRenderer = _pRenderer;
 	m_pInput = _pInput;
 	m_iScreenWidth = _iScreenWidth;
@@ -307,21 +308,15 @@ CLevel::Initialise(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext, CD
 	//m_pPlayer = new CPlayer();
 	//m_pPlayer->Initialise(m_pInput, m_pCamera, m_pCursor);
 	
-	//Initialise lighting
-	m_pLightManager = new CLightManager();
-	m_pLightManager->Initialise();
-	
 	//Directional
 	//m_pLightManager->AddDirectional(D3DXVECTOR3(0.0f, -0.2f, 1.0f), D3DXCOLOR(0.5f, 0.6f, 0.5f, 1.0f), 5.0f);
 	//Point
-	for(unsigned int i = 0; i < 3; ++i)
-	{
-		m_pLightManager->AddPoint(D3DXVECTOR3(0.0f, 0.4f, 0.0f), D3DXCOLOR(0.7f, 0.7f, 0.3f, 1.0f), D3DXVECTOR3(0.15f, 0.02f, 5.0f), 1.0f);
-	}
+	m_pLightManager->AddPoint(D3DXVECTOR3(0.0f, 0.4f, 0.0f), D3DXCOLOR(0.7f, 0.7f, 0.3f, 1.0f), D3DXVECTOR3(0.15f, 0.02f, 5.0f), 1.0f);
+	
 	//Cursor light
 	m_pLightManager->AddPoint(D3DXVECTOR3(0.0f, 0.4f, 0.0f), D3DXCOLOR(0.1f, 0.1f, 0.5f, 1.0f), D3DXVECTOR3(0.05f, 0.2f, 4.0f), 1.0f);
 	//Spot
-	//m_pLightManager->AddSpot(D3DXVECTOR3(0.0f, 15.0f, .0f), D3DXVECTOR3(0.0f, -1.0f, 0.0f), D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f), D3DXVECTOR3(1.0f, 0.5f, 0.02f), 1.5f, 5000.0f);
+	m_pLightManager->AddSpot(D3DXVECTOR3(0.0f, 15.0f, .0f), D3DXVECTOR3(0.0f, -1.0f, 0.0f), D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f), D3DXVECTOR3(1.0f, 0.5f, 0.02f), 1.5f, 5000.0f);
 
 	CAudioPlayer::GetInstance().Initialise();
 	CAudioPlayer::GetInstance().Play3DSound(SOUND_BIRDCHIRP, D3DXVECTOR3(0.0f, 0.0f, 0.0f));
@@ -337,6 +332,8 @@ CLevel::Initialise(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext, CD
 	m_pcProcessingMethodName[PROCESSING_THREADPOOL] = "Thread Pool";
 	m_pcProcessingMethodName[PROCESSING_OPENCL] = "GPU [OpenCL]";
 	m_pcProcessingMethodName[PROCESSING_DISTRIBUTED] = "Distributed";
+
+	SetFocus(_hWindow);
 
 	return true;
 }
@@ -356,6 +353,16 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	m_pEntityManager = new CEntityManager();
 	m_pEntityManager->Initialise(_pDevice);
 
+	//Initialise lighting
+	m_pLightManager = new CLightManager();
+	m_pLightManager->Initialise();
+
+	//Setup AI Hivemind
+	m_pHivemind = new CAIHiveMind();
+	m_pHivemind->Initialise();
+	m_pHivemind->CreateNavigationGrid(_pDevice, m_pEntityManager, &m_pShaderCollection[SHADER_POINTSPRITE], 20.0f, 60, 60);
+	m_pEntityManager->SetLevelInformation(m_pHivemind, m_pLightManager);
+
 	//Create thread pool for parallel task management
 	m_pThreadPool = new CThreadPool();
 	//std::thread::hardware_concurrency() is the recommended thread usage for this system
@@ -363,7 +370,7 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 
 	m_pOpenCLKernel = new COpenCLKernel();
 	m_pOpenCLKernel->InitialiseOpenCL();
-	m_pOpenCLKernel->LoadProgram("OpenCLKernels/test.cl");
+	m_pOpenCLKernel->LoadProgram("OpenCLKernels/test.cl", "ArrayAdd");
 	m_pOpenCLKernel->SendDataToGPU();
 	m_pOpenCLKernel->Run();
 
@@ -416,6 +423,9 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	m_pEntityManager->AddEntity(m_pTerrain, SCENE_PERMANENTSCENE);
 	m_pTerrain->SetRadius(FLT_MAX);
 
+	//Set the terrain to be the root node
+	m_pRootNode = m_pTerrain->CreateNode(NULL);
+
 	//m_fGrassScale = 15.0f;
 	//m_pGrass = new CGrass();
 	//m_pGrass->Initialise();
@@ -434,11 +444,6 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	m_pCursor->SetScale(D3DXVECTOR3(0.5f, 0.5f, 0.5f));
 	m_pCursor->SetRotation(D3DXVECTOR3(0.0f, -0.5f, 0.0f));
 	m_pEntityManager->AddEntity(m_pCursor, SCENE_PERMANENTSCENE); 
-
-	//Setup AI
-	m_pHivemind = new CAIHiveMind();
-	m_pHivemind->Initialise();
-	m_pHivemind->CreateNavigationGrid(_pDevice, m_pEntityManager, &m_pShaderCollection[SHADER_POINTSPRITE], 20.0f, 60, 60);
 
 	//Load Default level data
 	LoadLevel(_pDevice, "Data/Levels/level1.xml");
@@ -480,12 +485,6 @@ CLevel::Process(ID3D11Device* _pDevice, CClock* _pClock, float _fDeltaTime)
 	m_pCamera->Process(_fDeltaTime);
 	m_pOrthoCamera->Process(_fDeltaTime);
 
-	//for (unsigned int i = 0; i < m_pHumans.size(); ++i)
-	//{
-	//	m_pLightManager->GetPoint(i)->SetPosition(m_pHumans[i]->GetPosition() + m_pHumans[i]->GetForward() * 0.5f);
-	//}
-	//m_pLightManager->GetPoint(m_pLightManager->GetLightCount(LIGHT_POINT) - 1)->SetPosition(m_pCursor->GetPosition() + D3DXVECTOR3(0.0f, 0.1f, 0.0f));
-	
 	//Process camera and movement
 	//m_pPlayer->ProcessInput(_fDeltaTime);
 	m_pEditor->RefreshBuffers(_pDevice);
@@ -512,13 +511,12 @@ CLevel::Process(ID3D11Device* _pDevice, CClock* _pClock, float _fDeltaTime)
 	//m_pResourceManager->GetAnimatedModel("chicken")->Process(_fDeltaTime);
 	m_pFont->ProcessFont(_pDevice);
 
-	m_pEntityManager->Process(_fDeltaTime, SCENE_PERMANENTSCENE, m_pCamera);
-	m_pEntityManager->Process(_fDeltaTime, SCENE_3DSCENE, m_pCamera);
-	m_pEntityManager->Process(_fDeltaTime, SCENE_3DANIM, m_pCamera);
-	m_pEntityManager->Process(_fDeltaTime, SCENE_UI, m_pCamera);
-	m_pEntityManager->Process(_fDeltaTime, SCENE_DEBUG, m_pCamera);
-	m_pEntityManager->Process(_fDeltaTime, SCENE_FONT, m_pCamera);
-	m_pEntityManager->Process(_fDeltaTime, SCENE_FINAL, m_pCamera);
+	m_pRootNode->pEntity->Process(_fDeltaTime, NULL);
+	m_pEntityManager->Process(_fDeltaTime, SCENE_3DANIM);
+	m_pEntityManager->Process(_fDeltaTime, SCENE_UI);
+	m_pEntityManager->Process(_fDeltaTime, SCENE_DEBUG);
+	m_pEntityManager->Process(_fDeltaTime, SCENE_FONT);
+	m_pEntityManager->Process(_fDeltaTime, SCENE_FINAL);
 	m_fGameTimeElapsed += _fDeltaTime;
 	
 	//float fGrassOffset = m_fGrassScale * 0.1f;
@@ -593,7 +591,7 @@ CLevel::ProcessInput(ID3D11Device* _pDevice, float _fDeltaTime)
 		if (m_pInput->bLeftMouseClick.bPressed && m_pInput->bLeftMouseClick.bPreviousState == false)
 		{
 			m_pLevelEntities.push_back(m_pEntityManager->InstantiatePrefab(	_pDevice,
-																			m_pHivemind,
+																			m_pRootNode,
 																			m_sSelectedPrefab,
 																			&m_pShaderCollection[SHADER_MRT],
 																			SCENE_3DSCENE,
@@ -1033,11 +1031,91 @@ CLevel::OnResize(int _iWidth, int _iHeight)
 		m_pOrthoCamera->CreateProjectionMatrix(fAspectRatio);
 	}
 }
+/**
+*
+* CLevel class Creates an object from an XML node
+* (Task ID: n/a)
+*
+* @author Christopher Howlett
+* @param _pNode XML Node containing object information
+* @return Returns the new prefab object
+*
+*/
+CPrefab* 
+CLevel::CreateObject(ID3D11Device* _pDevice, rapidxml::xml_node<>* _pNode, TEntityNode* _pParentNode)
+{
+	//Get prefab type
+	std::string sType = _pNode->first_node("type")->value();
+
+	//Get Position Scale and Rotation data
+	D3DXVECTOR3 vecPosition(ReadFromString<float>(_pNode->first_node("position")->first_attribute("x")->value()),
+							ReadFromString<float>(_pNode->first_node("position")->first_attribute("y")->value()),
+							ReadFromString<float>(_pNode->first_node("position")->first_attribute("z")->value()));
+	D3DXVECTOR3 vecScale(	ReadFromString<float>(_pNode->first_node("scale")->first_attribute("x")->value()),
+							ReadFromString<float>(_pNode->first_node("scale")->first_attribute("y")->value()),
+							ReadFromString<float>(_pNode->first_node("scale")->first_attribute("z")->value()));
+	D3DXVECTOR3 vecRotation(ReadFromString<float>(_pNode->first_node("rotation")->first_attribute("x")->value()),
+							ReadFromString<float>(_pNode->first_node("rotation")->first_attribute("y")->value()),
+							ReadFromString<float>(_pNode->first_node("rotation")->first_attribute("z")->value()));
+	//Get Prefab colour							  
+	D3DXCOLOR prefabColour(	ReadFromString<float>(_pNode->first_node("colour")->first_attribute("r")->value()),
+							ReadFromString<float>(_pNode->first_node("colour")->first_attribute("g")->value()),
+							ReadFromString<float>(_pNode->first_node("colour")->first_attribute("b")->value()),
+							ReadFromString<float>(_pNode->first_node("colour")->first_attribute("a")->value()));
+
+	//Create an instance of this prefab
+	CPrefab* pNewPrefab = m_pEntityManager->InstantiatePrefab(	_pDevice,
+																_pParentNode,
+																sType,
+																&m_pShaderCollection[SHADER_MRT],
+																SCENE_3DSCENE,
+																vecPosition,
+																vecScale,
+																vecRotation,
+																prefabColour);
+
+	//Check if this object has children
+	if (_pNode->first_node("child"))
+	{
+		for (rapidxml::xml_node<>* pCurrentChild = _pNode->first_node("child"); pCurrentChild; pCurrentChild = pCurrentChild->next_sibling("child"))
+		{
+			CPrefab* pNewChild = CreateObject(_pDevice, pCurrentChild, pNewPrefab->GetNode());
+		}
+	}
+	//Check if this object has any lights attached
+	if (_pNode->first_node("light"))
+	{
+		for (rapidxml::xml_node<>* pCurrentLight = _pNode->first_node("light"); pCurrentLight; pCurrentLight = pCurrentLight->next_sibling("light"))
+		{
+			pNewPrefab->GetNode()->vecLights.push_back( m_pLightManager->AddPoint(D3DXVECTOR3(0.0f, 0.4f, 0.0f), D3DXCOLOR(0.7f, 0.7f, 0.3f, 1.0f), D3DXVECTOR3(0.15f, 0.02f, 5.0f), 1.0f) );
+		}
+	}
+
+	//Add new object to the level
+	m_pLevelEntities.push_back(pNewPrefab);
+	m_pEntityManager->AddEntity(pNewPrefab, SCENE_3DSCENE);
+
+	return pNewPrefab;
+}
+/**
+*
+* CLevel class Loads level data from file
+* (Task ID: n/a)
+*
+* @author Christopher Howlett
+* @param _pcLevelFilename Filename of level file
+*
+*/
 void
 CLevel::LoadLevel(ID3D11Device* _pDevice, char* _pcLevelFilename)
 {
 	m_pEntityManager->ClearScene(SCENE_3DSCENE);
 	m_pHivemind->ClearHivemind();
+	m_pRootNode->Clear();
+	delete m_pRootNode;
+
+	m_pRootNode = m_pTerrain->CreateNode(NULL);
+
 	//Delete all current entities in the scene
 	for (unsigned int iEntity = 0; iEntity < m_pLevelEntities.size(); ++iEntity)
 	{
@@ -1056,45 +1134,35 @@ CLevel::LoadLevel(ID3D11Device* _pDevice, char* _pcLevelFilename)
 
 	//Loop through models
 	printf("\n  == LOADING LEVEL FROM FILE: %s ==\n", _pcLevelFilename);
-	for (rapidxml::xml_node<>* pCurrentPrefab = pRoot->first_node("prefab"); pCurrentPrefab; pCurrentPrefab = pCurrentPrefab->next_sibling())
+	for (rapidxml::xml_node<>* pCurrentChild = pRoot->first_node("child"); pCurrentChild; pCurrentChild = pCurrentChild->next_sibling())
 	{
-		//Get prefab type
-		std::string sType = pCurrentPrefab->first_node("type")->value();
-
-		//Get Position Scale and Rotation data
-		D3DXVECTOR3 vecPosition(ReadFromString<float>(pCurrentPrefab->first_node("position")->first_attribute("x")->value()),
-								ReadFromString<float>(pCurrentPrefab->first_node("position")->first_attribute("y")->value()),
-								ReadFromString<float>(pCurrentPrefab->first_node("position")->first_attribute("z")->value()));
-		D3DXVECTOR3 vecScale(	ReadFromString<float>(pCurrentPrefab->first_node("scale")->first_attribute("x")->value()),
-								ReadFromString<float>(pCurrentPrefab->first_node("scale")->first_attribute("y")->value()),
-								ReadFromString<float>(pCurrentPrefab->first_node("scale")->first_attribute("z")->value()));
-		D3DXVECTOR3 vecRotation(ReadFromString<float>(pCurrentPrefab->first_node("rotation")->first_attribute("x")->value()),
-								ReadFromString<float>(pCurrentPrefab->first_node("rotation")->first_attribute("y")->value()),
-								ReadFromString<float>(pCurrentPrefab->first_node("rotation")->first_attribute("z")->value()));
-		//Get Prefab colour
-		D3DXCOLOR prefabColour(	ReadFromString<float>(pCurrentPrefab->first_node("colour")->first_attribute("r")->value()),
-								ReadFromString<float>(pCurrentPrefab->first_node("colour")->first_attribute("g")->value()),
-								ReadFromString<float>(pCurrentPrefab->first_node("colour")->first_attribute("b")->value()),
-								ReadFromString<float>(pCurrentPrefab->first_node("colour")->first_attribute("a")->value()));
-		
-		CPrefab* pNewPrefab = m_pEntityManager->InstantiatePrefab(	_pDevice,
-																	m_pHivemind,
-																	sType,
-																	&m_pShaderCollection[SHADER_MRT],
-																	SCENE_3DSCENE,
-																	vecPosition,
-																	vecScale,
-																	vecRotation,
-																	prefabColour);
-		m_pLevelEntities.push_back(pNewPrefab);
-		m_pEntityManager->AddEntity(pNewPrefab, SCENE_3DSCENE);
+		//Create Object will recursively loop through all children of this object and create those too
+		CPrefab* pNewPrefab = CreateObject(_pDevice, pCurrentChild, m_pRootNode);
 	}
 }
+/**
+*
+* CLevel class SaveLevel Saves level data to file
+* (Task ID: n/a)
+*
+* @author Christopher Howlett
+* @param _pcLevelFilename Output level filename
+*
+*/
 void
 CLevel::SaveLevel(ID3D11Device* _pDevice, char* _pcLevelFilename)
 {
 	
 }
+/**
+*
+* CLevel class Swaps between different processing methods
+* (Task ID: n/a)
+*
+* @author Christopher Howlett
+* @param _eProcessingMethod Processing method selected
+*
+*/
 void
 CLevel::ChangeProcessingMethod(EProcessingMethod _eProcessingMethod)
 {

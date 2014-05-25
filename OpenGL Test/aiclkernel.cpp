@@ -21,9 +21,6 @@ void
 CAICLKernel::SendDataToGPU(CAIHiveMind* _pHiveMind, float _fDeltaTime)
 {
 	cl_int iError = 0;
-	m_clKernel = clCreateKernel(m_clProgram, "ProcessAI", &iError);
-	//printf("-\tCreating OpenCL Kernel %s: %s\n", "ArrayAdd", GetErrorString(iError));
-
 	m_iArraySize = _pHiveMind->GetAICount();
 	D3DXVECTOR4* pPositions = new D3DXVECTOR4[m_iArraySize];
 	D3DXVECTOR4* pDirections = new D3DXVECTOR4[m_iArraySize];

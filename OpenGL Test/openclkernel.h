@@ -15,7 +15,7 @@ public:
 	~COpenCLKernel();
 
 	void InitialiseOpenCL();
-	void LoadProgram(char* _pcCLProgram);
+	void LoadProgram(char* _pcCLProgram, char* _pcFunctionName);
 	void SendDataToGPU();
 	void Run();
 	void RetrieveOpenCLResults();

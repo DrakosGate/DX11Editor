@@ -12,12 +12,43 @@
 
 // Library Includes
 #include <D3DX10math.h>
+#include <vector>
 
 // Local Includes
 #include "vertex.h"
 #include "defines.h"
 
 // Types
+class CRenderEntity;
+class CLight;
+
+struct TEntityNode
+{
+	TEntityNode()
+	: pEntity(0)
+	, pParent(0)
+	{}
+	TEntityNode(CRenderEntity* _pEntity, TEntityNode* _pParent)
+	{
+		pEntity = _pEntity;
+		pParent = _pParent;
+	}
+	void Clear()
+	{
+		pEntity = 0;
+		pParent = 0;
+		for (unsigned int iChild = 0; iChild < vecChildren.size(); ++iChild)
+		{
+			vecChildren[iChild]->Clear();
+			vecChildren[iChild] = 0;
+		}
+		vecChildren.clear();
+	}
+	CRenderEntity* pEntity;
+	TEntityNode* pParent;
+	std::vector<TEntityNode*> vecChildren;
+	std::vector<CLight*> vecLights;
+};
 
 // Constants
 
@@ -39,13 +70,16 @@ public:
 	virtual ~CRenderEntity();
 
 	virtual bool Initialise(ID3D11Device* _pDevice, float _fScale);
-	virtual void Process(float _fDeltaTime);
+	virtual void Process(float _fDeltaTime, D3DXMATRIX* _pParentMatrix);
 	virtual void Draw(ID3D11DeviceContext* _pDevice);
 	
 	virtual void CreateVertexBuffer(ID3D11Device* _pDevice);
 	virtual void CreateIndexBuffer(ID3D11Device* _pDevice);
+	virtual TEntityNode* CreateNode(TEntityNode* _pParentNode);
+	virtual TEntityNode* GetNode() const;
 
 	virtual D3DXVECTOR3& GetPosition();
+	virtual D3DXVECTOR3& GetRotation();
 	virtual D3DXVECTOR3& GetScale();
 	virtual D3DXVECTOR3& GetForward();
 	virtual D3DXMATRIX& GetWorld();
@@ -89,6 +123,7 @@ private:
 	
 //Member variables
 protected:
+	TEntityNode* m_pNode;
 	CShader* m_pObjectShader;
 	CBoundingBox* m_pBoundingBox;
 	float m_fRadius;

@@ -55,6 +55,7 @@ CRenderEntity::CRenderEntity()
 , m_fRadius(0.0f)
 , m_pDiffuseMap(0)
 , m_pNormalMap(0)
+, m_pNode(0)
 {
 	D3DXMatrixIdentity(&m_matWorld);
 	m_vecPosition *= 0.0f;
@@ -78,6 +79,11 @@ CRenderEntity::CRenderEntity()
 */
 CRenderEntity::~CRenderEntity()
 {
+	if (m_pNode)
+	{
+		delete m_pNode;
+		m_pNode = 0;
+	}
 	if (m_pBoundingBox)
 	{
 		delete m_pBoundingBox;
@@ -124,19 +130,43 @@ CRenderEntity::Initialise(ID3D11Device* _pDevice, float _fScale)
 *
 */
 void 
-CRenderEntity::Process(float _fDeltaTime)
+CRenderEntity::Process(float _fDeltaTime, D3DXMATRIX* _pParentMatrix)
 {
-	if (m_bIsBillboarded == false)
+	if (DoDraw())
 	{
-		//Calculate world matrix
-		D3DXQuaternionRotationYawPitchRoll(&m_quatRot, m_vecRotation.y, m_vecRotation.x, m_vecRotation.z);
-		D3DXMatrixTransformation(	&m_matWorld,
-									NULL,
-									NULL,
-									&m_vecScale,
-									NULL,
-									&m_quatRot,
-									&m_vecPosition);
+		if (m_bIsBillboarded == false)
+		{
+			//Calculate world matrix
+			D3DXQuaternionRotationYawPitchRoll(&m_quatRot, m_vecRotation.y, m_vecRotation.x, m_vecRotation.z);
+			D3DXMatrixTransformation(&m_matWorld,
+				NULL,
+				NULL,
+				&m_vecScale,
+				NULL,
+				&m_quatRot,
+				&m_vecPosition);
+			//Check if this matrix must be multiplied by the parent matrix
+			if (_pParentMatrix)
+			{
+				m_matWorld = m_matWorld * *_pParentMatrix;
+			}
+
+			//Process all children of this entity
+			if (m_pNode)
+			{
+				for (unsigned int iChild = 0; iChild < m_pNode->vecChildren.size(); ++iChild)
+				{
+					m_pNode->vecChildren[iChild]->pEntity->Process(_fDeltaTime, &m_matWorld);
+				}
+				//Process all lights attached to this entity
+				for (unsigned int iLight = 0; iLight < m_pNode->vecLights.size(); ++iLight)
+				{
+					CLight* pCurrentLight = m_pNode->vecLights[iLight];
+					pCurrentLight->SetPosition(GetPosition() + pCurrentLight->GetOffset());
+					pCurrentLight->SetDirection(GetForward());
+				}
+			}
+		}
 	}
 }
 /**
@@ -210,6 +240,44 @@ CRenderEntity::CreateIndexBuffer(ID3D11Device* _pDevice)
 }
 /**
 *
+* CRenderEntity class Creates an Entity Node for this object
+* (Task ID: n/a)
+*
+* @author Christopher Howlett
+* @param _pParentNode This objects parent
+* @return Returns pointer to new node
+*
+*/
+TEntityNode*
+CRenderEntity::CreateNode(TEntityNode* _pParentNode)
+{
+	m_pNode = new TEntityNode(this, _pParentNode);
+	if (_pParentNode)
+	{
+		_pParentNode->vecChildren.push_back(m_pNode);
+	}
+	else
+	{
+		//This is the root node
+	}
+	return m_pNode;
+}
+/**
+*
+* CRenderEntity class GetNode Returns this objects "Entity Node"
+* (Task ID: n/a)
+*
+* @author Christopher Howlett
+* @return Returns entity node
+*
+*/
+TEntityNode*
+CRenderEntity::GetNode() const
+{
+	return m_pNode;
+}
+/**
+*
 * CRenderEntity class GetPosition
 * (Task ID: n/a)
 *
@@ -221,6 +289,20 @@ D3DXVECTOR3&
 CRenderEntity::GetPosition()
 {
 	return m_vecPosition;
+}
+/**
+*
+* CRenderEntity class GetRotation
+* (Task ID: n/a)
+*
+* @author Christopher Howlett
+* @return Returns rotation
+*
+*/
+D3DXVECTOR3&
+CRenderEntity::GetRotation()
+{
+	return m_vecRotation;
 }
 /**
 *

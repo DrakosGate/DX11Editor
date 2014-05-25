@@ -78,6 +78,7 @@ public:
 	virtual void ProcessParent(float _fDeltaTime);
 	
 	virtual void SetPosition(D3DXVECTOR3& _rVecPosition);
+	virtual D3DXVECTOR3& GetOffset();
 	virtual D3DXVECTOR3& GetPosition();
 	virtual void SetDirection(D3DXVECTOR3& _rVecDir);
 	virtual D3DXVECTOR3& GetDirection();
@@ -94,7 +95,8 @@ private:
 	CLight& operator= (const CLight& _rhs);
 
 protected:
-	D3DXVECTOR3 m_vecPosition;
+	D3DXVECTOR3 m_vecOffsetPosition;
+	D3DXVECTOR3 m_vecWorldPosition;
 	D3DXVECTOR3 m_vecDirection;
 	D3DXCOLOR m_vecColour;
 	float m_fSpecularPower;

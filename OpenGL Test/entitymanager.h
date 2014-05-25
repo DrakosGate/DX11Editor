@@ -24,13 +24,15 @@
 // Prototypes
 struct ID3D11Device;
 struct ID3D11DeviceContext;
+struct TEntityNode;
 
-class CRenderEntity;
 class CCamera;
 class CShader;
 class CPrefab;
 class CBoundingBox;
 class CAIHiveMind;
+class CRenderEntity;
+class CLightManager;
 
 //Structure defined here due to forward declaration
 struct TTemporaryEntity
@@ -47,7 +49,9 @@ public:
 	virtual ~CEntityManager();
 
 	virtual bool Initialise(ID3D11Device* _pDevice);
-	virtual void Process(float _fDeltaTime, EGameScene _eGameScene, CCamera* _pCurrentCamera);
+	virtual void SetLevelInformation(CAIHiveMind* _pHivemind, CLightManager* _pLightManager);
+
+	virtual void Process(float _fDeltaTime, EGameScene _eGameScene);
 	virtual void Draw(ID3D11DeviceContext* _pDevice, CCamera* _pCurrentCamera, EGameScene _eScene);
 	virtual void DrawTransparentEntities(ID3D11DeviceContext* _pDevice, CCamera* _pCurrentCamera, EGameScene _eScene);
 	virtual void DrawProjection(ID3D11DeviceContext* _pDevice, CCamera* _pCurrentCamera, CCamera* _pProjectionCamera, ID3D10ShaderResourceView* _pProjectedMap, EGameScene _eScene);
@@ -56,7 +60,15 @@ public:
 	void AddEntity(CRenderEntity* _pNewEntity, EGameScene _eScene);
 	void AddPrefab(TPrefabOptions* _pPrefab);
 	TPrefabOptions* GetPrefabOptions(std::string& _pcPrefabName);
-	CPrefab* InstantiatePrefab(ID3D11Device* _pDevice, CAIHiveMind* _pHivemind, std::string& _pcPrefabName, CShader* _pShader, EGameScene _eScene, D3DXVECTOR3& _rPos, D3DXVECTOR3& _rScale, D3DXVECTOR3& _rRotation, D3DXCOLOR& _rColour);
+	CPrefab* InstantiatePrefab(	ID3D11Device* _pDevice, 
+								TEntityNode* _pParentNode, 
+								std::string& _pcPrefabName, 
+								CShader* _pShader, 
+								EGameScene _eScene, 
+								D3DXVECTOR3& _rPos, 
+								D3DXVECTOR3& _rScale, 
+								D3DXVECTOR3& _rRotation, 
+								D3DXCOLOR& _rColour);
 	
 	bool IsEntityInFrustum(CCamera* _pCamera, CBoundingBox* _pBoundingBox);
 	void ClearScene(EGameScene _eScene);
@@ -74,6 +86,8 @@ protected:
 	std::map<std::string, unsigned int> m_mapPrefabIndex;
 
 	CAIHiveMind* m_pAIHivemind;
+	CLightManager* m_pLightManager;
+
 	float* m_pCameraDepths;
 	int m_iTotalTransparentCount;
 	

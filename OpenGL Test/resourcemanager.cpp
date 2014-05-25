@@ -158,24 +158,24 @@ CResourceManager::Initialise(ID3D11Device* _pDevice, char* _pcResourceFilename)
 	}
 	
 	//Loop through animations
-	printf("\n  == LOADING ANIMATED MODELS\n");
-	sFilePrefix = pAnimations->first_node("fileprefix")->value();
-	for(rapidxml::xml_node<>* pCurrentAnimation = pAnimations->first_node("model"); pCurrentAnimation; pCurrentAnimation = pCurrentAnimation->next_sibling())
-	{
-		std::string sAnimationName = pCurrentAnimation->first_attribute("id")->value();
-		std::string sAnimationFilename = pCurrentAnimation->first_node()->value();
-		//Concatenate model prefix and model filename
-		sprintf_s(pcBuffer, iMaxMessageSize, "%s%s", sFilePrefix.c_str(), sAnimationFilename.c_str());
-
-		CAnimatedModel* pNewAnim = new CAnimatedModel();
-		pNewAnim->Initialise();
-		pNewAnim->LoadAIMesh(_pDevice, 1.0f, pcBuffer);
-
-		
-		//Add to model map 
-		printf("    = Texture successfully loaded from %s\n", pcBuffer);
-		m_mapAnimations[sAnimationName] = pNewAnim;
-	}
+	//printf("\n  == LOADING ANIMATED MODELS\n");
+	//sFilePrefix = pAnimations->first_node("fileprefix")->value();
+	//for(rapidxml::xml_node<>* pCurrentAnimation = pAnimations->first_node("model"); pCurrentAnimation; pCurrentAnimation = pCurrentAnimation->next_sibling())
+	//{
+	//	std::string sAnimationName = pCurrentAnimation->first_attribute("id")->value();
+	//	std::string sAnimationFilename = pCurrentAnimation->first_node()->value();
+	//	//Concatenate model prefix and model filename
+	//	sprintf_s(pcBuffer, iMaxMessageSize, "%s%s", sFilePrefix.c_str(), sAnimationFilename.c_str());
+	//
+	//	CAnimatedModel* pNewAnim = new CAnimatedModel();
+	//	pNewAnim->Initialise();
+	//	pNewAnim->LoadAIMesh(_pDevice, 1.0f, pcBuffer);
+	//
+	//	
+	//	//Add to model map 
+	//	printf("    = Texture successfully loaded from %s\n", pcBuffer);
+	//	m_mapAnimations[sAnimationName] = pNewAnim;
+	//}
 
 	//Clean up
 	delete[] pcBuffer;

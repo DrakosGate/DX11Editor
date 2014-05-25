@@ -62,7 +62,8 @@ CSpotLight::~CSpotLight()
 bool 
 CSpotLight::Initialise(D3DXVECTOR3& _rVecPosition, D3DXVECTOR3& _rVecDirection, D3DXCOLOR& _rVecColour, D3DXVECTOR3& _rAttenuation, float _fCutOff, float _fSpecularPower, ELightType _eLightType)
 {
-	m_vecPosition = _rVecPosition;
+	m_vecOffsetPosition = _rVecPosition;
+	m_vecWorldPosition = _rVecPosition;
 	m_vecColour = _rVecColour;
 	m_vecAttenuation = _rAttenuation;
 	m_fSpecularPower = _fSpecularPower;
@@ -136,6 +137,6 @@ CSpotLight::SetCutoff(float _fCutoff)
 TLightInfo& 
 CSpotLight::GetLightInfo()
 {
-	m_tLightInfo = TLightInfo(m_vecPosition, m_vecDirection, D3DXCOLOR(0.1f, 0.1f, 0.1f, 0.1f), m_vecColour, m_vecColour, m_vecAttenuation, m_fSpecularPower, 1000.0f, m_eLightType); 
+	m_tLightInfo = TLightInfo(m_vecWorldPosition, m_vecDirection, D3DXCOLOR(0.1f, 0.1f, 0.1f, 0.1f), m_vecColour, m_vecColour, m_vecAttenuation, m_fSpecularPower, 1000.0f, m_eLightType); 
 	return m_tLightInfo;
 }

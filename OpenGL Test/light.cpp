@@ -96,7 +96,20 @@ CLight::ProcessParent(float _fDeltaTime)
 void 
 CLight::SetPosition(D3DXVECTOR3& _rVecPosition)
 {
-	m_vecPosition = _rVecPosition;
+	m_vecWorldPosition = _rVecPosition;
+}
+/**
+*
+* CLight GetOffset
+*
+* @author Christopher Howlett
+* @return Returns the offset of this light
+*
+*/
+D3DXVECTOR3&
+CLight::GetOffset()
+{
+	return m_vecOffsetPosition;
 }
 /**
 *
@@ -109,7 +122,7 @@ CLight::SetPosition(D3DXVECTOR3& _rVecPosition)
 D3DXVECTOR3& 
 CLight::GetPosition()
 {
-	return m_vecPosition;
+	return m_vecWorldPosition;
 }
 /**
 *
@@ -213,6 +226,6 @@ CLight::ToggleIsOn(bool _bIsOn)
 TLightInfo& 
 CLight::GetLightInfo()
 {
-	m_tLightInfo = TLightInfo(m_vecPosition, m_vecDirection, D3DXCOLOR(0.1f, 0.1f, 0.1f, 0.1f), m_vecColour, m_vecColour, D3DXVECTOR3(1.0f, 0.2f, 0.05f), m_fSpecularPower, 1000.0f, m_eLightType); 
+	m_tLightInfo = TLightInfo(m_vecWorldPosition, m_vecDirection, D3DXCOLOR(0.1f, 0.1f, 0.1f, 0.1f), m_vecColour, m_vecColour, D3DXVECTOR3(1.0f, 0.2f, 0.05f), m_fSpecularPower, 1000.0f, m_eLightType); 
 	return m_tLightInfo;
 }
