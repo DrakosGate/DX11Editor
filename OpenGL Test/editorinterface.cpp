@@ -333,7 +333,7 @@ CEditorInterface::SaveLevel(ID3D11Device* _pDevice)
 		CLSCTX_INPROC_SERVER,
 		IID_PPV_ARGS(&m_pFileSaveDialog)),
 		L"Could not create SAVE dialog box");
-
+	
 	m_pFileSaveDialog->SetFileTypes(1, tFileType);
 	m_pFileSaveDialog->SetTitle(L"Open Level from File:");
 	HRESULT hr = m_pFileSaveDialog->Show(m_hWindow);
@@ -344,6 +344,7 @@ CEditorInterface::SaveLevel(ID3D11Device* _pDevice)
 		wchar_t* pName;
 		pShellItem->GetDisplayName(SIGDN_NORMALDISPLAY, &pName);
 		MessageBox(NULL, pName, L"File Chosen:", MB_OK);
+		m_pCurrentLevel->SaveLevel(_pDevice, "level2.xml");
 		pShellItem->Release();
 	}
 }

@@ -50,6 +50,13 @@ struct TAIThreadData
 	int iAIIndex;
 	float fDeltaTime;
 };
+enum ENavigationMethod
+{
+	NAVIGATION_INVALID = -1,
+	NAVIGATION_RANDOMWAYPOINT,
+	NAVIGATION_ASTAR,
+	NAVIGATION_MAX
+};
 
 // Constants
 

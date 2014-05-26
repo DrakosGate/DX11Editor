@@ -15,6 +15,7 @@
 // Library Includes
 #include <D3D11.h>
 #include <thread>
+#include <rapidxml_print.hpp>
 
 // Local Includes
 #include "defines.h"
@@ -22,7 +23,7 @@
 #include "entitymanager.h"
 #include "model.h"
 #include "animatedmodel.h"
-//#include "grass.h"
+#include "grass.h"
 #include "boundingbox.h"
 #include "prefab.h"
 #include "aihivemind.h"
@@ -41,6 +42,7 @@
 #include "threadpool.h"
 #include "openclkernel.h"
 #include "fontrenderer.h"
+#include "network.h"
 
 // This Include
 #include "level.h"
@@ -117,144 +119,51 @@ CLevel::~CLevel()
 	//	delete m_pPlayer;
 	//	m_pPlayer = 0;
 	//}
-	if (m_pcProcessingMethodName)
-	{
-		delete[] m_pcProcessingMethodName;
-		m_pcProcessingMethodName = 0;
-	}
-	if (m_pFont)
-	{
-		delete m_pFont;
-		m_pFont = 0;
-	}
-	if (m_pThreadPool)
-	{
-		delete m_pThreadPool;
-		m_pThreadPool = 0;
-	}
-	if (m_pOpenCLKernel)
-	{
-		delete m_pOpenCLKernel;
-		m_pOpenCLKernel = 0;
-	}
-	if (m_pEditor)
-	{
-		delete m_pEditor;
-		m_pEditor = 0;
-	}
-	if(m_pCursor)
-	{
-		delete m_pSelectionCursor;
-		m_pSelectionCursor = 0;
-		delete m_pCursor;
-		m_pCursor = 0;
-	}
-	if(m_pGrassEntities)
-	{
-		delete[] m_pGrassEntities;
-		m_pGrassEntities = 0;
-	}
-	if(m_pLightManager)
-	{
-		delete m_pLightManager;
-		m_pLightManager = 0;
-	}
-	if(m_pHivemind)
-	{
-		delete m_pHivemind;
-		m_pHivemind = 0;
-	}
 	for (unsigned int iEntity = 0; iEntity < m_pLevelEntities.size(); ++iEntity)
 	{
-		delete m_pLevelEntities[iEntity];
-		m_pLevelEntities[iEntity] = 0;
+		SAFEDELETE(m_pLevelEntities[iEntity]);
 	}
 	m_pLevelEntities.clear();
-	if (m_pTerrain)
-	{
-		delete m_pTerrain;
-		m_pTerrain = 0;
-	}
-	//if(m_pGrass)
-	//{
-	//	delete m_pGrass;
-	//	m_pGrass = 0;
-	//}
-	if(m_pCamera)
-	{
-		delete m_pCamera;
-		m_pCamera = 0;
+	SAFEDELETE(m_pGrass);
+	SAFEDELETE(m_pNetwork);
+	SAFEDELETE(m_pFont);
+	SAFEDELETE(m_pThreadPool);
+	SAFEDELETE(m_pOpenCLKernel);
+	SAFEDELETE(m_pEditor);
+	SAFEDELETE(m_pCursor);
+	SAFEDELETE(m_pSelectionCursor);
+	SAFEDELETE(m_pGrassEntities);
+	SAFEDELETE(m_pLightManager);
+	SAFEDELETE(m_pHivemind);
+	SAFEDELETE(m_pTerrain);
+	SAFEDELETE(m_pCamera);
+	SAFEDELETE(m_pOrthoCamera);
 
-		delete m_pOrthoCamera;
-		m_pOrthoCamera = 0;
-	}
 	//Clear render targets
-	if(m_pDiffuseMRT)
-	{
-		delete m_pDiffuseMRT;
-		m_pDiffuseMRT = 0;
-	}
-	if(m_pNormalsMRT)
-	{
-		delete m_pNormalsMRT;
-		m_pNormalsMRT = 0;
-	}
-	if (m_pPositionMRT)
-	{
-		delete m_pPositionMRT;
-		m_pPositionMRT = 0;
-	}
-	if (m_pDepthMRT)
-	{
-		delete m_pDepthMRT;
-		m_pDepthMRT = 0;
-	}
-	if (m_pMRT)
-	{
-		delete[] m_pMRT;
-		m_pMRT = 0;
-	}
-	if(m_pRenderTargets)
-	{
-		delete[] m_pRenderTargets;
-		m_pRenderTargets = 0;
-	}
+	SAFEDELETE(m_pDiffuseMRT);
+	SAFEDELETE(m_pNormalsMRT);
+	SAFEDELETE(m_pPositionMRT);
+	SAFEDELETE(m_pDepthMRT);
+	SAFEDELETE(m_pRenderTarget);
+	SAFEDELETEARRAY(m_pMRT);
+	SAFEDELETEARRAY(m_pRenderTargets);
 
-	if(m_pRenderMonitor)
-	{
-		delete[] m_pRenderMonitor;
-		m_pRenderMonitor = 0;
-	}
-	if(m_pRenderTarget)
-	{
-		delete m_pRenderTarget;
-		m_pRenderTarget = 0;
-	}
-	if (m_pEntityManager)
-	{
-		delete m_pEntityManager;
-		m_pEntityManager = 0;
-	}
-	if (m_pResourceManager)
-	{
-		delete m_pResourceManager;
-		m_pResourceManager = 0;
-	}
+	SAFEDELETE(m_pEntityManager);
+	SAFEDELETE(m_pResourceManager);
+	SAFEDELETEARRAY(m_pRenderMonitor);
+	SAFEDELETEARRAY(m_pcProcessingMethodName);
 
 	//Clear shaders
-	if(m_pShaderCollection)
-	{
-		delete[] m_pShaderCollection;
-		m_pShaderCollection = 0;
-	}
+	SAFEDELETEARRAY(m_pShaderCollection);
+
+	//Clear COM Objects
 	ReleaseCOM(m_pRasteriserState);
 	ReleaseCOM(m_pSamplerState);
 	for (int iLayout = 0; iLayout < VERTEX_MAX; ++iLayout)
 	{
 		ReleaseCOM(m_pVertexLayout[iLayout]);
 	}
-	delete[] m_pVertexLayout;
-	m_pVertexLayout = 0;
+	SAFEDELETEARRAY(m_pVertexLayout);
 }
 /**
 *
@@ -291,7 +200,7 @@ CLevel::Initialise(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext, CD
 
 	float fAspectRatio = static_cast<float>(m_iScreenWidth) / static_cast<float>(m_iScreenHeight);
 	m_pCamera = new CCamera();
-	m_pCamera->Initialise(50.0f, 0.5f, 10.0f, m_iScreenWidth, m_iScreenHeight, true);
+	m_pCamera->Initialise(20.0f, 0.2f, 10.0f, m_iScreenWidth, m_iScreenHeight, true);
 	m_pCamera->SetPosition(D3DXVECTOR3(0.0f, 2.0f, -15.0f));
 	D3DXVECTOR3 vecCameraLook;
 	D3DXVec3Normalize(&vecCameraLook, &(D3DXVECTOR3(0.0f, 0.0f, 0.0f) - m_pCamera->GetPosition()));
@@ -346,6 +255,11 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	//Initialise lighting
 	m_pLightManager = new CLightManager();
 	m_pLightManager->Initialise();
+
+	//Setup network for distributed processing
+	m_pNetwork = new CNetwork();
+	m_pNetwork->Initialise();
+	m_pNetwork->CreateServer();
 
 	//Setup AI Hivemind
 	m_pHivemind = new CAIHiveMind();
@@ -414,16 +328,17 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	m_pTerrain->SetRadius(FLT_MAX);
 
 	//Set the terrain to be the root node
+	m_pTerrain->SetEntityType(std::string("terrain"));
 	m_pRootNode = m_pTerrain->CreateNode(NULL);
 
-	//m_fGrassScale = 15.0f;
-	//m_pGrass = new CGrass();
-	//m_pGrass->Initialise();
-	//m_pGrass->LoadTerrain(_pDevice, 100, 100, m_fGrassScale, D3DXVECTOR2(10.0f, 10.0f));
-	//m_pGrass->SetRenderTechnique(m_pObjectShader->GetEffect()->GetTechniqueByName("GrassMRT"));
-	//m_pGrass->SetDiffuseMap(m_pResourceManager->GetTexture("grassblades"));
-	//m_pGrass->SetRadius(FLT_MAX);
-	//m_pEntityManager->AddEntity(m_pGrass, SCENE_GRASS);
+	m_fGrassScale = 15.0f;
+	m_pGrass = new CGrass();
+	m_pGrass->Initialise();
+	m_pGrass->LoadTerrain(_pDevice, 100, 100, m_fGrassScale, D3DXVECTOR2(10.0f, 10.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
+	m_pGrass->SetObjectShader(&m_pShaderCollection[SHADER_MRT]);
+	m_pGrass->SetDiffuseMap(m_pResourceManager->GetTexture(std::string("grass")));
+	m_pGrass->SetRadius(FLT_MAX);
+	m_pEntityManager->AddEntity(m_pGrass, SCENE_GRASS);
 	
 	m_pCursor = new CPrefab();
 	m_pCursor->Initialise(_pDevice, 1.0f);
@@ -865,6 +780,11 @@ CLevel::LoadShaderData(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	m_pShaderCollection[SHADER_MRT].CompileVertexShader(_pDevice, L"Shaders/objectshader_vs.hlsl", "ObjectVS");
 	m_pShaderCollection[SHADER_MRT].CompilePixelShader(_pDevice, L"Shaders/mrtshader_ps.hlsl", "MRTPS");
 
+	//m_pShaderCollection[SHADER_GRASS].Initialise(_pDevice);
+	//m_pShaderCollection[SHADER_GRASS].CompileVertexShader(_pDevice, L"Shaders/objectshader_vs.hlsl", "ObjectVS");
+	//m_pShaderCollection[SHADER_GRASS].CompileGeometryShader(_pDevice, L"Shaders/grassshader_gs.hlsl", "PointGS");
+	//m_pShaderCollection[SHADER_GRASS].CompilePixelShader(_pDevice, L"Shaders/mrtshader_ps.hlsl", "MRTPS");
+
 	m_pShaderCollection[SHADER_DEFERRED].Initialise(_pDevice);
 	m_pShaderCollection[SHADER_DEFERRED].CompileVertexShader(_pDevice, L"Shaders/objectshader_vs.hlsl", "ObjectVS");
 	m_pShaderCollection[SHADER_DEFERRED].CompilePixelShader(_pDevice, L"Shaders/deferred_ps.hlsl", "DeferredPS");
@@ -1155,7 +1075,91 @@ CLevel::LoadLevel(ID3D11Device* _pDevice, char* _pcLevelFilename)
 void
 CLevel::SaveLevel(ID3D11Device* _pDevice, char* _pcLevelFilename)
 {
+	rapidxml::xml_document<> xmlDoc;
+	//Add xml header
+	rapidxml::xml_node<>* pDeclaration = xmlDoc.allocate_node(rapidxml::node_declaration);
+	pDeclaration->append_attribute(xmlDoc.allocate_attribute("version", "1.0"));
+	pDeclaration->append_attribute(xmlDoc.allocate_attribute("encoding", "utf-8"));
+	xmlDoc.append_node(pDeclaration);
+
+	//Create root node
+	rapidxml::xml_node<>* pRoot = xmlDoc.allocate_node(rapidxml::node_element, "level");
+	xmlDoc.append_node(pRoot);
+
+	//Loop through all entities attached to the root node
+	for (unsigned int iChild = 0; iChild < m_pRootNode->vecChildren.size(); ++iChild)
+	{
+		AddChildToXMLNode(&xmlDoc, pRoot, m_pRootNode->vecChildren[iChild]);
+	}
+
+	//Write this document data to a string
+	std::string sXMLString;
+	rapidxml::print(std::back_inserter(sXMLString), xmlDoc);
 	
+	//Save this string to file
+	std::ofstream outFile;
+	outFile.open(_pcLevelFilename);
+
+	outFile << xmlDoc;
+	outFile.close();
+}
+void 
+CLevel::AddChildToXMLNode(rapidxml::xml_document<>* _pDocument, rapidxml::xml_node<>* _pParentNode, TEntityNode* _pChildNode)
+{
+	char cBuffer[32];
+	CRenderEntity* pCurrentEntity = _pChildNode->pEntity;
+	rapidxml::xml_node<>* pChild = _pDocument->allocate_node(rapidxml::node_element, "child");
+	//Object type
+	pChild->append_node(_pDocument->allocate_node(rapidxml::node_element, "type", _pChildNode->pEntity->GetEntityType().c_str()));
+	//Object position
+	rapidxml::xml_node<>* pPosition = _pDocument->allocate_node(rapidxml::node_element, "position");
+	sprintf_s(cBuffer, 32, "%.2f", pCurrentEntity->GetPosition().x);
+	pPosition->append_attribute(_pDocument->allocate_attribute("x", _pDocument->allocate_string(cBuffer)));
+	sprintf_s(cBuffer, 32, "%.2f", pCurrentEntity->GetPosition().y);
+	pPosition->append_attribute(_pDocument->allocate_attribute("y", _pDocument->allocate_string(cBuffer)));
+	sprintf_s(cBuffer, 32, "%.2f", pCurrentEntity->GetPosition().z);
+	pPosition->append_attribute(_pDocument->allocate_attribute("z", _pDocument->allocate_string(cBuffer)));
+	pChild->append_node(pPosition);
+	//Object scale
+	rapidxml::xml_node<>* pScale = _pDocument->allocate_node(rapidxml::node_element, "scale");
+	sprintf_s(cBuffer, 32, "%.2f", pCurrentEntity->GetScale().x);
+	pScale->append_attribute(_pDocument->allocate_attribute("x", _pDocument->allocate_string(cBuffer)));
+	sprintf_s(cBuffer, 32, "%.2f", pCurrentEntity->GetScale().y);
+	pScale->append_attribute(_pDocument->allocate_attribute("y", _pDocument->allocate_string(cBuffer)));
+	sprintf_s(cBuffer, 32, "%.2f", pCurrentEntity->GetScale().z);
+	pScale->append_attribute(_pDocument->allocate_attribute("z", _pDocument->allocate_string(cBuffer)));
+	pChild->append_node(pScale);
+	//Object rotation
+	rapidxml::xml_node<>* pRotation = _pDocument->allocate_node(rapidxml::node_element, "rotation");
+	sprintf_s(cBuffer, 32, "%.2f", pCurrentEntity->GetRotation().x);
+	pRotation->append_attribute(_pDocument->allocate_attribute("x", _pDocument->allocate_string(cBuffer)));
+	sprintf_s(cBuffer, 32, "%.2f", pCurrentEntity->GetRotation().y);
+	pRotation->append_attribute(_pDocument->allocate_attribute("y", _pDocument->allocate_string(cBuffer)));
+	sprintf_s(cBuffer, 32, "%.2f", pCurrentEntity->GetRotation().z);
+	pRotation->append_attribute(_pDocument->allocate_attribute("z", _pDocument->allocate_string(cBuffer)));
+	pChild->append_node(pRotation);
+	//Object colour
+	rapidxml::xml_node<>* pColour = _pDocument->allocate_node(rapidxml::node_element, "colour");
+	pColour->append_attribute(_pDocument->allocate_attribute("r", _pDocument->allocate_string("1.0f")));
+	pColour->append_attribute(_pDocument->allocate_attribute("g", _pDocument->allocate_string("1.0f")));
+	pColour->append_attribute(_pDocument->allocate_attribute("b", _pDocument->allocate_string("1.0f")));
+	pColour->append_attribute(_pDocument->allocate_attribute("a", _pDocument->allocate_string("1.0f")));
+	pChild->append_node(pColour);
+
+	//Do the same for all children of this class
+	for (unsigned int iChild = 0; iChild < _pChildNode->vecChildren.size(); ++iChild)
+	{
+		AddChildToXMLNode(_pDocument, pChild, _pChildNode->vecChildren[iChild]);
+	}
+	//Add lights attached to this object to file
+	for (unsigned int iLight = 0; iLight < _pChildNode->vecLights.size(); ++iLight)
+	{
+		rapidxml::xml_node<>* pLight = _pDocument->allocate_node(rapidxml::node_element, "light");
+		pLight->append_node(_pDocument->allocate_node(rapidxml::node_element, "type", "point"));
+		pChild->append_node(pLight);
+	}
+
+	_pParentNode->append_node(pChild);
 }
 /**
 *

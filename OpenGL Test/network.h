@@ -12,9 +12,11 @@
 #define __NETWORK_H__
 
 // Library Includes
-#include <WinSock2.h>
+#include <WinSock.h>
+#include <thread>
 
 // Local Includes
+#include "defines.h"
 
 // Types
 
@@ -31,8 +33,8 @@ public:
 
 	bool Initialise();
 	void CreateServer();
-	void CreateClient();
-	void JoinServer();
+
+	void Listen();
 
 private:
 	CNetwork(const CNetwork& _krInstanceToCopy);
@@ -40,7 +42,8 @@ private:
 
 	//Member variables
 protected:
-
+	SOCKET m_sSocket;
+	struct sockaddr_in m_tServer;
 };
 
 #endif //__NETWORK_H__

@@ -23,13 +23,16 @@ struct TRay;
 class CModel;
 
 //Program definitions
-#define WINDOW_WIDTH 800
-#define WINDOW_HEIGHT 600
-//#define WINDOW_WIDTH 1680
-//#define WINDOW_HEIGHT 1050
+//#define WINDOW_WIDTH 800
+//#define WINDOW_HEIGHT 600
+#define WINDOW_WIDTH 1680
+#define WINDOW_HEIGHT 1050
 #define MAX_LIGHTS 50
+#define SERVER_PORT 56000
 
 //Helpful defines / functions
+#define SAFEDELETE(_object) { if(_object){ delete _object;_object = 0; } }
+#define SAFEDELETEARRAY(_array){ if(_array){ delete[] _array; _array = 0; } }
 #define ReleaseCOM(_COM) { if(_COM){ _COM->Release();_COM = 0; } }
 #define Error(pwcErrorMessage) MessageBox(NULL, pwcErrorMessage, L"ERROR", MB_OK)
 void HRCheck(HRESULT _hResult, wchar_t* _pcErrorMessage);
@@ -110,6 +113,7 @@ enum EShaderType
 	SHADER_POINTSPRITE,		//GS Shaders
 	SHADER_LINERENDERER,
 	SHADER_FONT,
+	//SHADER_GRASS,
 
 	SHADER_OBJECT,			//Object Shaders
 	SHADER_UNLITOBJECT,

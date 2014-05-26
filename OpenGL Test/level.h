@@ -51,6 +51,7 @@ class CEditorInterface;
 class CThreadPool;
 class COpenCLKernel;
 class CFontRenderer;
+class CNetwork;
 
 class CLevel
 {
@@ -71,6 +72,7 @@ public:
 	CPrefab* CreateObject(ID3D11Device* _pDevice, rapidxml::xml_node<>* _pNode, TEntityNode* _pParentNode);
 	void LoadLevel(ID3D11Device* _pDevice, char* _pcLevelFilename);
 	void SaveLevel(ID3D11Device* _pDevice, char* _pcLevelFilename);
+	void AddChildToXMLNode(rapidxml::xml_document<>* _pDocument, rapidxml::xml_node<>* _pParentNode, TEntityNode* _pChildNode);
 
 	void ChangeProcessingMethod(EProcessingMethod _eProcessingMethod);
 
@@ -89,6 +91,7 @@ private:
 	CThreadPool* m_pThreadPool;
 	COpenCLKernel* m_pOpenCLKernel;
 	CFontRenderer* m_pFont;
+	CNetwork* m_pNetwork;
 
 	CEntityManager* m_pEntityManager;
 	TEntityNode* m_pRootNode;
@@ -97,9 +100,6 @@ private:
 
 	//Game entities
 	//CPlayer* m_pPlayer;
-	//std::vector<CPrefab*> m_pHumans;
-	//std::vector<CPrefab*> m_pCreatures;
-	//std::vector<CPrefab*> m_pTrees;
 	CPrefab* m_pCursor;
 	CModel* m_pTerrain;
 	CModel* m_pSelectionCursor;
@@ -113,7 +113,7 @@ private:
 	CRenderEntity* m_pSelectedObject;
 	bool m_bHasSelectedObject;
 
-	//CGrass* m_pGrass;
+	CGrass* m_pGrass;
 	CRenderEntity** m_pGrassEntities;
 	int m_iNumGrassEntities;
 	float m_fGrassScale;

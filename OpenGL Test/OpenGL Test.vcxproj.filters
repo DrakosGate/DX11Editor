@@ -171,6 +171,9 @@
     <ClInclude Include="aiclkernel.h">
       <Filter>Header Files\Parallel</Filter>
     </ClInclude>
+    <ClInclude Include="grass.h">
+      <Filter>Header Files\Rendering</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -274,6 +277,9 @@
     </ClCompile>
     <ClCompile Include="aiclkernel.cpp">
       <Filter>Source Files\Parallel</Filter>
+    </ClCompile>
+    <ClCompile Include="grass.cpp">
+      <Filter>Source Files\Rendering</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
