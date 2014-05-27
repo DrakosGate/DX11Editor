@@ -195,7 +195,7 @@ CFontRenderer::ProcessFont(ID3D11Device* _pDevice)
 *
 */
 void
-CFontRenderer::Write(char* _pcMessage, int _iIndex)
+CFontRenderer::Write(std::string& _pcMessage, int _iIndex)
 {
 	//Adjust message buffer to size of this index
 	while(static_cast<unsigned int>(_iIndex) >= m_Messages.size())

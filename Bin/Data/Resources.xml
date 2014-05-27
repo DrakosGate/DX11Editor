@@ -77,6 +77,15 @@
 		<texture id="menu_load">
 			<filename>Menu/EditorHUD_Load.png</filename>
 		</texture>	
+		<texture id="menu_prefab">
+			<filename>Menu/openPrefabMenu.png</filename>
+		</texture>	
+		<texture id="menu_scenegraph">
+			<filename>Menu/openSceneGraph.png</filename>
+		</texture>	
+		<texture id="menu_close">
+			<filename>Menu/close.png</filename>
+		</texture>	
 		<texture id="font_arial">
 			<filename>Font/arial.png</filename>
 		</texture>

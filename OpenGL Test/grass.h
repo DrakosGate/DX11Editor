@@ -36,7 +36,7 @@ public:
 	CGrass();
 	virtual ~CGrass();
 
-	void RecreateGrassMesh(ID3D11Device* _pDevice, D3DXVECTOR3& _rCameraPos, CRenderEntity** _pEntities, int _iNumEntities, float _fDeltaTime);
+	void RecreateGrassMesh(ID3D11Device* _pDevice, D3DXVECTOR3& _rCameraPos, std::vector<CRenderEntity*>& _pEntities, float _fDeltaTime);
 	
 	//Member variables
 protected:

@@ -408,7 +408,8 @@ CPrefab*
 CEntityManager::InstantiatePrefab(	ID3D11Device* _pDevice, 
 									TEntityNode* _pParentNode, 
 									std::string& _pcPrefabName, 
-									CShader* _pShader, 
+									CShader* _pShader,
+									std::vector<CRenderEntity*>& _rGrassColliders,
 									EGameScene _eScene, 
 									D3DXVECTOR3& _rPos, 
 									D3DXVECTOR3& _rScale, 
@@ -435,16 +436,20 @@ CEntityManager::InstantiatePrefab(	ID3D11Device* _pDevice,
 	{
 		m_pAIHivemind->AddStaticObject(_pDevice, pNewEntity);
 	}
-	//Check if this is controlled by AI
-	else if (pPrefabOptions->eAIType != AI_INVALID)
+	//This object moves
+	else
 	{
-		//Only add AI to children of the root node
-		if (_pParentNode->pParent == NULL)
+		_rGrassColliders.push_back(pNewEntity);
+		//Check if this is controlled by AI
+		if (pPrefabOptions->eAIType != AI_INVALID)
 		{
-			m_pAIHivemind->AddAI(pNewEntity, pPrefabOptions->eAIType);
+			//Only add AI to children of the root node
+			if (_pParentNode->pParent == NULL)
+			{
+				m_pAIHivemind->AddAI(pNewEntity, pPrefabOptions->eAIType);
+			}
 		}
 	}
-
 	AddEntity(pNewEntity, _eScene);
 	return pNewEntity;
 }

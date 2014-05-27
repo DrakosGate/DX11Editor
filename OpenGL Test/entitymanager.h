@@ -26,6 +26,7 @@ struct ID3D11Device;
 struct ID3D11DeviceContext;
 struct TEntityNode;
 
+class CGrass;
 class CCamera;
 class CShader;
 class CPrefab;
@@ -64,6 +65,7 @@ public:
 								TEntityNode* _pParentNode, 
 								std::string& _pcPrefabName, 
 								CShader* _pShader, 
+								std::vector<CRenderEntity*>& _rGrassColliders,
 								EGameScene _eScene, 
 								D3DXVECTOR3& _rPos, 
 								D3DXVECTOR3& _rScale, 

@@ -241,32 +241,7 @@ CAIHiveMind::AddStaticObject(ID3D11Device* _pDevice, CRenderEntity* _pObject)
 	m_vecStaticObstacles.push_back(_pObject);
 	//Check navigation grid for grid sections in range of this obstacle
 
-	D3DXCOLOR deactiveColour(1.5f, 0.1f, 0.1f, 0.5f);
-	int iCurrentObstacle = 0;
-	bool bHasDeactivatedGrid = false;
-	for (int iHeight = 0; iHeight < m_iHeight; ++iHeight)
-	{
-		for (int iWidth = 0; iWidth < m_iWidth; ++iWidth)
-		{
-			if (m_pNavigationGrid[iCurrentObstacle].bIsActive)
-			{
-				D3DXVECTOR3 vecToObstacle = _pObject->GetPosition() - m_pNavigationGrid[iCurrentObstacle].vecPosition;
-				vecToObstacle.y = 0.0f;
-				if (D3DXVec3LengthSq(&vecToObstacle) < _pObject->GetRadius() * 0.2f)
-				{
-					//Deactivate this grid element
-					m_pNavigationGrid[iCurrentObstacle].bIsActive = false;
-					m_pNavigationGridMesh->GetPointSprite(iCurrentObstacle)->colour = deactiveColour;
-					bHasDeactivatedGrid = true;
-				}
-			}
-			++iCurrentObstacle;
-		}
-	}
-	if (bHasDeactivatedGrid)
-	{
-		m_pNavigationGridMesh->RefreshBuffers(_pDevice);
-	}
+	RecalculateNavGrid(_pDevice);
 }
 /**
 *
@@ -364,4 +339,33 @@ void
 CAIHiveMind::ChangeProcessingMethod(EProcessingMethod _eProcessingMethod)
 {
 	m_eProcessingMethod = _eProcessingMethod;
+}
+void
+CAIHiveMind::RecalculateNavGrid(ID3D11Device* _pDevice)
+{
+	D3DXCOLOR deactiveColour(1.5f, 0.1f, 0.1f, 0.5f);
+	D3DXCOLOR lineColour(0.2f, 0.2f, 0.8f, 0.2f);
+
+	int iCurrentGrid = 0;
+	for (int iHeight = 0; iHeight < m_iHeight; ++iHeight)
+	{
+		for (int iWidth = 0; iWidth < m_iWidth; ++iWidth)
+		{
+			m_pNavigationGrid[iCurrentGrid].bIsActive = true;
+			m_pNavigationGridMesh->GetPointSprite(iCurrentGrid)->colour = lineColour;
+			for (unsigned int iObstalce = 0; iObstalce < m_vecStaticObstacles.size(); ++iObstalce)
+			{
+				D3DXVECTOR3 vecToObstacle = m_vecStaticObstacles[iObstalce]->GetPosition() - m_pNavigationGrid[iCurrentGrid].vecPosition;
+				vecToObstacle.y = 0.0f;
+				if (D3DXVec3LengthSq(&vecToObstacle) < m_vecStaticObstacles[iObstalce]->GetRadius() * 0.2f)
+				{
+					//Deactivate this grid element
+					m_pNavigationGrid[iCurrentGrid].bIsActive = false;
+					m_pNavigationGridMesh->GetPointSprite(iCurrentGrid)->colour = deactiveColour;
+				}
+			}
+			++iCurrentGrid;
+		}
+	}
+	m_pNavigationGridMesh->RefreshBuffers(_pDevice);
 }

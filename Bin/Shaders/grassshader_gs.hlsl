@@ -20,10 +20,10 @@ struct GS_DATA
 	float2 texC		: TEXCOORD;
 };
 
-[maxvertexcount(6)]
+[maxvertexcount(12)]
 void GrassGS(point GS_DATA input[1], inout TriangleStream<GS_DATA> gsOut)
 {
-	float3 vecGrassScale = float3(0.5f, 0.5f, 0.5f);
+	float3 vecGrassScale = float3(0.25f, 0.5f, 0.25f);
 	float3 vertPos;
 
 	//==================================================================================
@@ -31,19 +31,19 @@ void GrassGS(point GS_DATA input[1], inout TriangleStream<GS_DATA> gsOut)
 	//==================================================================================
 	//Bottom Left
 	GS_DATA outVert = input[0];
-	vertPos = input[0].worldPos + float3(0.0f, 0.0f, 0.0f);
+	vertPos = input[0].worldPos + float3(-vecGrassScale.x, 0.0f, 0.0f);
 	outVert.finalPos = ToScreenSpace(float4(vertPos, 1.0f), worldMat, viewMat, projMat);
 	outVert.texC = float2(0.0f, 1.0f);
 	gsOut.Append(outVert);
 	//Top Left
 	outVert = input[0];
-	vertPos = input[0].worldPos + float3(0.0f, vecGrassScale.y, 0.0f);
+	vertPos = input[0].worldPos + float3(-vecGrassScale.x, 0.0f, 0.0f) + (input[0].normal * vecGrassScale.y);
 	outVert.finalPos = ToScreenSpace(float4(vertPos, 1.0f), worldMat, viewMat, projMat);
 	outVert.texC = float2(0.0f, 0.0f);
 	gsOut.Append(outVert);
 	//Top Right
 	outVert = input[0];
-	vertPos = input[0].worldPos + float3(vecGrassScale.x, vecGrassScale.y, 0.0f);
+	vertPos = input[0].worldPos + float3(vecGrassScale.x, 0.0f, 0.0f) + (input[0].normal * vecGrassScale.y);
 	outVert.finalPos = ToScreenSpace(float4(vertPos, 1.0f), worldMat, viewMat, projMat);
 	outVert.texC = float2(1.0f, 0.0f);
 	gsOut.Append(outVert);
@@ -51,7 +51,7 @@ void GrassGS(point GS_DATA input[1], inout TriangleStream<GS_DATA> gsOut)
 
 	//Top Right
 	outVert = input[0];
-	vertPos = input[0].worldPos + float3(vecGrassScale.x, vecGrassScale.y, 0.0f);
+	vertPos = input[0].worldPos + float3(vecGrassScale.x, 0.0f, 0.0f) + (input[0].normal * vecGrassScale.y);
 	outVert.finalPos = ToScreenSpace(float4(vertPos, 1.0f), worldMat, viewMat, projMat);
 	outVert.texC = float2(1.0f, 0.0f);
 	gsOut.Append(outVert);
@@ -65,7 +65,7 @@ void GrassGS(point GS_DATA input[1], inout TriangleStream<GS_DATA> gsOut)
 
 	//Bottom Left
 	outVert = input[0];
-	vertPos = input[0].worldPos + float3(0.0f, 0.0f, 0.0f);
+	vertPos = input[0].worldPos + float3(-vecGrassScale.x, 0.0f, 0.0f);
 	outVert.finalPos = ToScreenSpace(float4(vertPos, 1.0f), worldMat, viewMat, projMat);
 	outVert.texC = float2(0.0f, 1.0f);
 	gsOut.Append(outVert);
@@ -74,5 +74,46 @@ void GrassGS(point GS_DATA input[1], inout TriangleStream<GS_DATA> gsOut)
 	//==================================================================================
 	//	SIDE PLANE
 	//==================================================================================
+	//Bottom Left
+	outVert = input[0];
+	vertPos = input[0].worldPos + float3(0.0f, 0.0f, -vecGrassScale.z);
+	outVert.finalPos = ToScreenSpace(float4(vertPos, 1.0f), worldMat, viewMat, projMat);
+	outVert.texC = float2(0.0f, 1.0f);
+	gsOut.Append(outVert);
+	//Top Left
+	outVert = input[0];
+	vertPos = input[0].worldPos + float3(0.0f, 0.0f, -vecGrassScale.z) + (input[0].normal * vecGrassScale.y);
+	outVert.finalPos = ToScreenSpace(float4(vertPos, 1.0f), worldMat, viewMat, projMat);
+	outVert.texC = float2(0.0f, 0.0f);
+	gsOut.Append(outVert);
+	//Top Right
+	outVert = input[0];
+	vertPos = input[0].worldPos + float3(0.0f, 0.0f, vecGrassScale.z) + (input[0].normal * vecGrassScale.y);
+	outVert.finalPos = ToScreenSpace(float4(vertPos, 1.0f), worldMat, viewMat, projMat);
+	outVert.texC = float2(1.0f, 0.0f);
+	gsOut.Append(outVert);
+	gsOut.RestartStrip();
+
+	//Top Right
+	outVert = input[0];
+	vertPos = input[0].worldPos + float3(0.0f, 0.0f, vecGrassScale.z) + (input[0].normal * vecGrassScale.y);
+	outVert.finalPos = ToScreenSpace(float4(vertPos, 1.0f), worldMat, viewMat, projMat);
+	outVert.texC = float2(1.0f, 0.0f);
+	gsOut.Append(outVert);
+
+	//Bottom Right
+	outVert = input[0];
+	vertPos = input[0].worldPos + float3(0.0f, 0.0f, vecGrassScale.z);
+	outVert.finalPos = ToScreenSpace(float4(vertPos, 1.0f), worldMat, viewMat, projMat);
+	outVert.texC = float2(1.0f, 1.0f);
+	gsOut.Append(outVert);
+
+	//Bottom Left
+	outVert = input[0];
+	vertPos = input[0].worldPos + float3(0.0f, 0.0f, -vecGrassScale.z);
+	outVert.finalPos = ToScreenSpace(float4(vertPos, 1.0f), worldMat, viewMat, projMat);
+	outVert.texC = float2(0.0f, 1.0f);
+	gsOut.Append(outVert);
+	gsOut.RestartStrip();
 
 }

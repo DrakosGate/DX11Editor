@@ -356,6 +356,11 @@ CWindow::msgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			m_tInput.bD.bPressed = true;
 		}
 			break;
+		case 'G':
+		{
+			m_tInput.bG.bPressed = true;
+		}
+			break;
 		case 'R':
 		{
 			m_tInput.bToggleRender.bPressed = true;
@@ -445,6 +450,11 @@ CWindow::msgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			m_tInput.bD.bPressed = false;
 			break;
 		}
+		case 'G':
+		{
+			m_tInput.bG.bPressed = false;
+		}
+			break;
 		case 'R':
 		{
 			m_tInput.bToggleRender.bPressed = false;

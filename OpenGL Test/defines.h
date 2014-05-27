@@ -205,6 +205,7 @@ struct TInputStruct
 		bA.bPressed = false;
 		bS.bPressed = false;
 		bD.bPressed = false;
+		bG.bPressed = false;
 		bToggleRender.bPressed = false;
 		b1.bPressed = false;
 		b2.bPressed = false;
@@ -230,6 +231,7 @@ struct TInputStruct
 		bA.RecordPreviousState();
 		bS.RecordPreviousState();
 		bD.RecordPreviousState();
+		bG.RecordPreviousState();
 		bToggleRender.RecordPreviousState();
 		b1.RecordPreviousState();
 		b2.RecordPreviousState();
@@ -251,6 +253,7 @@ struct TInputStruct
 	TButtonState bA;
 	TButtonState bS;
 	TButtonState bD;
+	TButtonState bG;
 	TButtonState bToggleRender;
 	TButtonState b1;
 	TButtonState b2;

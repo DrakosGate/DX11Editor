@@ -61,7 +61,7 @@ CGrass::~CGrass()
 *
 */
 void
-CGrass::RecreateGrassMesh(ID3D11Device* _pDevice, D3DXVECTOR3& _rCameraPos, CRenderEntity** _pEntities, int _iNumEntities, float _fDeltaTime)
+CGrass::RecreateGrassMesh(ID3D11Device* _pDevice, D3DXVECTOR3& _rCameraPos, std::vector<CRenderEntity*>& _pEntities, float _fDeltaTime)
 {
 	float fHalfScale = m_fModelScale * 0.5f;
 	//Delete and recreate vertex buffer data
@@ -93,11 +93,14 @@ CGrass::RecreateGrassMesh(ID3D11Device* _pDevice, D3DXVECTOR3& _rCameraPos, CRen
 		//Avoid entities
 		D3DXVECTOR3 vecToEntity;
 		float fAvoidanceRange = 1.0f;
-		for(int iEntity = 0; iEntity < _iNumEntities; ++iEntity)
+		unsigned int iNumEntities = _pEntities.size();
+		for (unsigned int iEntity = 0; iEntity < iNumEntities; ++iEntity)
 		{
+			fAvoidanceRange = _pEntities[iEntity]->GetRadius() * _pEntities[iEntity]->GetRadius();
+
 			vecToEntity = _pEntities[iEntity]->GetPosition() - m_pVertices[iVertex].pos;
 			float fDistanceToEntity = D3DXVec3LengthSq(&vecToEntity);
-			if(fDistanceToEntity < fAvoidanceRange)
+			if (fDistanceToEntity < fAvoidanceRange)
 			{
 				m_pVertices[iVertex].normal -= (vecToEntity * (fAvoidanceRange - fDistanceToEntity) * 2.0f) * m_fGrassSpeed * _fDeltaTime;
 			}

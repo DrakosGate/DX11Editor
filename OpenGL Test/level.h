@@ -24,6 +24,13 @@ struct TUCHARColour
 	unsigned char b;
 	unsigned char a;
 };
+enum EFontType
+{
+	FONT_INVALID = -1,
+	FONT_DEBUG,
+	FONT_SCENEGRAPH,
+	FONT_MAX
+};
 // Constants
 
 // Prototypes
@@ -66,6 +73,7 @@ public:
 	virtual void Draw(ID3D11DeviceContext* _pDevice);
 	virtual void DrawScene(ID3D11DeviceContext* _pDevice, CCamera* _pCurrentCamera, EGameScene _EGameScene);
 	
+	virtual void AddTextToSceneGraph(TEntityNode* _pEntityNode, int& _iTextOffset, int _iTabCount);
 	virtual void CreateRenderTargets(ID3D11Device* _pDevice);
 	
 	void OnResize(int _iWidth, int _iHeight);	
@@ -114,9 +122,9 @@ private:
 	bool m_bHasSelectedObject;
 
 	CGrass* m_pGrass;
-	CRenderEntity** m_pGrassEntities;
-	int m_iNumGrassEntities;
+	std::vector<CRenderEntity*> m_vecGrassEntities;
 	float m_fGrassScale;
+	bool m_bGrassIsActive;
 
 	CAIHiveMind* m_pHivemind;
 	

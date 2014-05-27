@@ -39,7 +39,7 @@ float4 RadialBlurPS(PS_IN _input) : SV_Target
 	int iNumSamples = 5;
 	//Calculate distance of pixel from centre of screen
 	float fRatio = length(float2(0.5f, 0.5f) - _input.texC);
-	float fBlurDistance = (0.03f / iNumSamples) * (fRatio * 0.5f);
+	float fBlurDistance = (0.01f / iNumSamples) * (fRatio * 0.5f);
 	int iSampleCount = 0;
 	float fBlurPower = 1.0f;
 	//Blur texture samples

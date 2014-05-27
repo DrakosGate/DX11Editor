@@ -99,6 +99,7 @@ CEditorInterface::Initialise(HWND _hWindow, CLevel* _pLevel)
 	m_pWindowColours[WINDOWSTATE_OPEN] = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
 	m_pWindowColours[WINDOWSTATE_CLOSED] = D3DXCOLOR(0.0f, 0.0f, 0.0f, 0.0f);
 	m_pWindowColours[WINDOWSTATE_MOUSEOVER] = D3DXCOLOR(0.5f, 0.7f, 0.8f, 1.0f);
+	m_pWindowColours[WINDOWSTATE_CLOSEBUTTON] = D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f);
 
 	m_hWindow = _hWindow;
 	m_pCurrentLevel = _pLevel;
@@ -153,7 +154,14 @@ CEditorInterface::ProcessInput(ID3D11Device* _pDevice, TInputStruct* _pKeys, flo
 						if (HasCollided(_pKeys->vecMouse, pCurrentButton))
 						{
 							bIsOverButton = true;
-							pCurrentButton->targetColour = m_pWindowColours[WINDOWSTATE_MOUSEOVER];
+							if (pCurrentButton->sName == "Close")
+							{
+								pCurrentButton->targetColour = m_pWindowColours[WINDOWSTATE_CLOSEBUTTON];
+							}
+							else
+							{
+								pCurrentButton->targetColour = m_pWindowColours[WINDOWSTATE_MOUSEOVER];
+							}
 							if (_pKeys->bLeftMouseClick.bPressed && _pKeys->bLeftMouseClick.bPreviousState == false)
 							{
 								ProcessButtonPressed(_pDevice, m_vecWindows[iWindow], pCurrentButton);
@@ -418,6 +426,11 @@ CEditorInterface::ProcessButtonPressed(ID3D11Device* _pDevice, TWindow* _pWindow
 		m_eEditorState = EDITOR_IDLE;
 		m_vecWindows[1]->SetIsActive(true, m_pWindowColours[WINDOWSTATE_OPEN]);
 	}
+	else if (strcmp(_pButton->sName.c_str(), "OpenSceneGraph") == 0)
+	{
+		m_eEditorState = EDITOR_IDLE;
+		m_vecWindows[2]->SetIsActive(true, m_pWindowColours[WINDOWSTATE_OPEN]);
+	}
 	else if (strcmp(_pButton->sName.c_str(), "Create") == 0)
 	{
 		m_eEditorState = EDITOR_SELECTED;
@@ -536,8 +549,8 @@ CEditorInterface::LoadFromXML(ID3D11Device* _pDevice, CResourceManager* _pResour
 			m_vecWindows[iWindow]->vecButtons[iButton]->pBackgroundVertex = CreatePointSprite(_pDevice, m_vecWindows[iWindow]->vecButtons[iButton]->vecPosition + D3DXVECTOR3(0.0f, 0.0f, 0.1f), m_vecWindows[iWindow]->vecButtons[iButton]->vecScale, m_vecWindows[iWindow]->vecButtons[iButton]->colour, 0.0f, m_vecWindows[iWindow]->vecButtons[iButton]->iBackgroundTexture);
 			m_vecWindows[iWindow]->vecButtons[iButton]->pForegroundVertex = CreatePointSprite(_pDevice, m_vecWindows[iWindow]->vecButtons[iButton]->vecPosition, m_vecWindows[iWindow]->vecButtons[iButton]->vecScale, m_vecWindows[iWindow]->vecButtons[iButton]->colour, 0.0f, m_vecWindows[iWindow]->vecButtons[iButton]->iForegroundTexture);
 		}
-		m_vecWindows[iWindow]->pForegroundVertex = CreatePointSprite(_pDevice, m_vecWindows[iWindow]->vecPosition, m_vecWindows[iWindow]->vecScale, m_vecWindows[iWindow]->colour, 0.0f, m_vecWindows[iWindow]->iForegroundTexture);
 		m_vecWindows[iWindow]->pBackgroundVertex = CreatePointSprite(_pDevice, m_vecWindows[iWindow]->vecPosition + D3DXVECTOR3(0.0f, 0.0f, 0.1f), m_vecWindows[iWindow]->vecScale, m_vecWindows[iWindow]->colour, 0.0f, m_vecWindows[iWindow]->iBackgroundTexture);
+		m_vecWindows[iWindow]->pForegroundVertex = CreatePointSprite(_pDevice, m_vecWindows[iWindow]->vecPosition, m_vecWindows[iWindow]->vecScale, m_vecWindows[iWindow]->colour, 0.0f, m_vecWindows[iWindow]->iForegroundTexture);
 	}
 
 	delete[] pcBuffer;

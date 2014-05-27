@@ -70,7 +70,6 @@ CLevel::CLevel()
 , m_pCursor(0)
 , m_pTerrain(0)
 //, m_pGrass(0)
-, m_pGrassEntities(0)
 , m_pHivemind(0)
 , m_pCamera(0)
 , m_pOrthoCamera(0)
@@ -90,7 +89,6 @@ CLevel::CLevel()
 , m_fGameTimeElapsed(0.0f)
 , m_iScreenWidth(0)
 , m_iScreenHeight(0)
-, m_iNumGrassEntities(0)
 , m_pResourceManager(0)
 , m_pThreadPool(0)
 , m_pOpenCLKernel(0)
@@ -99,6 +97,7 @@ CLevel::CLevel()
 , m_pcProcessingMethodName(0)
 , m_bCreateObject(false)
 , m_bHasSelectedObject(false)
+, m_bGrassIsActive(false)
 {
 	D3DXMatrixIdentity(&m_matWorldViewProjection); 
 }
@@ -124,20 +123,20 @@ CLevel::~CLevel()
 		SAFEDELETE(m_pLevelEntities[iEntity]);
 	}
 	m_pLevelEntities.clear();
+	m_vecGrassEntities.clear();
 	SAFEDELETE(m_pGrass);
 	SAFEDELETE(m_pNetwork);
-	SAFEDELETE(m_pFont);
 	SAFEDELETE(m_pThreadPool);
 	SAFEDELETE(m_pOpenCLKernel);
 	SAFEDELETE(m_pEditor);
 	SAFEDELETE(m_pCursor);
 	SAFEDELETE(m_pSelectionCursor);
-	SAFEDELETE(m_pGrassEntities);
 	SAFEDELETE(m_pLightManager);
 	SAFEDELETE(m_pHivemind);
 	SAFEDELETE(m_pTerrain);
 	SAFEDELETE(m_pCamera);
 	SAFEDELETE(m_pOrthoCamera);
+	SAFEDELETEARRAY(m_pFont);
 
 	//Clear render targets
 	SAFEDELETE(m_pDiffuseMRT);
@@ -158,6 +157,7 @@ CLevel::~CLevel()
 
 	//Clear COM Objects
 	ReleaseCOM(m_pRasteriserState);
+	ReleaseCOM(m_pGrassRasteriser);
 	ReleaseCOM(m_pSamplerState);
 	for (int iLayout = 0; iLayout < VERTEX_MAX; ++iLayout)
 	{
@@ -284,12 +284,15 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	m_pResourceManager->LoadPrefabTypes(_pDevice, m_pEntityManager, "Data/Prefabs.xml");
 	
 	//Load font
-	m_pFont = new CFontRenderer();
-	m_pFont->Initialise("Something", 16, 6, D3DXVECTOR3(10.0f, WINDOW_HEIGHT * 0.1f, 0.0f), D3DXVECTOR2(12.0f, 15.0f));
-	m_pFont->Write("This is a message345", 0);
-	m_pFont->SetObjectShader(&m_pShaderCollection[SHADER_FONT]);
-	m_pFont->SetDiffuseMap(m_pResourceManager->GetTexture(std::string("font_arial")));
-	m_pEntityManager->AddEntity(m_pFont, SCENE_FONT);
+	m_pFont = new CFontRenderer[FONT_MAX];
+	m_pFont[FONT_DEBUG].Initialise("Something", 16, 6, D3DXVECTOR3(10.0f, WINDOW_HEIGHT * 0.1f, 2.0f), D3DXVECTOR2(12.0f, 15.0f));
+	m_pFont[FONT_SCENEGRAPH].Initialise("Something", 16, 6, D3DXVECTOR3(WINDOW_WIDTH * 0.81f, WINDOW_HEIGHT * 0.11f, 0.6f), D3DXVECTOR2(12.0f, 15.0f));
+	for (int iFont = 0; iFont < FONT_MAX; ++iFont)
+	{
+		m_pFont[iFont].SetObjectShader(&m_pShaderCollection[SHADER_FONT]);
+		m_pFont[iFont].SetDiffuseMap(m_pResourceManager->GetTexture(std::string("font_arial")));
+		m_pEntityManager->AddEntity(&m_pFont[iFont], SCENE_FONT);
+	}
 
 	int iCurrentPixel = 0;
 	int iTextureWidth = 256;
@@ -331,10 +334,10 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	m_pTerrain->SetEntityType(std::string("terrain"));
 	m_pRootNode = m_pTerrain->CreateNode(NULL);
 
-	m_fGrassScale = 25.0f;
+	m_fGrassScale = 20.0f;
 	m_pGrass = new CGrass();
 	m_pGrass->Initialise();
-	m_pGrass->LoadTerrain(_pDevice, 50, 50, m_fGrassScale, D3DXVECTOR2(10.0f, 10.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
+	m_pGrass->LoadTerrain(_pDevice, 80, 80, m_fGrassScale, D3DXVECTOR2(10.0f, 10.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
 	m_pGrass->SetObjectShader(&m_pShaderCollection[SHADER_GRASS]);
 	m_pGrass->SetDiffuseMap(m_pResourceManager->GetTexture(std::string("grassblades")));
 	m_pGrass->SetRadius(FLT_MAX);
@@ -351,8 +354,9 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	m_pCursor->SetPosition(D3DXVECTOR3(0.0f, 0.4f, 0.0f));
 	m_pCursor->SetScale(D3DXVECTOR3(0.5f, 0.5f, 0.5f));
 	m_pCursor->SetRotation(D3DXVECTOR3(0.0f, -0.5f, 0.0f));
+	m_pCursor->SetEntityType(std::string("PlayerCursor"));
 	m_pCursor->CreateNode(m_pRootNode);
-	m_pCursor->GetNode()->vecLights.push_back(m_pLightManager->AddPoint(D3DXVECTOR3(0.0f, 0.4f, 0.0f), D3DXCOLOR(0.3f, 0.3f, 0.8f, 1.0f), D3DXVECTOR3(0.05f, 0.2f, 4.0f), 1.0f));
+	m_pCursor->GetNode()->vecLights.push_back(m_pLightManager->AddPoint(D3DXVECTOR3(0.0f, 0.4f, 0.0f), D3DXCOLOR(0.3f, 0.3f, 0.8f, 1.0f), D3DXVECTOR3(0.05f, 0.2f, 4.0f), 100.0f));
 	m_pEntityManager->AddEntity(m_pCursor, SCENE_PERMANENTSCENE);
 
 	m_pEditor = new CEditorInterface();
@@ -423,27 +427,34 @@ CLevel::Process(ID3D11Device* _pDevice, CClock* _pClock, float _fDeltaTime)
 		}
 		m_pSelectionCursor->SetPosition(m_pSelectedObject->GetPosition());
 		m_pSelectionCursor->SetScale(m_pSelectedObject->GetScale());
+		m_pHivemind->RecalculateNavGrid(_pDevice);
 	}
 	
 	//m_pResourceManager->GetAnimatedModel("chicken")->Process(_fDeltaTime);
-	m_pFont->ProcessFont(_pDevice);
+	for (int iFont = 0; iFont < FONT_MAX; ++iFont)
+	{
+		m_pFont[iFont].ProcessFont(_pDevice);
+	}
 
 	m_pRootNode->pEntity->Process(_fDeltaTime, NULL);
 	m_pEntityManager->Process(_fDeltaTime, SCENE_3DANIM);
 	m_pEntityManager->Process(_fDeltaTime, SCENE_UI);
 	m_pEntityManager->Process(_fDeltaTime, SCENE_DEBUG);
 	m_pEntityManager->Process(_fDeltaTime, SCENE_FONT);
-	m_pEntityManager->Process(_fDeltaTime, SCENE_GRASS);
 	m_pEntityManager->Process(_fDeltaTime, SCENE_FINAL);
 	m_fGameTimeElapsed += _fDeltaTime;
 	
-	float fGrassOffset = m_fGrassScale * 0.1f;
-	m_pGrass->RecreateGrassMesh(_pDevice, 
-								m_pCursor->GetPosition() + (m_pCamera->GetLook() * fGrassOffset), 
-								m_pGrassEntities, 
-								m_iNumGrassEntities,
-								_fDeltaTime);
-
+	if (m_bGrassIsActive)
+	{
+		m_pEntityManager->Process(_fDeltaTime, SCENE_GRASS);
+		float fGrassOffset = m_fGrassScale * 0.5f;
+		D3DXVECTOR3 vecGrassPosition = m_pCamera->GetPosition() + (m_pCamera->GetLook() * fGrassOffset);
+		vecGrassPosition.y = 0.0f;
+		m_pGrass->RecreateGrassMesh(_pDevice,
+									vecGrassPosition,
+									m_vecGrassEntities,
+									_fDeltaTime);
+	}
 	//Process audio
 	CAudioPlayer::GetInstance().SetListenerPosition(m_pCamera->GetPosition(), m_pCamera->GetLook(), D3DXVECTOR3(0.0f, 1.0f, 0.0f));
 	CAudioPlayer::GetInstance().Process();
@@ -451,9 +462,19 @@ CLevel::Process(ID3D11Device* _pDevice, CClock* _pClock, float _fDeltaTime)
 	//Print FPS
 	char cBuffer[64];
 	sprintf_s(cBuffer, 64, "FPS: %i\tFrame Time Elapsed: %f", _pClock->GetFPS(), _fDeltaTime);
-	m_pFont->Write(cBuffer, 1);
+	m_pFont[FONT_DEBUG].Write(std::string(cBuffer), 0);
 	sprintf_s(cBuffer, 64, "Processing Method: %s", m_pcProcessingMethodName[m_eProcessingMethod].c_str());
-	m_pFont->Write(cBuffer, 2);
+	m_pFont[FONT_DEBUG].Write(std::string(cBuffer), 1);
+
+	if (m_pEditor->IsActive())
+	{
+		int iCurrentTextIndex = 0;
+		for (unsigned int iChild = 0; iChild < m_pRootNode->vecChildren.size(); ++iChild)
+		{
+			AddTextToSceneGraph(m_pRootNode->vecChildren[iChild], iCurrentTextIndex, 0);
+			++iCurrentTextIndex;
+		}
+	}
 }
 /**
 *
@@ -484,6 +505,10 @@ CLevel::ProcessInput(ID3D11Device* _pDevice, float _fDeltaTime)
 	{
 		ChangeProcessingMethod(PROCESSING_DISTRIBUTED);
 	}
+	if (m_pInput->bG.bPressed && m_pInput->bG.bPreviousState == false)
+	{
+		m_bGrassIsActive = !m_bGrassIsActive;
+	}
 	//Toggle level editor
 	if (m_pInput->bTilde.bPressed && m_pInput->bTilde.bPreviousState == false)
 	{
@@ -511,6 +536,7 @@ CLevel::ProcessInput(ID3D11Device* _pDevice, float _fDeltaTime)
 																			m_pRootNode,
 																			m_sSelectedPrefab,
 																			&m_pShaderCollection[SHADER_MRT],
+																			m_vecGrassEntities,
 																			SCENE_3DSCENE,
 																			m_pCursor->GetPosition(),
 																			D3DXVECTOR3(1.0f, 1.0f, 1.0f),
@@ -626,13 +652,19 @@ CLevel::Draw(ID3D11DeviceContext* _pDevice)
 		DrawScene(_pDevice, m_pCamera, SCENE_PERMANENTSCENE);
 
 		//=== DRAW GRASS ===
-		_pDevice->VSSetShader(m_pShaderCollection[SHADER_GRASS].GetVertexShader(), NULL, 0);
-		_pDevice->GSSetShader(m_pShaderCollection[SHADER_GRASS].GetGeometryShader(), NULL, 0);
-		_pDevice->PSSetShader(m_pShaderCollection[SHADER_GRASS].GetPixelShader(), NULL, 0);
-		_pDevice->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_POINTLIST);
-		DrawScene(_pDevice, m_pCamera, SCENE_GRASS);
-		_pDevice->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
+		if (m_bGrassIsActive)
+		{
+			m_pRenderer->SetBlendState(BLEND_ALPHATOCOVERAGE);
+			_pDevice->RSSetState(m_pGrassRasteriser);
+			_pDevice->VSSetShader(m_pShaderCollection[SHADER_GRASS].GetVertexShader(), NULL, 0);
+			_pDevice->GSSetShader(m_pShaderCollection[SHADER_GRASS].GetGeometryShader(), NULL, 0);
+			_pDevice->PSSetShader(m_pShaderCollection[SHADER_GRASS].GetPixelShader(), NULL, 0);
+			_pDevice->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_POINTLIST);
+			DrawScene(_pDevice, m_pCamera, SCENE_GRASS);
+			_pDevice->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+			_pDevice->RSSetState(m_pRasteriserState);
+			m_pRenderer->SetBlendState(BLEND_TRANSPARENT);
+		}
 		//============================ Deferred Render ================================
 		_pDevice->VSSetShader(m_pShaderCollection[SHADER_DEFERRED].GetVertexShader(), NULL, 0);
 		_pDevice->GSSetShader(NULL, NULL, 0);
@@ -674,7 +706,6 @@ CLevel::Draw(ID3D11DeviceContext* _pDevice)
 	_pDevice->GSSetShader(m_pShaderCollection[SHADER_FONT].GetGeometryShader(), NULL, 0);
 	_pDevice->PSSetShader(m_pShaderCollection[SHADER_FONT].GetPixelShader(), NULL, 0);
 	DrawScene(_pDevice, m_pOrthoCamera, SCENE_FONT);
-
 	_pDevice->IASetInputLayout(m_pVertexLayout[VERTEX_POINT]);
 	if (m_eRenderState >= RENDERSTATE_DEBUG)
 	{
@@ -693,7 +724,7 @@ CLevel::Draw(ID3D11DeviceContext* _pDevice)
 		m_pResourceManager->SendTextureDataToShader(_pDevice);
 		DrawScene(_pDevice, m_pOrthoCamera, SCENE_UI);
 	}
-
+	
 	//Unbind all render targets and shader resources prior to next frame
 	ID3D11ShaderResourceView* const blankTexture[3] = { NULL, NULL, NULL };
 	_pDevice->PSSetShaderResources(0, 3, blankTexture);
@@ -712,6 +743,30 @@ void CLevel::DrawScene(ID3D11DeviceContext* _pDevice, CCamera* _pCurrentCamera, 
 {
 	//Draw all entities in scene
 	m_pEntityManager->Draw(_pDevice, _pCurrentCamera, _EGameScene);
+}
+/**
+*
+* CLevel class Sets the scene graph to draw to screen
+* (Task ID: n/a)
+*
+* @author Christopher Howlett
+*
+*/
+void
+CLevel::AddTextToSceneGraph(TEntityNode* _pEntityNode, int& _iTextOffset, int _iTabCount)
+{
+	std::string sText = "";
+	for (int iSpaceCount = 0; iSpaceCount < _iTabCount; ++iSpaceCount)
+	{
+		sText += "--";
+	}
+	sText += _pEntityNode->pEntity->GetEntityType();
+	m_pFont[FONT_SCENEGRAPH].Write(sText, _iTextOffset);
+	for (unsigned int iChild = 0; iChild < _pEntityNode->vecChildren.size(); ++iChild)
+	{
+		++_iTextOffset;
+		AddTextToSceneGraph(_pEntityNode->vecChildren[iChild], _iTextOffset, _iTabCount + 1);
+	}
 }
 /**
 *
@@ -918,7 +973,12 @@ CLevel::BuildLevelVertexLayouts(ID3D11Device* _pDevice, ID3D11DeviceContext* _pD
 	tRasterDesc.ScissorEnable = false;
 	tRasterDesc.SlopeScaledDepthBias = 0.0f;
 	HRCheck(_pDevice->CreateRasterizerState(&tRasterDesc, &m_pRasteriserState),
-		L"Could not create rasteriser state");
+			L"Could not create rasteriser state");
+	
+	tRasterDesc.CullMode = D3D11_CULL_NONE;
+	HRCheck(_pDevice->CreateRasterizerState(&tRasterDesc, &m_pGrassRasteriser),
+			L"Could not create grass rasteriser state");
+
 	_pDevContext->RSSetState(m_pRasteriserState);
 
 	//=================  CREATE TEXTURE SAMPLER STATE ====================
@@ -993,6 +1053,7 @@ CLevel::CreateObject(ID3D11Device* _pDevice, rapidxml::xml_node<>* _pNode, TEnti
 																_pParentNode,
 																sType,
 																&m_pShaderCollection[SHADER_MRT],
+																m_vecGrassEntities,
 																SCENE_3DSCENE,
 																vecPosition,
 																vecScale,
@@ -1012,7 +1073,7 @@ CLevel::CreateObject(ID3D11Device* _pDevice, rapidxml::xml_node<>* _pNode, TEnti
 	{
 		for (rapidxml::xml_node<>* pCurrentLight = _pNode->first_node("light"); pCurrentLight; pCurrentLight = pCurrentLight->next_sibling("light"))
 		{
-			pNewPrefab->GetNode()->vecLights.push_back( m_pLightManager->AddPoint(D3DXVECTOR3(0.0f, 0.4f, 0.0f), D3DXCOLOR(0.7f, 0.7f, 0.3f, 1.0f), D3DXVECTOR3(0.15f, 0.02f, 5.0f), 1.0f) );
+			pNewPrefab->GetNode()->vecLights.push_back( m_pLightManager->AddPoint(D3DXVECTOR3(0.0f, 0.4f, 0.0f), D3DXCOLOR(0.7f, 0.7f, 0.3f, 1.0f), D3DXVECTOR3(0.5f, 0.02f, 5.0f), 1.0f) );
 		}
 	}
 
@@ -1037,6 +1098,10 @@ CLevel::LoadLevel(ID3D11Device* _pDevice, char* _pcLevelFilename)
 	m_pEntityManager->ClearScene(SCENE_3DSCENE);
 	m_pHivemind->ClearHivemind();
 	m_pLightManager->DestroyLights();
+	m_vecGrassEntities.clear();
+	m_pSelectedObject = 0;
+	m_bCreateObject = false;
+
 	m_pRootNode->Clear();
 	delete m_pRootNode;
 

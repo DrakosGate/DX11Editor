@@ -60,7 +60,7 @@ public:
 	virtual bool Initialise(char* _pcFontFilename, int _iFileWidth, int _iFileHeight, D3DXVECTOR3& _rPosition, D3DXVECTOR2& _rCharacterSize);
 	void Draw(ID3D11DeviceContext* _pDevice);
 	void ProcessFont(ID3D11Device* _pDevice);
-	void Write(char* _pcMessage, int _iIndex);
+	void Write(std::string& _pcMessage, int _iIndex);
 	
 	void CreateVertexBuffer(ID3D11Device* _pDevice);
 

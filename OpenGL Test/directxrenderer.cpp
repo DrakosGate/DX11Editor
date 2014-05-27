@@ -43,7 +43,6 @@ CDirectXRenderer::CDirectXRenderer()
 , m_pDepthStencilBuffer(0)
 , m_pDepthStencilState(0)
 , m_pDepthStencilView(0)
-, m_pTransparentBlendState(0)
 , m_iVideoCardMemory(0)
 , m_bVSyncEnabled(false)
 , m_bIsFullscreen(false)
@@ -133,6 +132,12 @@ ID3D11ShaderResourceView*
 CDirectXRenderer::GetDepthSRV()
 {
 	return m_pDepthShaderResource;
+}
+void 
+CDirectXRenderer::SetBlendState(EBlendTypes _eBlendType)
+{
+	float fBlendFactor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+	m_pDeviceContext->OMSetBlendState(m_pBlendStates[_eBlendType], fBlendFactor, 0xffffffff);
 }
 /**
 *
@@ -360,10 +365,11 @@ CDirectXRenderer::SetupDirectX11(HWND _hWnd)
 
 	//D3DXMatrixPerspectiveFovLH(&m_matProjection, fFieldOfView, fScreenAspect, 0.1f, 1000.0f);
 	//D3DXMatrixIdentity(&m_matWorld);
+	m_pBlendStates = new ID3D11BlendState*[BLEND_MAX];
 
 	D3D11_BLEND_DESC tBlendState;
 	ZeroMemory(&tBlendState, sizeof(D3D11_BLEND_DESC));
-	tBlendState.RenderTarget[0].BlendEnable = TRUE;
+	tBlendState.RenderTarget[0].BlendEnable = FALSE;
 	tBlendState.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
 	tBlendState.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
 	tBlendState.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
@@ -371,11 +377,15 @@ CDirectXRenderer::SetupDirectX11(HWND _hWnd)
 	tBlendState.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
 	tBlendState.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
 	tBlendState.RenderTarget[0].RenderTargetWriteMask = 0x0f;
-	tBlendState.AlphaToCoverageEnable = TRUE;
+	tBlendState.AlphaToCoverageEnable = FALSE;
 	
-	float blendFactor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-	m_pDevice->CreateBlendState(&tBlendState, &m_pTransparentBlendState);
-	m_pDeviceContext->OMSetBlendState(m_pTransparentBlendState, blendFactor, 0xffffffff);
+	m_pDevice->CreateBlendState(&tBlendState, &m_pBlendStates[BLEND_SOLID]);
+	tBlendState.RenderTarget[0].BlendEnable = TRUE;
+	m_pDevice->CreateBlendState(&tBlendState, &m_pBlendStates[BLEND_TRANSPARENT]);
+	tBlendState.AlphaToCoverageEnable = TRUE;
+	m_pDevice->CreateBlendState(&tBlendState, &m_pBlendStates[BLEND_ALPHATOCOVERAGE]);
+
+	SetBlendState(BLEND_TRANSPARENT);
 }
 void 
 CDirectXRenderer::CleanUp()
@@ -386,7 +396,12 @@ CDirectXRenderer::CleanUp()
 	}
 
 	//Release DX11 stuff
-	ReleaseCOM(m_pTransparentBlendState);
+	for (int iBlendState = 0; iBlendState < BLEND_MAX; ++iBlendState)
+	{
+		ReleaseCOM(m_pBlendStates[iBlendState]);
+	}
+	SAFEDELETEARRAY(m_pBlendStates);
+
 	ReleaseCOM(m_pDepthShaderResource);
 	ReleaseCOM(m_pDepthStencilView);
 	ReleaseCOM(m_pDepthStencilState);

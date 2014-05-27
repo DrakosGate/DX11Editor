@@ -3,14 +3,20 @@
 	<window id="HeadRibbon">
 		<foregroundtexture>menu_ribbon</foregroundtexture>
 		<backgroundtexture>menu_ribbon</backgroundtexture>
-		<position x="0" y="0" z="0"></position>
+		<position x="0" y="0" z="1.0"></position>
 		<scale x="1" y="0.1"></scale>
 		<canmove>false</canmove>
 		
 		<button id="OpenPrefabWindow">
-			<maintexture>menu_button</maintexture>
+			<maintexture>menu_prefab</maintexture>
 			<bgtexture>menu_button</bgtexture>
 			<position x="0.02" y="0.02" z="0"></position>
+			<scale x="0.05" y="0.05"></scale>
+		</button>
+		<button id="OpenSceneGraph">
+			<maintexture>menu_scenegraph</maintexture>
+			<bgtexture>menu_button</bgtexture>
+			<position x="0.92" y="0.02" z="0"></position>
 			<scale x="0.05" y="0.05"></scale>
 		</button>
 		<button id="LoadLevel">
@@ -29,7 +35,7 @@
 	<window id="PrefabWindow">
 		<foregroundtexture>menu_windowFG</foregroundtexture>
 		<backgroundtexture>menu_windowBG</backgroundtexture>
-		<position x="0.5" y="0.35" z="0"></position>
+		<position x="0.5" y="0.35" z="0.1"></position>
 		<scale x="0.35" y="0.5"></scale>
 		<canmove>true</canmove>
 		
@@ -70,7 +76,22 @@
 			<scale x="0.1" y="0.1"></scale>
 		</button>
 		<button id="Close">
-			<maintexture>menu_button</maintexture>
+			<maintexture>menu_close</maintexture>
+			<bgtexture>menu_button</bgtexture>
+			<position x="0.89" y="0.01" z="0"></position>
+			<scale x="0.1" y="0.1"></scale>
+		</button>
+	</window>
+	<window id="SceneGraph">
+		<foregroundtexture>menu_bar</foregroundtexture>
+		<backgroundtexture>menu_windowBG</backgroundtexture>
+		<position x="0.8" y="0.1" z="0.5"></position>
+		<scale x="0.2" y="0.9"></scale>
+		<canmove>true</canmove>
+		
+		<button id="Close">
+			<options>human</options>
+			<maintexture>menu_close</maintexture>
 			<bgtexture>menu_button</bgtexture>
 			<position x="0.89" y="0.01" z="0"></position>
 			<scale x="0.1" y="0.1"></scale>

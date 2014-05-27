@@ -94,6 +94,7 @@ public:
 	TAIDescription& GetAIDesc(EAIType _eAIType);
 	void ClearHivemind();
 	void ChangeProcessingMethod(EProcessingMethod _eProcessingMethod);
+	void RecalculateNavGrid(ID3D11Device* _pDevice);
 
 private:
 	CAIHiveMind(const CAIHiveMind& _krInstanceToCopy);

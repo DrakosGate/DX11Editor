@@ -18,6 +18,14 @@
 #include "irenderer.h"
 
 // Types
+enum EBlendTypes
+{
+	BLEND_INVALID = -1,
+	BLEND_SOLID,
+	BLEND_TRANSPARENT,
+	BLEND_ALPHATOCOVERAGE,
+	BLEND_MAX
+};
 
 // Constants
 
@@ -55,6 +63,8 @@ public:
 	ID3D11DepthStencilView* GetDepthStencilView();
 	ID3D11ShaderResourceView* GetDepthSRV();
 
+	void SetBlendState(EBlendTypes _eBlendType);
+
 private:
 	CDirectXRenderer(const CDirectXRenderer& _krInstanceToCopy);
 	const CDirectXRenderer& operator =(const CDirectXRenderer& _krInstanceToCopy);
@@ -79,7 +89,7 @@ private:
 	ID3D11DepthStencilState* m_pDepthStencilState;
 	ID3D11DepthStencilView* m_pDepthStencilView;
 	ID3D11ShaderResourceView* m_pDepthShaderResource;
-	ID3D11BlendState* m_pTransparentBlendState;
+	ID3D11BlendState** m_pBlendStates;
 
 	CLevel* m_pLevel;
 };
