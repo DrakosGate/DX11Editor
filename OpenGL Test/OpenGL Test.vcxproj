@@ -184,6 +184,7 @@
     <FxCompile Include="..\Bin\Shaders\fontshader_gs.hlsl" />
     <FxCompile Include="..\Bin\Shaders\fontshader_ps.hlsl" />
     <FxCompile Include="..\Bin\Shaders\fontshader_vs.hlsl" />
+    <FxCompile Include="..\Bin\Shaders\grassshader_gs.hlsl" />
     <FxCompile Include="..\Bin\Shaders\linerenderer_gs.hlsl" />
     <FxCompile Include="..\Bin\Shaders\linerenderer_ps.hlsl" />
     <FxCompile Include="..\Bin\Shaders\linerenderer_vs.hlsl" />

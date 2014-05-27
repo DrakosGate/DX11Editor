@@ -43,7 +43,7 @@ public:
 	bool CheckPointCollision(D3DXVECTOR3& _rPoint);
 
 	virtual void SetScale(D3DXVECTOR3& _rVecScale);
-	
+
 protected:
 	CModel* m_pModel;
 	ETileType m_eTileType;

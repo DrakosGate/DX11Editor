@@ -149,6 +149,7 @@ private:
 	//Vertex Information
 	ID3D11InputLayout** m_pVertexLayout;
 	ID3D11RasterizerState* m_pRasteriserState;
+	ID3D11RasterizerState* m_pGrassRasteriser;
 	ID3D11SamplerState* m_pSamplerState;
 
 	//Screen info

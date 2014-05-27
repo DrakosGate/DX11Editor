@@ -371,7 +371,8 @@ CDirectXRenderer::SetupDirectX11(HWND _hWnd)
 	tBlendState.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
 	tBlendState.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
 	tBlendState.RenderTarget[0].RenderTargetWriteMask = 0x0f;
-
+	tBlendState.AlphaToCoverageEnable = TRUE;
+	
 	float blendFactor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 	m_pDevice->CreateBlendState(&tBlendState, &m_pTransparentBlendState);
 	m_pDeviceContext->OMSetBlendState(m_pTransparentBlendState, blendFactor, 0xffffffff);

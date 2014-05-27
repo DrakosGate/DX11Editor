@@ -158,9 +158,9 @@ CModel::LoadTerrain(ID3D11Device* _pDevice, int _iTerrainWidth, int _iTerrainHei
 	{
 		for(int iWidth = 0; iWidth < _iTerrainWidth; ++iWidth)
 		{
-			vecPos = D3DXVECTOR3(	(static_cast<float>(iWidth) * vecPosDivision.x) - 0.5f + ((500 - rand() % 1000) * 0.00001f), 
+			vecPos = D3DXVECTOR3(	(static_cast<float>(iWidth) * vecPosDivision.x) - 0.5f + ((500 - rand() % 1000) * 0.0001f), 
 									0.0f * vecPosDivision.y, 
-									(static_cast<float>(iHeight) * vecPosDivision.z) - 0.5f + ((500 - rand() % 1000) * 0.00001f));
+									(static_cast<float>(iHeight) * vecPosDivision.z) - 0.5f + ((500 - rand() % 1000) * 0.0001f));
 			m_pVertices[iCurrentVertex] = TVertex(	vecPos, 
 													_rColour,
 													defaultNormal, 

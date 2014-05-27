@@ -1,4 +1,6 @@
 
+#include "shaderdefines.hlsl"
+
 // Buffers
 cbuffer MatrixBuffer
 {
@@ -7,157 +9,70 @@ cbuffer MatrixBuffer
 	matrix projMat;
 }; 
 
-struct GS_IN
+struct GS_DATA
 {
-	float4 pos		: SV_POSITION;
-	float3 dir		: DIRECTION;
-	float2 scale	: SCALE;
+	float4 finalPos : SV_POSITION;
+	float3 worldPos : POSITION;
 	float4 colour	: COLOR;
-	float rotation : ROTATION;
-	int textureID : TEXID;
-};
-struct GS_OUT
-{
-	float4 pos		: SV_POSITION;
-	float3 dir		: DIRECTION;
-	float2 scale	: SCALE;
-	float4 colour	: COLOR;
-	float rotation : ROTATION;
-	float2 texC		:TEXCOORD;
-	int textureID : TEXID;
+	float3 normal	: NORMAL;
+	float3 tangent	: TANGENT;
+	float3 binormal	: BINORMAL;
+	float2 texC		: TEXCOORD;
 };
 
-[maxvertexcount(12)]
-void GrassGS(point GS_IN input[1], inout TriangleStream<GS_OUT> gsOut)
+[maxvertexcount(6)]
+void GrassGS(point GS_DATA input[1], inout TriangleStream<GS_DATA> gsOut)
 {
-	GS_OUT gTri;
-	float4 Origin = input[0].pos;
-	float4 fGrassScale = float4(0.2f, 0.5f, 1.0f, 1.0f);
-	float4 fCurrentPos = Origin;
-	float fScale = 0.01f;
-	fCurrentPos = Origin;
-	float3 vecNormal;
-	float2 fGrassDim = float2(1.0f, 0.2f);
+	float3 vecGrassScale = float3(0.5f, 0.5f, 0.5f);
+	float3 vertPos;
 
-	float4 vecOffset = float4(0.0f, 0.0f, 0.0f, 0.0f) * 0.0f;
-
-	//Top R
-	gTri.pos = fCurrentPos + ((float4(input[0].normal, 0.0f) + float4(fGrassDim.x, 0.0f, 0.0f, 0.0f)) * fGrassScale) + vecOffset;
-	gTri.pos = mul(gTri.pos, gWVP);
-	vecNormal = (gTri.pos - Origin);
-	gTri.normal = vecNormal;
-	gTri.texC = float2(1.0f, 0.0f);
-	gsOut.Append(gTri);
-
-	//Top L
-	gTri = input[0];
-	gTri.pos = fCurrentPos + ((float4(input[0].normal, 0.0f) + float4(-fGrassDim.x, 0.0f, 0.0f, 0.0f)) * fGrassScale) + vecOffset;
-	gTri.pos = mul(gTri.pos, gWVP);
-	vecNormal = (gTri.pos - Origin);
-	gTri.normal = vecNormal;
-	gTri.texC = float2(0.0f, 0.0f);
-	gsOut.Append(gTri);
-
-	//Bottom L
-	gTri = input[0];
-	gTri.pos = fCurrentPos + (float4(-fGrassDim.x, 0.0f, 0.0f, 0.0f) * fGrassScale);
-	gTri.pos = mul(gTri.pos, gWVP);
-	gTri.normal = vecNormal;
-	gTri.texC = float2(0.0f, 1.0f);
-	gsOut.Append(gTri);
-
-	//Top R
-	gTri = input[0];
-	gTri.pos = fCurrentPos + ((float4(input[0].normal, 0.0f) + float4(fGrassDim.x, 0.0f, 0.0f, 0.0f)) * fGrassScale) + vecOffset;
-	gTri.pos = mul(gTri.pos, gWVP);
-	vecNormal = (gTri.pos - Origin);
-	gTri.normal = vecNormal;
-	gTri.texC = float2(1.0f, 0.0f);
-	gsOut.Append(gTri);
-
+	//==================================================================================
+	//	FRONT PLANE
+	//==================================================================================
 	//Bottom Left
-	gTri = input[0];
-	gTri.pos = fCurrentPos + (float4(-fGrassDim.x, 0.0f, 0.0f, 0.0f) * fGrassScale);
-	gTri.pos = mul(gTri.pos, gWVP);
-	gTri.normal = vecNormal;
-	gTri.texC = float2(0.0f, 1.0f);
-	gsOut.Append(gTri);
-
-	//Bottom Right
-	gTri = input[0];
-	gTri.pos = fCurrentPos + (float4(fGrassDim.x, 0.0f, 0.0f, 0.0f) * fGrassScale);
-	gTri.pos = mul(gTri.pos, gWVP);
-	gTri.normal = vecNormal;
-	gTri.texC = float2(1.0f, 1.0f);
-	gsOut.Append(gTri);
+	GS_DATA outVert = input[0];
+	vertPos = input[0].worldPos + float3(0.0f, 0.0f, 0.0f);
+	outVert.finalPos = ToScreenSpace(float4(vertPos, 1.0f), worldMat, viewMat, projMat);
+	outVert.texC = float2(0.0f, 1.0f);
+	gsOut.Append(outVert);
+	//Top Left
+	outVert = input[0];
+	vertPos = input[0].worldPos + float3(0.0f, vecGrassScale.y, 0.0f);
+	outVert.finalPos = ToScreenSpace(float4(vertPos, 1.0f), worldMat, viewMat, projMat);
+	outVert.texC = float2(0.0f, 0.0f);
+	gsOut.Append(outVert);
+	//Top Right
+	outVert = input[0];
+	vertPos = input[0].worldPos + float3(vecGrassScale.x, vecGrassScale.y, 0.0f);
+	outVert.finalPos = ToScreenSpace(float4(vertPos, 1.0f), worldMat, viewMat, projMat);
+	outVert.texC = float2(1.0f, 0.0f);
+	gsOut.Append(outVert);
 	gsOut.RestartStrip();
 
-	//============================================================================
-	//	Sideways grass
-	//============================================================================
-
-	//Top R
-	gTri.pos = fCurrentPos + ((float4(input[0].normal, 0.0f) + float4(0.0f, 0.0f, fGrassDim.y, 0.0f)) * fGrassScale) + vecOffset;
-	gTri.pos = mul(gTri.pos, gWVP);
-	vecNormal = (gTri.pos - Origin);
-	gTri.normal = vecNormal;
-	gTri.texC = float2(1.0f, 0.0f);
-	gsOut.Append(gTri);
-
-	//Top L
-	gTri = input[0];
-	gTri.pos = fCurrentPos + ((float4(input[0].normal, 0.0f) + float4(0.0f, 0.0f, -fGrassDim.y, 0.0f)) * fGrassScale) + vecOffset;
-	gTri.pos = mul(gTri.pos, gWVP);
-	vecNormal = (gTri.pos - Origin);
-	gTri.normal = vecNormal;
-	gTri.texC = float2(0.0f, 0.0f);
-	gsOut.Append(gTri);
-
-	//Bottom L
-	gTri = input[0];
-	gTri.pos = fCurrentPos + (float4(0.0f, 0.0f, -fGrassDim.y, 0.0f) * fGrassScale);
-	gTri.pos = mul(gTri.pos, gWVP);
-	gTri.normal = vecNormal;
-	gTri.texC = float2(0.0f, 1.0f);
-	gsOut.Append(gTri);
-
-	//Top R
-	gTri = input[0];
-	gTri.pos = fCurrentPos + ((float4(input[0].normal, 0.0f) + float4(0.0f, 0.0f, fGrassDim.y, 0.0f)) * fGrassScale) + vecOffset;
-	gTri.pos = mul(gTri.pos, gWVP);
-	vecNormal = (gTri.pos - Origin);
-	gTri.normal = vecNormal;
-	gTri.texC = float2(1.0f, 0.0f);
-	gsOut.Append(gTri);
-
-	//Bottom Left
-	gTri = input[0];
-	gTri.pos = fCurrentPos + (float4(0.0f, 0.0f, -fGrassDim.y, 0.0f) * fGrassScale);
-	gTri.pos = mul(gTri.pos, gWVP);
-	gTri.normal = vecNormal;
-	gTri.texC = float2(0.0f, 1.0f);
-	gsOut.Append(gTri);
+	//Top Right
+	outVert = input[0];
+	vertPos = input[0].worldPos + float3(vecGrassScale.x, vecGrassScale.y, 0.0f);
+	outVert.finalPos = ToScreenSpace(float4(vertPos, 1.0f), worldMat, viewMat, projMat);
+	outVert.texC = float2(1.0f, 0.0f);
+	gsOut.Append(outVert);
 
 	//Bottom Right
-	gTri = input[0];
-	gTri.pos = fCurrentPos + (float4(0.0f, 0.0f, fGrassDim.y, 0.0f) * fGrassScale);
-	gTri.pos = mul(gTri.pos, gWVP);
-	gTri.normal = vecNormal;
-	gTri.texC = float2(1.0f, 1.0f);
-	gsOut.Append(gTri);
+	outVert = input[0];
+	vertPos = input[0].worldPos + float3(vecGrassScale.x, 0.0f, 0.0f);
+	outVert.finalPos = ToScreenSpace(float4(vertPos, 1.0f), worldMat, viewMat, projMat);
+	outVert.texC = float2(1.0f, 1.0f);
+	gsOut.Append(outVert);
+
+	//Bottom Left
+	outVert = input[0];
+	vertPos = input[0].worldPos + float3(0.0f, 0.0f, 0.0f);
+	outVert.finalPos = ToScreenSpace(float4(vertPos, 1.0f), worldMat, viewMat, projMat);
+	outVert.texC = float2(0.0f, 1.0f);
+	gsOut.Append(outVert);
 	gsOut.RestartStrip();
-}
-MRTPSOut GrassMRTPS(VS_OUT pIn) : SV_Target
-{
-	MRTPSOut pOut;
-	// Get materials from texture maps.
-	float4 diffuse = gDiffuseMap.Sample(gTriLinearSam, pIn.texC);
-		float fAlpha = diffuse.a;
 
-	//pOut.oDiffuse = float4(pIn.posW, fAlpha);
-	pOut.oDiffuse = diffuse;
-	pOut.oNormal = float4(normalize(pIn.normal), fAlpha);
-	pOut.oPosition = float4(pIn.posW, fAlpha);
+	//==================================================================================
+	//	SIDE PLANE
+	//==================================================================================
 
-	return pOut;
 }

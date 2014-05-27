@@ -438,10 +438,20 @@ CRenderEntity::SetScale(D3DXVECTOR3& _rVecScale)
 {
 	m_vecScale = _rVecScale;
 }
+void
+CRenderEntity::SetLocalScale(D3DXVECTOR3& _rLocalScale)
+{
+	m_vecLocalScale = _rLocalScale;
+}
 D3DXVECTOR3&
 CRenderEntity::GetScale()
 {
 	return m_vecScale;
+}
+D3DXVECTOR3&
+CRenderEntity::GetLocalScale()
+{
+	return m_vecLocalScale;
 }
 /**
 *

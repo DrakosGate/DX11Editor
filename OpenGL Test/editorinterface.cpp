@@ -324,16 +324,19 @@ CEditorInterface::LoadLevel(ID3D11Device* _pDevice)
 void
 CEditorInterface::SaveLevel(ID3D11Device* _pDevice)
 {
+	//Specify file types
 	COMDLG_FILTERSPEC tFileType[] =
 	{
 		{ L"Level File", L"*.xml" }
 	};
+	//Open 
 	HRCheck(CoCreateInstance(CLSID_FileSaveDialog,
 		NULL,
 		CLSCTX_INPROC_SERVER,
 		IID_PPV_ARGS(&m_pFileSaveDialog)),
 		L"Could not create SAVE dialog box");
 	
+	//Set default file type
 	m_pFileSaveDialog->SetFileTypes(1, tFileType);
 	m_pFileSaveDialog->SetTitle(L"Open Level from File:");
 	HRESULT hr = m_pFileSaveDialog->Show(m_hWindow);
@@ -342,10 +345,18 @@ CEditorInterface::SaveLevel(ID3D11Device* _pDevice)
 		IShellItem* pShellItem;
 		hr = m_pFileSaveDialog->GetResult(&pShellItem);
 		wchar_t* pName;
-		pShellItem->GetDisplayName(SIGDN_NORMALDISPLAY, &pName);
+		pShellItem->GetDisplayName(SIGDN_FILESYSPATH, &pName);
+
+		int iStrLength = lstrlenW(pName);
+		char* pcName = new char[iStrLength + 1];
+		const wchar_t* pwName = pName;
+		wcsrtombs(pcName, &pwName, iStrLength, std::mbstate_t());
+		pcName[iStrLength] = '\0';
 		MessageBox(NULL, pName, L"File Chosen:", MB_OK);
-		m_pCurrentLevel->SaveLevel(_pDevice, "level2.xml");
+		m_pCurrentLevel->SaveLevel(_pDevice, pcName);
+
 		pShellItem->Release();
+		delete[] pcName;
 	}
 }
 /**

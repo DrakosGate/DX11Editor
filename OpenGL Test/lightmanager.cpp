@@ -35,7 +35,6 @@
 *
 */
 CLightManager::CLightManager()
-: m_iLightCount(0)
 {
 }
 
@@ -48,21 +47,7 @@ CLightManager::CLightManager()
 */
 CLightManager::~CLightManager()
 {
-	for(unsigned int iLight = 0; iLight < m_vSpotLights.size(); ++iLight)
-	{
-		delete m_vSpotLights[iLight];
-	}
-	m_vSpotLights.clear();
-	for(unsigned int iLight = 0; iLight < m_vPointLights.size(); ++iLight)
-	{
-		delete m_vPointLights[iLight];
-	}
-	m_vPointLights.clear();
-	for(unsigned int iLight = 0; iLight < m_vDirectionalLights.size(); ++iLight)
-	{
-		delete m_vDirectionalLights[iLight];
-	}
-	m_vDirectionalLights.clear();
+	DestroyLights();
 }
 	
 /**
@@ -77,13 +62,31 @@ CLightManager::Initialise()
 {
 	return true;
 }
+void
+CLightManager::DestroyLights()
+{
+	for (unsigned int iLight = 0; iLight < m_vSpotLights.size(); ++iLight)
+	{
+		delete m_vSpotLights[iLight];
+	}
+	m_vSpotLights.clear();
+	for (unsigned int iLight = 0; iLight < m_vPointLights.size(); ++iLight)
+	{
+		delete m_vPointLights[iLight];
+	}
+	m_vPointLights.clear();
+	for (unsigned int iLight = 0; iLight < m_vDirectionalLights.size(); ++iLight)
+	{
+		delete m_vDirectionalLights[iLight];
+	}
+	m_vDirectionalLights.clear();
+}
 CSpotLight* 
 CLightManager::AddSpot(D3DXVECTOR3& _rVecPosition, D3DXVECTOR3& _rVecDirection, D3DXCOLOR& _rVecColour, D3DXVECTOR3& _rAttenuation, float _fCutOff, float _fSpecularPower)
 {
 	CSpotLight* pNewSpot = new CSpotLight;
 	pNewSpot->Initialise(_rVecPosition, _rVecDirection, _rVecColour, _rAttenuation, _fCutOff, _fSpecularPower, LIGHT_SPOT);
 	m_vSpotLights.push_back(pNewSpot);
-	++m_iLightCount;
 	return pNewSpot;
 }
 CPointLight*
@@ -92,7 +95,6 @@ CLightManager::AddPoint(D3DXVECTOR3& _rVecPosition, D3DXCOLOR& _rVecColour, D3DX
 	CPointLight* pNewPoint = new CPointLight;
 	pNewPoint->Initialise(_rVecPosition, _rVecColour, _rAttenuation, _fSpecularPower, LIGHT_POINT);
 	m_vPointLights.push_back(pNewPoint);
-	++m_iLightCount;
 	return pNewPoint;
 }
 CDirectionalLight*
@@ -101,7 +103,6 @@ CLightManager::AddDirectional(D3DXVECTOR3& _rVecDir, D3DXCOLOR& _rVecColour, flo
 	CDirectionalLight* pNewDirectional = new CDirectionalLight;
 	pNewDirectional->Initialise(_rVecDir, _rVecColour, _fSpecularPower, LIGHT_DIRECTIONAL);
 	m_vDirectionalLights.push_back(pNewDirectional);
-	++m_iLightCount;
 	return pNewDirectional;
 }
 int 
@@ -153,5 +154,5 @@ CLightManager::GetDirectional(int _iIndex)
 int 
 CLightManager::GetLightCount() const
 {
-	return m_iLightCount;
+	return (m_vPointLights.size() + m_vSpotLights.size() + m_vDirectionalLights.size());
 }

@@ -425,6 +425,7 @@ CEntityManager::InstantiatePrefab(	ID3D11Device* _pDevice,
 	pNewEntity->SetObjectShader(_pShader);
 	pNewEntity->SetPosition(_rPos + D3DXVECTOR3(0.0f, vecInstanceScale.y * 0.5f, 0.0f)); //Offset the position above the ground
 	pNewEntity->SetScale(vecInstanceScale);
+	pNewEntity->SetLocalScale(_rScale);
 	pNewEntity->SetRotation(_rRotation);
 	pNewEntity->SetEntityType(_pcPrefabName);
 	pNewEntity->CreateNode(_pParentNode);

@@ -81,6 +81,7 @@ public:
 	virtual D3DXVECTOR3& GetPosition();
 	virtual D3DXVECTOR3& GetRotation();
 	virtual D3DXVECTOR3& GetScale();
+	virtual D3DXVECTOR3& GetLocalScale();
 	virtual D3DXVECTOR3& GetForward();
 	virtual D3DXMATRIX& GetWorld();
 	virtual std::string& GetEntityType();
@@ -90,6 +91,7 @@ public:
 	virtual bool ProcessInput(TInputStruct& _pKeys, float _fDT);
 	virtual void SetWorldMatrix(D3DXMATRIX& _rWorld);
 	virtual void SetScale(D3DXVECTOR3& _rVecScale);
+	virtual void SetLocalScale(D3DXVECTOR3& _rLocalScale);
 	virtual void SetEntityType(std::string& _sType);
 
 	virtual ID3D11ShaderResourceView* GetDiffuseMap();
@@ -133,6 +135,8 @@ protected:
 	D3DXVECTOR3 m_vecPosition;
 	D3DXVECTOR3 m_vecRotation;
 	D3DXVECTOR3 m_vecScale;
+	D3DXVECTOR3 m_vecLocalScale;
+
 	D3DXVECTOR3 m_vecLook;
 	D3DXVECTOR3 m_vecUp;
 	D3DXVECTOR3 m_vecRight;

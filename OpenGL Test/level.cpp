@@ -331,15 +331,18 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	m_pTerrain->SetEntityType(std::string("terrain"));
 	m_pRootNode = m_pTerrain->CreateNode(NULL);
 
-	m_fGrassScale = 15.0f;
+	m_fGrassScale = 25.0f;
 	m_pGrass = new CGrass();
 	m_pGrass->Initialise();
-	m_pGrass->LoadTerrain(_pDevice, 100, 100, m_fGrassScale, D3DXVECTOR2(10.0f, 10.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
-	m_pGrass->SetObjectShader(&m_pShaderCollection[SHADER_MRT]);
-	m_pGrass->SetDiffuseMap(m_pResourceManager->GetTexture(std::string("grass")));
+	m_pGrass->LoadTerrain(_pDevice, 50, 50, m_fGrassScale, D3DXVECTOR2(10.0f, 10.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
+	m_pGrass->SetObjectShader(&m_pShaderCollection[SHADER_GRASS]);
+	m_pGrass->SetDiffuseMap(m_pResourceManager->GetTexture(std::string("grassblades")));
 	m_pGrass->SetRadius(FLT_MAX);
 	m_pEntityManager->AddEntity(m_pGrass, SCENE_GRASS);
 	
+	//Load Default level data
+	LoadLevel(_pDevice, "Data/Levels/level1.xml");
+
 	m_pCursor = new CPrefab();
 	m_pCursor->Initialise(_pDevice, 1.0f);
 	m_pCursor->SetModel(m_pResourceManager->GetModel(std::string("cursor")));
@@ -348,13 +351,9 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	m_pCursor->SetPosition(D3DXVECTOR3(0.0f, 0.4f, 0.0f));
 	m_pCursor->SetScale(D3DXVECTOR3(0.5f, 0.5f, 0.5f));
 	m_pCursor->SetRotation(D3DXVECTOR3(0.0f, -0.5f, 0.0f));
-	m_pCursor->CreateNode(m_pRootNode);	
+	m_pCursor->CreateNode(m_pRootNode);
 	m_pCursor->GetNode()->vecLights.push_back(m_pLightManager->AddPoint(D3DXVECTOR3(0.0f, 0.4f, 0.0f), D3DXCOLOR(0.3f, 0.3f, 0.8f, 1.0f), D3DXVECTOR3(0.05f, 0.2f, 4.0f), 1.0f));
-
-	m_pEntityManager->AddEntity(m_pCursor, SCENE_PERMANENTSCENE); 
-
-	//Load Default level data
-	LoadLevel(_pDevice, "Data/Levels/level1.xml");
+	m_pEntityManager->AddEntity(m_pCursor, SCENE_PERMANENTSCENE);
 
 	m_pEditor = new CEditorInterface();
 	m_pEditor->Initialise(_hWindow, this);
@@ -434,16 +433,16 @@ CLevel::Process(ID3D11Device* _pDevice, CClock* _pClock, float _fDeltaTime)
 	m_pEntityManager->Process(_fDeltaTime, SCENE_UI);
 	m_pEntityManager->Process(_fDeltaTime, SCENE_DEBUG);
 	m_pEntityManager->Process(_fDeltaTime, SCENE_FONT);
+	m_pEntityManager->Process(_fDeltaTime, SCENE_GRASS);
 	m_pEntityManager->Process(_fDeltaTime, SCENE_FINAL);
 	m_fGameTimeElapsed += _fDeltaTime;
 	
-	//float fGrassOffset = m_fGrassScale * 0.1f;
-	//m_pGrass->RecreateGrassMesh(_pDevice, 
-	//							m_pCursor->GetPosition() + (m_pCamera->GetLook() * fGrassOffset), 
-	//							m_pGrassEntities, 
-	//							m_iNumGrassEntities,
-	//							_fDeltaTime);
-	//m_pInput->fMouseWheel = 0.0f;
+	float fGrassOffset = m_fGrassScale * 0.1f;
+	m_pGrass->RecreateGrassMesh(_pDevice, 
+								m_pCursor->GetPosition() + (m_pCamera->GetLook() * fGrassOffset), 
+								m_pGrassEntities, 
+								m_iNumGrassEntities,
+								_fDeltaTime);
 
 	//Process audio
 	CAudioPlayer::GetInstance().SetListenerPosition(m_pCamera->GetPosition(), m_pCamera->GetLook(), D3DXVECTOR3(0.0f, 1.0f, 0.0f));
@@ -627,9 +626,12 @@ CLevel::Draw(ID3D11DeviceContext* _pDevice)
 		DrawScene(_pDevice, m_pCamera, SCENE_PERMANENTSCENE);
 
 		//=== DRAW GRASS ===
-		//_pDevice->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_POINTLIST);
-		//DrawScene(_pDevice, pActiveCamera, SCENE_GRASS);
-		//_pDevice->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		_pDevice->VSSetShader(m_pShaderCollection[SHADER_GRASS].GetVertexShader(), NULL, 0);
+		_pDevice->GSSetShader(m_pShaderCollection[SHADER_GRASS].GetGeometryShader(), NULL, 0);
+		_pDevice->PSSetShader(m_pShaderCollection[SHADER_GRASS].GetPixelShader(), NULL, 0);
+		_pDevice->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_POINTLIST);
+		DrawScene(_pDevice, m_pCamera, SCENE_GRASS);
+		_pDevice->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		//============================ Deferred Render ================================
 		_pDevice->VSSetShader(m_pShaderCollection[SHADER_DEFERRED].GetVertexShader(), NULL, 0);
@@ -780,10 +782,10 @@ CLevel::LoadShaderData(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	m_pShaderCollection[SHADER_MRT].CompileVertexShader(_pDevice, L"Shaders/objectshader_vs.hlsl", "ObjectVS");
 	m_pShaderCollection[SHADER_MRT].CompilePixelShader(_pDevice, L"Shaders/mrtshader_ps.hlsl", "MRTPS");
 
-	//m_pShaderCollection[SHADER_GRASS].Initialise(_pDevice);
-	//m_pShaderCollection[SHADER_GRASS].CompileVertexShader(_pDevice, L"Shaders/objectshader_vs.hlsl", "ObjectVS");
-	//m_pShaderCollection[SHADER_GRASS].CompileGeometryShader(_pDevice, L"Shaders/grassshader_gs.hlsl", "PointGS");
-	//m_pShaderCollection[SHADER_GRASS].CompilePixelShader(_pDevice, L"Shaders/mrtshader_ps.hlsl", "MRTPS");
+	m_pShaderCollection[SHADER_GRASS].Initialise(_pDevice);
+	m_pShaderCollection[SHADER_GRASS].CompileVertexShader(_pDevice, L"Shaders/objectshader_vs.hlsl", "ObjectVS");
+	m_pShaderCollection[SHADER_GRASS].CompileGeometryShader(_pDevice, L"Shaders/grassshader_gs.hlsl", "GrassGS");
+	m_pShaderCollection[SHADER_GRASS].CompilePixelShader(_pDevice, L"Shaders/mrtshader_ps.hlsl", "MRTPS");
 
 	m_pShaderCollection[SHADER_DEFERRED].Initialise(_pDevice);
 	m_pShaderCollection[SHADER_DEFERRED].CompileVertexShader(_pDevice, L"Shaders/objectshader_vs.hlsl", "ObjectVS");
@@ -1034,6 +1036,7 @@ CLevel::LoadLevel(ID3D11Device* _pDevice, char* _pcLevelFilename)
 {
 	m_pEntityManager->ClearScene(SCENE_3DSCENE);
 	m_pHivemind->ClearHivemind();
+	m_pLightManager->DestroyLights();
 	m_pRootNode->Clear();
 	delete m_pRootNode;
 
@@ -1103,6 +1106,14 @@ CLevel::SaveLevel(ID3D11Device* _pDevice, char* _pcLevelFilename)
 	outFile << xmlDoc;
 	outFile.close();
 }
+/**
+*
+* CLevel class Adds a child node to the XML file
+* (Task ID: n/a)
+*
+* @author Christopher Howlett
+*
+*/
 void 
 CLevel::AddChildToXMLNode(rapidxml::xml_document<>* _pDocument, rapidxml::xml_node<>* _pParentNode, TEntityNode* _pChildNode)
 {
@@ -1115,18 +1126,18 @@ CLevel::AddChildToXMLNode(rapidxml::xml_document<>* _pDocument, rapidxml::xml_no
 	rapidxml::xml_node<>* pPosition = _pDocument->allocate_node(rapidxml::node_element, "position");
 	sprintf_s(cBuffer, 32, "%.2f", pCurrentEntity->GetPosition().x);
 	pPosition->append_attribute(_pDocument->allocate_attribute("x", _pDocument->allocate_string(cBuffer)));
-	sprintf_s(cBuffer, 32, "%.2f", pCurrentEntity->GetPosition().y);
+	sprintf_s(cBuffer, 32, "%.2f", (pCurrentEntity->GetPosition().y - pCurrentEntity->GetScale().y * 0.5f)); // Lower the model by half its scale
 	pPosition->append_attribute(_pDocument->allocate_attribute("y", _pDocument->allocate_string(cBuffer)));
 	sprintf_s(cBuffer, 32, "%.2f", pCurrentEntity->GetPosition().z);
 	pPosition->append_attribute(_pDocument->allocate_attribute("z", _pDocument->allocate_string(cBuffer)));
 	pChild->append_node(pPosition);
 	//Object scale
 	rapidxml::xml_node<>* pScale = _pDocument->allocate_node(rapidxml::node_element, "scale");
-	sprintf_s(cBuffer, 32, "%.2f", pCurrentEntity->GetScale().x);
+	sprintf_s(cBuffer, 32, "%.2f", pCurrentEntity->GetLocalScale().x);
 	pScale->append_attribute(_pDocument->allocate_attribute("x", _pDocument->allocate_string(cBuffer)));
-	sprintf_s(cBuffer, 32, "%.2f", pCurrentEntity->GetScale().y);
+	sprintf_s(cBuffer, 32, "%.2f", pCurrentEntity->GetLocalScale().y);
 	pScale->append_attribute(_pDocument->allocate_attribute("y", _pDocument->allocate_string(cBuffer)));
-	sprintf_s(cBuffer, 32, "%.2f", pCurrentEntity->GetScale().z);
+	sprintf_s(cBuffer, 32, "%.2f", pCurrentEntity->GetLocalScale().z);
 	pScale->append_attribute(_pDocument->allocate_attribute("z", _pDocument->allocate_string(cBuffer)));
 	pChild->append_node(pScale);
 	//Object rotation
