@@ -182,7 +182,10 @@ void
 CClock::EndTimer()
 {
 	QueryPerformanceCounter(&m_iNumCounts);
-	m_fEndTime = static_cast<float>(m_iNumCounts.QuadPart / static_cast<float>(m_iTimerFrequency.QuadPart));;
+	m_fEndTime = static_cast<float>(m_iNumCounts.QuadPart / static_cast<float>(m_iTimerFrequency.QuadPart));
+
+	++m_fFramesCounted;
+	m_fTotalAverageTimeElapsed += m_fEndTime - m_fStartTime;
 }
 /**
 *
@@ -194,9 +197,10 @@ CClock::EndTimer()
 float
 CClock::GetTimeElapsed()
 {
-	++m_fFramesCounted;
-	m_fTotalAverageTimeElapsed += m_fEndTime - m_fStartTime;
-	return (m_fTotalAverageTimeElapsed / m_fFramesCounted);
+	float fTimeElapsed = m_fTotalAverageTimeElapsed / m_fFramesCounted;
+	m_fTotalAverageTimeElapsed = 0.0f;
+	m_fFramesCounted = 0.0f;
+	return (fTimeElapsed);
 }
 /**
 *

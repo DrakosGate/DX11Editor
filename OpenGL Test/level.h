@@ -32,6 +32,14 @@ enum EFontType
 	FONT_PERFORMANCE,
 	FONT_MAX
 };
+enum EGrassState
+{
+	GRASS_INVALID = -1,
+	GRASS_DRAWWITHCOLLISIONS,
+	GRASS_DRAWONLY,
+	GRASS_OFF,
+	GRASS_MAX
+};
 // Constants
 
 // Prototypes
@@ -127,8 +135,8 @@ private:
 
 	CGrass* m_pGrass;
 	std::vector<CRenderEntity*> m_vecGrassEntities;
+	EGrassState m_eGrassState;
 	float m_fGrassScale;
-	bool m_bGrassIsActive;
 
 	CAIHiveMind* m_pHivemind;
 	

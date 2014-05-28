@@ -100,7 +100,7 @@ CLevel::CLevel()
 , m_pcProcessingMethodName(0)
 , m_bCreateObject(false)
 , m_bHasSelectedObject(false)
-, m_bGrassIsActive(false)
+, m_eGrassState(GRASS_OFF)
 {
 	D3DXMatrixIdentity(&m_matWorldViewProjection); 
 }
@@ -347,6 +347,7 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	m_pGrass->SetDiffuseMap(m_pResourceManager->GetTexture(std::string("grassblades")));
 	m_pGrass->SetRadius(FLT_MAX);
 	m_pEntityManager->AddEntity(m_pGrass, SCENE_GRASS);
+	m_eGrassState = GRASS_OFF;
 	
 	//Load Default level data
 	LoadLevel(_pDevice, "Data/Levels/level1.xml");
@@ -403,6 +404,7 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 void 
 CLevel::Process(ID3D11Device* _pDevice, CClock* _pClock, float _fDeltaTime)
 {
+	_pClock->StartTimer();
 	ProcessInput(_pDevice, _fDeltaTime);
 
 	m_pCamera->Process(_fDeltaTime);
@@ -456,7 +458,7 @@ CLevel::Process(ID3D11Device* _pDevice, CClock* _pClock, float _fDeltaTime)
 	m_pEntityManager->Process(_fDeltaTime, SCENE_FINAL);
 	m_fGameTimeElapsed += _fDeltaTime;
 	
-	if (m_bGrassIsActive)
+	if (m_eGrassState == GRASS_DRAWWITHCOLLISIONS)
 	{
 		m_pEntityManager->Process(_fDeltaTime, SCENE_GRASS);
 		float fGrassOffset = m_fGrassScale * 0.5f;
@@ -466,6 +468,18 @@ CLevel::Process(ID3D11Device* _pDevice, CClock* _pClock, float _fDeltaTime)
 									vecGrassPosition,
 									m_vecGrassEntities,
 									_fDeltaTime);
+		m_pFont[FONT_DEBUG].Write(std::string("Grass State: On With Collisions (Press G to toggle)"), 2);
+	}
+	else
+	{
+		if (m_eGrassState == GRASS_DRAWONLY)
+		{
+			m_pFont[FONT_DEBUG].Write(std::string("Grass State: Draw Only (Press G to toggle)"), 2);
+		}
+		else
+		{
+			m_pFont[FONT_DEBUG].Write(std::string("Grass State: Off (Press G to toggle)"), 2);
+		}
 	}
 	//Process audio
 	CAudioPlayer::GetInstance().SetListenerPosition(m_pCamera->GetPosition(), m_pCamera->GetLook(), D3DXVECTOR3(0.0f, 1.0f, 0.0f));
@@ -487,12 +501,13 @@ CLevel::Process(ID3D11Device* _pDevice, CClock* _pClock, float _fDeltaTime)
 			++iCurrentTextIndex;
 		}
 	}
+	_pClock->EndTimer();
 	//Send data to performance graph
 	m_fGraphDelay -= _fDeltaTime;
 	if (m_fGraphDelay < 0.0f)
 	{
-		m_fGraphDelay = 0.05f;
-		float fGraphMeasurement = sinf(m_fGameTimeElapsed * 2.0f);
+		m_fGraphDelay = 0.02f;
+		float fGraphMeasurement = _pClock->GetTimeElapsed();//_pClock->GetFPS();//  sinf(m_fGameTimeElapsed * 2.0f);
 		m_pGraph->SetGraphRange(fGraphMeasurement, fGraphMeasurement);
 		m_pGraph->AddNode(_pDevice, fGraphMeasurement);
 		sprintf_s(cBuffer, 64, "Max:     %f", m_pGraph->GetMax());
@@ -534,7 +549,14 @@ CLevel::ProcessInput(ID3D11Device* _pDevice, float _fDeltaTime)
 	}
 	if (m_pInput->bG.bPressed && m_pInput->bG.bPreviousState == false)
 	{
-		m_bGrassIsActive = !m_bGrassIsActive;
+		if (m_eGrassState == GRASS_OFF)
+		{
+			m_eGrassState = GRASS_DRAWWITHCOLLISIONS;
+		}
+		else
+		{
+			m_eGrassState = GRASS_OFF;
+		}
 	}
 	//Toggle level editor
 	if (m_pInput->bTilde.bPressed && m_pInput->bTilde.bPreviousState == false)
@@ -679,7 +701,7 @@ CLevel::Draw(ID3D11DeviceContext* _pDevice)
 		DrawScene(_pDevice, m_pCamera, SCENE_PERMANENTSCENE);
 
 		//=== DRAW GRASS ===
-		if (m_bGrassIsActive)
+		if (m_eGrassState != GRASS_OFF)
 		{
 			m_pRenderer->SetBlendState(BLEND_ALPHATOCOVERAGE);
 			_pDevice->RSSetState(m_pGrassRasteriser);

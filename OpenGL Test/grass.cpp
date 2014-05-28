@@ -68,27 +68,28 @@ CGrass::RecreateGrassMesh(ID3D11Device* _pDevice, D3DXVECTOR3& _rCameraPos, std:
 	m_pVertexBuffer->Release();
 	D3DXVECTOR3 vecNormalTarget = D3DXVECTOR3(0.0f, m_fGrassStiffness, 0.0f);
 
-	for(int iVertex = 0; iVertex < m_iVertexCount; ++iVertex)
+	for (int iVertex = 0; iVertex < m_iVertexCount; ++iVertex)
 	{
 		m_pVertices[iVertex].normal += (vecNormalTarget - m_pVertices[iVertex].normal) * m_fGrassSpeed * _fDeltaTime;
 		//Width
-		if(m_pVertices[iVertex].pos.x > _rCameraPos.x + fHalfScale)
+		if (m_pVertices[iVertex].pos.x > _rCameraPos.x + fHalfScale)
 		{
 			m_pVertices[iVertex].pos.x -= m_fModelScale;
 		}
-		if(m_pVertices[iVertex].pos.x < _rCameraPos.x - fHalfScale)
+		if (m_pVertices[iVertex].pos.x < _rCameraPos.x - fHalfScale)
 		{
 			m_pVertices[iVertex].pos.x += m_fModelScale;
 		}
 		//Height
-		if(m_pVertices[iVertex].pos.z > _rCameraPos.z + fHalfScale)
+		if (m_pVertices[iVertex].pos.z > _rCameraPos.z + fHalfScale)
 		{
 			m_pVertices[iVertex].pos.z -= m_fModelScale;
 		}
-		if(m_pVertices[iVertex].pos.z < _rCameraPos.z - fHalfScale)
+		if (m_pVertices[iVertex].pos.z < _rCameraPos.z - fHalfScale)
 		{
 			m_pVertices[iVertex].pos.z += m_fModelScale;
 		}
+	
 
 		//Avoid entities
 		D3DXVECTOR3 vecToEntity;
@@ -97,12 +98,12 @@ CGrass::RecreateGrassMesh(ID3D11Device* _pDevice, D3DXVECTOR3& _rCameraPos, std:
 		for (unsigned int iEntity = 0; iEntity < iNumEntities; ++iEntity)
 		{
 			fAvoidanceRange = _pEntities[iEntity]->GetRadius() * _pEntities[iEntity]->GetRadius();
-
+	
 			vecToEntity = _pEntities[iEntity]->GetPosition() - m_pVertices[iVertex].pos;
 			float fDistanceToEntity = D3DXVec3LengthSq(&vecToEntity);
 			if (fDistanceToEntity < fAvoidanceRange)
 			{
-				m_pVertices[iVertex].normal -= (vecToEntity * (fAvoidanceRange - fDistanceToEntity) * 2.0f) * m_fGrassSpeed * _fDeltaTime;
+				m_pVertices[iVertex].normal -= (vecToEntity * (fAvoidanceRange - fDistanceToEntity) * 4.0f) * m_fGrassSpeed * _fDeltaTime;
 			}
 		}
 		if(m_pVertices[iVertex].normal.y < 0.5f)
