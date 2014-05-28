@@ -19,6 +19,5 @@ float4 FontPS(PS_IN _input) : SV_TARGET
 {
 	float4 diffuse = diffuseMap.Sample(textureSampler, _input.texC);
 	diffuse *= _input.colour;
-	diffuse.r = 1.0f;
 	return diffuse;
 }

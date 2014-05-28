@@ -29,6 +29,7 @@ enum EFontType
 	FONT_INVALID = -1,
 	FONT_DEBUG,
 	FONT_SCENEGRAPH,
+	FONT_PERFORMANCE,
 	FONT_MAX
 };
 // Constants
@@ -59,6 +60,7 @@ class CThreadPool;
 class COpenCLKernel;
 class CFontRenderer;
 class CNetwork;
+class CPerformanceGraph;
 
 class CLevel
 {
@@ -100,6 +102,8 @@ private:
 	COpenCLKernel* m_pOpenCLKernel;
 	CFontRenderer* m_pFont;
 	CNetwork* m_pNetwork;
+	CPerformanceGraph* m_pGraph;
+	float m_fGraphDelay;
 
 	CEntityManager* m_pEntityManager;
 	TEntityNode* m_pRootNode;

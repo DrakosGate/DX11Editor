@@ -75,12 +75,13 @@ CFontRenderer::~CFontRenderer()
 *
 */
 bool 
-CFontRenderer::Initialise(char* _pcFontFilename, int _iFileWidth, int _iFileHeight, D3DXVECTOR3& _rPosition, D3DXVECTOR2& _rCharacterSize)
+CFontRenderer::Initialise(char* _pcFontFilename, int _iFileWidth, int _iFileHeight, D3DXVECTOR3& _rPosition, D3DXVECTOR2& _rCharacterSize, D3DXCOLOR& _rFontColour)
 {
 	m_iNumFontLetters = _iFileWidth * _iFileHeight;
 	m_pLetterCoordinates = new TLetterCoordinates[m_iNumFontLetters];
 	m_vecPosition = _rPosition;
 	m_vecCharacterSize = _rCharacterSize;
+	m_fontColour = _rFontColour;
 	
 	float fWidthPercentage = 1.0f / static_cast<float>(_iFileWidth);
 	float fHeightPercentage = 1.0f / static_cast<float>(_iFileHeight);
@@ -143,7 +144,7 @@ CFontRenderer::ProcessFont(ID3D11Device* _pDevice)
 				D3DXVECTOR3 vecCurrentLetterPos(iLetter * m_vecCharacterSize.x, iRow * -m_vecCharacterSize.y, 0.0f);
 				D3DXVECTOR3 vecScreenPos(m_vecPosition.x, -m_vecPosition.y, m_vecPosition.z);
 				vecCurrentLetterPos += vecScreenPos - vecScreenOffset;
-				m_Vertices.push_back(new TFontVertex(vecCurrentLetterPos, m_vecCharacterSize, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f), m_pLetterCoordinates[iLetterIndex].uvTopLeft, m_pLetterCoordinates[iLetterIndex].uvBottomRight));
+				m_Vertices.push_back(new TFontVertex(vecCurrentLetterPos, m_vecCharacterSize, m_fontColour, m_pLetterCoordinates[iLetterIndex].uvTopLeft, m_pLetterCoordinates[iLetterIndex].uvBottomRight));
 			}
 			//int iStringLength = strlen(_pcMessage);
 			//D3DXVECTOR3 vecScreenOffset(WINDOW_WIDTH * 0.5f, WINDOW_HEIGHT * -0.5f, 0.0f);

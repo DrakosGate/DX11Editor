@@ -57,7 +57,7 @@ public:
 	CFontRenderer();
 	virtual ~CFontRenderer();
 
-	virtual bool Initialise(char* _pcFontFilename, int _iFileWidth, int _iFileHeight, D3DXVECTOR3& _rPosition, D3DXVECTOR2& _rCharacterSize);
+	virtual bool Initialise(char* _pcFontFilename, int _iFileWidth, int _iFileHeight, D3DXVECTOR3& _rPosition, D3DXVECTOR2& _rCharacterSize, D3DXCOLOR& _rFontColour);
 	void Draw(ID3D11DeviceContext* _pDevice);
 	void ProcessFont(ID3D11Device* _pDevice);
 	void Write(std::string& _pcMessage, int _iIndex);
@@ -77,6 +77,7 @@ protected:
 	TFontVertex* m_pFontVerts;
 	D3DXVECTOR3 m_vecPosition;
 	D3DXVECTOR2 m_vecCharacterSize;
+	D3DXCOLOR m_fontColour;
 
 	int m_iNumFontLetters;
 	bool m_bHasChanged;

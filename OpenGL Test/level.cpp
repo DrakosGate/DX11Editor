@@ -43,6 +43,7 @@
 #include "openclkernel.h"
 #include "fontrenderer.h"
 #include "network.h"
+#include "performancegraph.h"
 
 // This Include
 #include "level.h"
@@ -94,6 +95,8 @@ CLevel::CLevel()
 , m_pOpenCLKernel(0)
 , m_pSelectedObject(0)
 , m_pFont(0)
+, m_pGraph(0)
+, m_fGraphDelay(0.0f)
 , m_pcProcessingMethodName(0)
 , m_bCreateObject(false)
 , m_bHasSelectedObject(false)
@@ -124,6 +127,7 @@ CLevel::~CLevel()
 	}
 	m_pLevelEntities.clear();
 	m_vecGrassEntities.clear();
+	SAFEDELETE(m_pGraph);
 	SAFEDELETE(m_pGrass);
 	SAFEDELETE(m_pNetwork);
 	SAFEDELETE(m_pThreadPool);
@@ -217,7 +221,7 @@ CLevel::Initialise(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext, CD
 	//m_pPlayer = new CPlayer();
 	//m_pPlayer->Initialise(m_pInput, m_pCamera, m_pCursor);
 	
-	CAudioPlayer::GetInstance().Initialise();
+	CAudioPlayer::GetInstance().Initialise(false);
 	CAudioPlayer::GetInstance().Play3DSound(SOUND_BIRDCHIRP, D3DXVECTOR3(0.0f, 0.0f, 0.0f));
 
 	float fFieldOfView = static_cast<float>(D3DX_PI)* 0.25f;
@@ -285,8 +289,9 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	
 	//Load font
 	m_pFont = new CFontRenderer[FONT_MAX];
-	m_pFont[FONT_DEBUG].Initialise("Something", 16, 6, D3DXVECTOR3(10.0f, WINDOW_HEIGHT * 0.1f, 2.0f), D3DXVECTOR2(12.0f, 15.0f));
-	m_pFont[FONT_SCENEGRAPH].Initialise("Something", 16, 6, D3DXVECTOR3(WINDOW_WIDTH * 0.81f, WINDOW_HEIGHT * 0.11f, 0.6f), D3DXVECTOR2(12.0f, 15.0f));
+	m_pFont[FONT_DEBUG].Initialise("Something", 16, 6, D3DXVECTOR3(10.0f, WINDOW_HEIGHT * 0.1f, 2.0f), D3DXVECTOR2(12.0f, 15.0f), D3DXCOLOR(0.5f, 0.5f, 1.0f, 1.0f));
+	m_pFont[FONT_SCENEGRAPH].Initialise("Something", 16, 6, D3DXVECTOR3(WINDOW_WIDTH * 0.81f, WINDOW_HEIGHT * 0.11f, 0.6f), D3DXVECTOR2(12.0f, 15.0f), D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f));
+	m_pFont[FONT_PERFORMANCE].Initialise("Something", 16, 6, D3DXVECTOR3(WINDOW_WIDTH * 0.01f, WINDOW_HEIGHT * 0.41f, 0.6f), D3DXVECTOR2(10.0f, 12.0f), D3DXCOLOR(0.7f, 0.9f, 0.7f, 1.0f));
 	for (int iFont = 0; iFont < FONT_MAX; ++iFont)
 	{
 		m_pFont[iFont].SetObjectShader(&m_pShaderCollection[SHADER_FONT]);
@@ -365,6 +370,13 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	m_pEditor->SetObjectShader(&m_pShaderCollection[SHADER_POINTSPRITE]);
 	m_pEditor->SetDiffuseMap(m_pResourceManager->GetTexture(std::string("menu_button")));
 	m_pEntityManager->AddEntity(m_pEditor, SCENE_UI);
+	
+	m_pGraph = new CPerformanceGraph();
+	m_pGraph->Initialise(_pDevice, D3DXVECTOR3(WINDOW_WIDTH * 0.01f, WINDOW_HEIGHT * 0.2f, 0.0f), D3DXVECTOR3(WINDOW_WIDTH * 0.3f, WINDOW_HEIGHT * 0.2f, 1.0f), 50);
+	m_pGraph->SetGraphRange(0.0f, 0.0000000001f);
+	m_pGraph->SetObjectShader(&m_pShaderCollection[SHADER_POINTSPRITE]);
+	m_pGraph->SetDiffuseMap(m_pResourceManager->GetTexture(std::string("menu_button")));
+	m_pEntityManager->AddEntity(m_pGraph, SCENE_UI);
 
 	m_pSelectionCursor = new CModel();
 	m_pSelectionCursor->Initialise();
@@ -461,7 +473,7 @@ CLevel::Process(ID3D11Device* _pDevice, CClock* _pClock, float _fDeltaTime)
 
 	//Print FPS
 	char cBuffer[64];
-	sprintf_s(cBuffer, 64, "FPS: %i\tFrame Time Elapsed: %f", _pClock->GetFPS(), _fDeltaTime);
+	sprintf_s(cBuffer, 64, "FPS: %i", _pClock->GetFPS());
 	m_pFont[FONT_DEBUG].Write(std::string(cBuffer), 0);
 	sprintf_s(cBuffer, 64, "Processing Method: %s", m_pcProcessingMethodName[m_eProcessingMethod].c_str());
 	m_pFont[FONT_DEBUG].Write(std::string(cBuffer), 1);
@@ -474,6 +486,21 @@ CLevel::Process(ID3D11Device* _pDevice, CClock* _pClock, float _fDeltaTime)
 			AddTextToSceneGraph(m_pRootNode->vecChildren[iChild], iCurrentTextIndex, 0);
 			++iCurrentTextIndex;
 		}
+	}
+	//Send data to performance graph
+	m_fGraphDelay -= _fDeltaTime;
+	if (m_fGraphDelay < 0.0f)
+	{
+		m_fGraphDelay = 0.05f;
+		float fGraphMeasurement = sinf(m_fGameTimeElapsed * 2.0f);
+		m_pGraph->SetGraphRange(fGraphMeasurement, fGraphMeasurement);
+		m_pGraph->AddNode(_pDevice, fGraphMeasurement);
+		sprintf_s(cBuffer, 64, "Max:     %f", m_pGraph->GetMax());
+		m_pFont[FONT_PERFORMANCE].Write(std::string(cBuffer), 0);
+		sprintf_s(cBuffer, 64, "Current: %f", fGraphMeasurement);
+		m_pFont[FONT_PERFORMANCE].Write(std::string(cBuffer), 1);
+		sprintf_s(cBuffer, 64, "Min:     %f", m_pGraph->GetMin());
+		m_pFont[FONT_PERFORMANCE].Write(std::string(cBuffer), 2);
 	}
 }
 /**
@@ -665,6 +692,7 @@ CLevel::Draw(ID3D11DeviceContext* _pDevice)
 			_pDevice->RSSetState(m_pRasteriserState);
 			m_pRenderer->SetBlendState(BLEND_TRANSPARENT);
 		}
+
 		//============================ Deferred Render ================================
 		_pDevice->VSSetShader(m_pShaderCollection[SHADER_DEFERRED].GetVertexShader(), NULL, 0);
 		_pDevice->GSSetShader(NULL, NULL, 0);
@@ -699,32 +727,33 @@ CLevel::Draw(ID3D11DeviceContext* _pDevice)
 		_pDevice->PSSetShader(m_pShaderCollection[SHADER_FINALOUTPUT].GetPixelShader(), NULL, 0);
 		DrawScene(_pDevice, m_pOrthoCamera, SCENE_FINAL);
 	}
-	_pDevice->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
-	_pDevice->IASetInputLayout(m_pVertexLayout[VERTEX_FONT]);
-	//Render debug lines to screen
-	_pDevice->VSSetShader(m_pShaderCollection[SHADER_FONT].GetVertexShader(), NULL, 0);
-	_pDevice->GSSetShader(m_pShaderCollection[SHADER_FONT].GetGeometryShader(), NULL, 0);
-	_pDevice->PSSetShader(m_pShaderCollection[SHADER_FONT].GetPixelShader(), NULL, 0);
-	DrawScene(_pDevice, m_pOrthoCamera, SCENE_FONT);
-	_pDevice->IASetInputLayout(m_pVertexLayout[VERTEX_POINT]);
 	if (m_eRenderState >= RENDERSTATE_DEBUG)
 	{
+		_pDevice->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
+		_pDevice->IASetInputLayout(m_pVertexLayout[VERTEX_FONT]);
+		//Render debug lines to screen
+		_pDevice->VSSetShader(m_pShaderCollection[SHADER_FONT].GetVertexShader(), NULL, 0);
+		_pDevice->GSSetShader(m_pShaderCollection[SHADER_FONT].GetGeometryShader(), NULL, 0);
+		_pDevice->PSSetShader(m_pShaderCollection[SHADER_FONT].GetPixelShader(), NULL, 0);
+		DrawScene(_pDevice, m_pOrthoCamera, SCENE_FONT);
+		_pDevice->IASetInputLayout(m_pVertexLayout[VERTEX_POINT]);
 		//Render debug lines to screen
 		_pDevice->VSSetShader(m_pShaderCollection[SHADER_LINERENDERER].GetVertexShader(), NULL, 0);
 		_pDevice->GSSetShader(m_pShaderCollection[SHADER_LINERENDERER].GetGeometryShader(), NULL, 0);
 		_pDevice->PSSetShader(m_pShaderCollection[SHADER_LINERENDERER].GetPixelShader(), NULL, 0);
 		DrawScene(_pDevice, m_pCamera, SCENE_DEBUG);
+		if (m_eRenderState >= RENDERSTATE_EDITOR)
+		{
+			_pDevice->IASetInputLayout(m_pVertexLayout[VERTEX_POINT]);
+			//Render UI objects to screen
+			_pDevice->VSSetShader(m_pShaderCollection[SHADER_POINTSPRITE].GetVertexShader(), NULL, 0);
+			_pDevice->GSSetShader(m_pShaderCollection[SHADER_POINTSPRITE].GetGeometryShader(), NULL, 0);
+			_pDevice->PSSetShader(m_pShaderCollection[SHADER_POINTSPRITE].GetPixelShader(), NULL, 0);
+			m_pResourceManager->SendTextureDataToShader(_pDevice);
+			DrawScene(_pDevice, m_pOrthoCamera, SCENE_UI);
+		}
 	}
-	if (m_eRenderState >= RENDERSTATE_EDITOR)
-	{
-		//Render UI objects to screen
-		_pDevice->VSSetShader(m_pShaderCollection[SHADER_POINTSPRITE].GetVertexShader(), NULL, 0);
-		_pDevice->GSSetShader(m_pShaderCollection[SHADER_POINTSPRITE].GetGeometryShader(), NULL, 0);
-		_pDevice->PSSetShader(m_pShaderCollection[SHADER_POINTSPRITE].GetPixelShader(), NULL, 0);
-		m_pResourceManager->SendTextureDataToShader(_pDevice);
-		DrawScene(_pDevice, m_pOrthoCamera, SCENE_UI);
-	}
-	
+
 	//Unbind all render targets and shader resources prior to next frame
 	ID3D11ShaderResourceView* const blankTexture[3] = { NULL, NULL, NULL };
 	_pDevice->PSSetShaderResources(0, 3, blankTexture);

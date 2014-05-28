@@ -96,7 +96,7 @@ bool
 CEditorInterface::Initialise(HWND _hWindow, CLevel* _pLevel)
 {
 	m_pWindowColours = new D3DXCOLOR[WINDOWSTATE_MAX];
-	m_pWindowColours[WINDOWSTATE_OPEN] = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
+	m_pWindowColours[WINDOWSTATE_OPEN] = D3DXCOLOR(1.0f, 1.0f, 1.0f, 0.8f);
 	m_pWindowColours[WINDOWSTATE_CLOSED] = D3DXCOLOR(0.0f, 0.0f, 0.0f, 0.0f);
 	m_pWindowColours[WINDOWSTATE_MOUSEOVER] = D3DXCOLOR(0.5f, 0.7f, 0.8f, 1.0f);
 	m_pWindowColours[WINDOWSTATE_CLOSEBUTTON] = D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f);
