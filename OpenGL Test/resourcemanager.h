@@ -45,7 +45,7 @@ public:
 	virtual void Initialise(ID3D11Device* _pDevice, char* _pcResourceFilename);
 	void LoadPrefabTypes(ID3D11Device* _pDevice, CEntityManager* _pEntityManager, char* _pcResourceFilename);
 
-	void CreateTextureFromData(ID3D11Device* _pDevice, unsigned char* _pcData, std::string& _sTextureString, int _iWidth, int _iHeight);
+	ID3D11ShaderResourceView* CreateTextureFromData(ID3D11Device* _pDevice, unsigned char* _pcData, std::string& _sTextureString, int _iWidth, int _iHeight);
 
 	CModel*  GetModel(std::string& _pcModelName) const;
 	CAnimatedModel* GetAnimatedModel(std::string& _pcAnimatedModelName) const;

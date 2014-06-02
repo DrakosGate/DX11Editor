@@ -2,6 +2,7 @@
 
 //Textures
 Texture2D diffuseMap;
+Texture2D normalMap;
 SamplerState textureSampler;
 
 struct PS_IN

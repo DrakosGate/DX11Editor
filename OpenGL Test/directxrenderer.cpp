@@ -105,7 +105,7 @@ CDirectXRenderer::Initialise(HWND _hWnd, int _iWindowWidth, int _iWindowHeight, 
 void 
 CDirectXRenderer::ExecuteOneFrame(CClock* _pClock, float _fDeltaTick)
 {
-	m_pLevel->Process(m_pDevice, _pClock, _fDeltaTick);
+	m_pLevel->Process(m_pDevice, m_pDeviceContext, _pClock, _fDeltaTick);
 	
 	m_pLevel->Draw(m_pDeviceContext);
 	m_pSwapChain->Present(m_bVSyncEnabled, 0);

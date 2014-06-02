@@ -32,6 +32,7 @@ public:
 	virtual bool Initialise(CAIHiveMind* _pHivemind, CRenderEntity* _pEntity, float _fMovementSpeed, float _fRotationSpeed);
 	void Process(float _fDeltaTime, D3DXVECTOR3& _rAvoidance);
 	void ProcessWaypointMovement(float _fDeltaTime);
+	void ProcessAStarMovement(int _iPathLength, float _fDeltaTime);
 	void CheckWaypointReached();
 	
 	D3DXVECTOR3& GetRandomVector(D3DXVECTOR3& _rMin, D3DXVECTOR3& _rMax);
@@ -48,6 +49,8 @@ private:
 	CAIHiveMind* m_pHivemind;
 	CRenderEntity* m_pEntity;
 	D3DXVECTOR3 m_vecWaypoint;
+
+	D3DXVECTOR3 m_vecAStarActivePoint;
 	float m_fMovementSpeed;
 	float m_fRotationSpeed;
 

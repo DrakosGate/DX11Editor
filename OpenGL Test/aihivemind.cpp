@@ -131,6 +131,7 @@ CAIHiveMind::Process(CThreadPool* _pThreadPool, float _fDeltaTime)
 		{
 			for (int iAI = 0; iAI < m_iNumAI; ++iAI)
 			{
+				//m_pAI[iAI]->ProcessAStarMovement(_fDeltaTime, 10);
 				m_pAI[iAI]->ProcessWaypointMovement(_fDeltaTime);
 				ProcessIndividualAIController(iAI, _fDeltaTime);
 			}					 

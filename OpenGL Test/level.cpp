@@ -341,10 +341,10 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 
 	m_fGrassScale = 20.0f;
 	m_pGrass = new CGrass();
-	m_pGrass->Initialise();
-	m_pGrass->LoadTerrain(_pDevice, 80, 80, m_fGrassScale, D3DXVECTOR2(10.0f, 10.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
+	m_pGrass->Initialise(_pDevice, m_pResourceManager, 80, 80, m_fGrassScale, D3DXVECTOR2(10.0f, 10.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
 	m_pGrass->SetObjectShader(&m_pShaderCollection[SHADER_GRASS]);
 	m_pGrass->SetDiffuseMap(m_pResourceManager->GetTexture(std::string("grassblades")));
+	m_pGrass->SetNormalMap(m_pResourceManager->GetTexture(std::string("grassnormals")));
 	m_pGrass->SetRadius(FLT_MAX);
 	m_pEntityManager->AddEntity(m_pGrass, SCENE_GRASS);
 	m_eGrassState = GRASS_OFF;
@@ -373,7 +373,7 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	m_pEntityManager->AddEntity(m_pEditor, SCENE_UI);
 	
 	m_pGraph = new CPerformanceGraph();
-	m_pGraph->Initialise(_pDevice, D3DXVECTOR3(WINDOW_WIDTH * 0.01f, WINDOW_HEIGHT * 0.2f, 0.0f), D3DXVECTOR3(WINDOW_WIDTH * 0.3f, WINDOW_HEIGHT * 0.2f, 1.0f), 50);
+	m_pGraph->Initialise(_pDevice, D3DXVECTOR3(WINDOW_WIDTH * 0.01f, WINDOW_HEIGHT * 0.2f, 0.0f), D3DXVECTOR3(WINDOW_WIDTH * 0.3f, WINDOW_HEIGHT * 0.2f, 1.0f), 150);
 	m_pGraph->SetGraphRange(0.0f, 0.0000000001f);
 	m_pGraph->SetObjectShader(&m_pShaderCollection[SHADER_POINTSPRITE]);
 	m_pGraph->SetDiffuseMap(m_pResourceManager->GetTexture(std::string("menu_button")));
@@ -402,7 +402,7 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 *
 */
 void 
-CLevel::Process(ID3D11Device* _pDevice, CClock* _pClock, float _fDeltaTime)
+CLevel::Process(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDeviceContext, CClock* _pClock, float _fDeltaTime)
 {
 	_pClock->StartTimer();
 	ProcessInput(_pDevice, _fDeltaTime);
@@ -465,6 +465,7 @@ CLevel::Process(ID3D11Device* _pDevice, CClock* _pClock, float _fDeltaTime)
 		D3DXVECTOR3 vecGrassPosition = m_pCamera->GetPosition() + (m_pCamera->GetLook() * fGrassOffset);
 		vecGrassPosition.y = 0.0f;
 		m_pGrass->RecreateGrassMesh(_pDevice,
+									_pDeviceContext,
 									vecGrassPosition,
 									m_vecGrassEntities,
 									_fDeltaTime);
@@ -550,6 +551,10 @@ CLevel::ProcessInput(ID3D11Device* _pDevice, float _fDeltaTime)
 	if (m_pInput->bG.bPressed && m_pInput->bG.bPreviousState == false)
 	{
 		if (m_eGrassState == GRASS_OFF)
+		{
+			m_eGrassState = GRASS_DRAWONLY;
+		}
+		else if (m_eGrassState == GRASS_DRAWONLY)
 		{
 			m_eGrassState = GRASS_DRAWWITHCOLLISIONS;
 		}
@@ -889,9 +894,9 @@ CLevel::LoadShaderData(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	m_pShaderCollection[SHADER_MRT].CompilePixelShader(_pDevice, L"Shaders/mrtshader_ps.hlsl", "MRTPS");
 
 	m_pShaderCollection[SHADER_GRASS].Initialise(_pDevice);
-	m_pShaderCollection[SHADER_GRASS].CompileVertexShader(_pDevice, L"Shaders/objectshader_vs.hlsl", "ObjectVS");
+	m_pShaderCollection[SHADER_GRASS].CompileVertexShader(_pDevice, L"Shaders/grassshader_vs.hlsl", "GrassVS");
 	m_pShaderCollection[SHADER_GRASS].CompileGeometryShader(_pDevice, L"Shaders/grassshader_gs.hlsl", "GrassGS");
-	m_pShaderCollection[SHADER_GRASS].CompilePixelShader(_pDevice, L"Shaders/mrtshader_ps.hlsl", "MRTPS");
+	m_pShaderCollection[SHADER_GRASS].CompilePixelShader(_pDevice, L"Shaders/grassshader_ps.hlsl", "GrassMRTPS");
 
 	m_pShaderCollection[SHADER_DEFERRED].Initialise(_pDevice);
 	m_pShaderCollection[SHADER_DEFERRED].CompileVertexShader(_pDevice, L"Shaders/objectshader_vs.hlsl", "ObjectVS");

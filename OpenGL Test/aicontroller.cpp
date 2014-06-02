@@ -122,6 +122,38 @@ CAIController::ProcessWaypointMovement(float _fDeltaTime)
 }
 /**
 *
+* CAIController class ProcessAStarMovement Moves AI towards its current waypoint using the A* algorithm
+* (Task ID: n/a)
+*
+* @author Christopher Howlett
+* @param _iPathLength Max path length to search
+* @param _fDeltaTime Game time elapsed
+*
+*/
+void
+CAIController::ProcessAStarMovement(int _iPathLength, float _fDeltaTime)
+{
+	//Check distance to closest waypoint
+	D3DXVECTOR3 vecToCurrentPoint = m_vecAStarActivePoint - m_pEntity->GetPosition();
+	if (D3DXVec3LengthSq(&m_vecAStarActivePoint) < 0.5f)
+	{
+		//Controller has reached its current waypoint
+	}
+
+	//Find shortest path to waypoint
+	D3DXVECTOR3 vecForward = m_pEntity->GetForward();
+	D3DXVECTOR3 vecCurrentPos = m_pEntity->GetPosition();
+	D3DXVECTOR3 vecToWaypoint = vecToCurrentPoint - vecCurrentPos;
+	vecToWaypoint.y = 0.0f;
+	vecForward += vecToWaypoint * m_fRotationSpeed * _fDeltaTime;
+	D3DXVec3Normalize(&vecForward, &vecForward);
+
+	vecCurrentPos += vecForward * m_fMovementSpeed * _fDeltaTime;
+	m_pEntity->SetPosition(vecCurrentPos);
+	m_pEntity->SetForward(vecForward);
+}
+/**
+*
 * CAIController class Checks if this controller has reached its waypoint. If so, get a new one
 * (Task ID: n/a)
 *

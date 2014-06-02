@@ -28,6 +28,7 @@
 // Constants
 
 // Prototypes
+class CResourceManager;
 
 class CGrass : public CModel
 {
@@ -35,8 +36,8 @@ class CGrass : public CModel
 public:
 	CGrass();
 	virtual ~CGrass();
-
-	void RecreateGrassMesh(ID3D11Device* _pDevice, D3DXVECTOR3& _rCameraPos, std::vector<CRenderEntity*>& _pEntities, float _fDeltaTime);
+	bool Initialise(ID3D11Device* _pDevice, CResourceManager* _pResourceManager, int _iTerrainWidth, int _iTerrainHeight, float _fScale, D3DXVECTOR2& _rVecTiling, D3DXCOLOR& _rColour);
+	void RecreateGrassMesh(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDeviceContext, D3DXVECTOR3& _rCameraPos, std::vector<CRenderEntity*>& _pEntities, float _fDeltaTime);
 	
 	//Member variables
 protected:

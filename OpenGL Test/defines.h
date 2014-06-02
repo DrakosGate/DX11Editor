@@ -50,6 +50,13 @@ template<class T> T ReadFromString(std::string _sInput)
 
 //Texture types
 
+struct TUCHARColour
+{
+	unsigned char r;
+	unsigned char g;
+	unsigned char b;
+	unsigned char a;
+};
 enum EGameState
 {
 	GAMESTATE_INVALID = -1,

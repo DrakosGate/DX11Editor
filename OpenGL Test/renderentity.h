@@ -97,6 +97,7 @@ public:
 	virtual ID3D11ShaderResourceView* GetDiffuseMap();
 	virtual ID3D11ShaderResourceView* GetNormalMap();
 	virtual void SetDiffuseMap(ID3D11ShaderResourceView* _pDiffuseMap);
+	virtual void SetNormalMap(ID3D11ShaderResourceView* _pNormalMap);
 	virtual void SendTextureDataToShader(ID3D11DeviceContext* _pDevContext);
 
 	virtual int GetVertexCount() const;

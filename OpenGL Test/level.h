@@ -17,13 +17,6 @@
 #include "defines.h"
 
 // Types
-struct TUCHARColour
-{
-	unsigned char r;
-	unsigned char g;
-	unsigned char b;
-	unsigned char a;
-};
 enum EFontType
 {
 	FONT_INVALID = -1,
@@ -78,7 +71,7 @@ public:
 
 	virtual bool Initialise(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext, CDirectXRenderer* _pRenderer, HWND _hWindow, TInputStruct* _pInput, int _iScreenWidth, int _iScreenHeight);
 	virtual void CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext, HWND _hWindow);
-	virtual void Process(ID3D11Device* _pDevice, CClock* _pClock, float _fDeltaTime);
+	virtual void Process(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDeviceContext, CClock* _pClock, float _fDeltaTime);
 	virtual bool ProcessInput(ID3D11Device* _pDevice, float _fDeltaTime);
 	virtual void Draw(ID3D11DeviceContext* _pDevice);
 	virtual void DrawScene(ID3D11DeviceContext* _pDevice, CCamera* _pCurrentCamera, EGameScene _EGameScene);

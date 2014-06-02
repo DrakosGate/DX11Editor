@@ -487,13 +487,27 @@ CRenderEntity::GetNormalMap()
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
-* @param _pTexture new model texture
+* @param _pDiffuseMap new model texture
 *
 */
 void
 CRenderEntity::SetDiffuseMap(ID3D11ShaderResourceView* _pDiffuseMap)
 {
 	m_pDiffuseMap = _pDiffuseMap;
+}
+/**
+*
+* CRenderEntity class Sets the Normal map for this object
+* (Task ID: n/a)
+*
+* @author Christopher Howlett
+* @param _pNormalMap new model normal map
+*
+*/
+void
+CRenderEntity::SetNormalMap(ID3D11ShaderResourceView* _pNormalMap)
+{
+	m_pNormalMap = _pNormalMap;
 }
 /**
 *
@@ -509,8 +523,9 @@ CRenderEntity::SendTextureDataToShader(ID3D11DeviceContext* _pDevContext)
 {
 	if (GetDiffuseMap())
 	{
-		ID3D11ShaderResourceView* const texture[1] = { GetDiffuseMap() };
-		_pDevContext->PSSetShaderResources(0, 1, texture);
+		ID3D11ShaderResourceView* const textureData[2] = {	GetDiffuseMap(),
+															GetNormalMap() };
+		_pDevContext->PSSetShaderResources(0, 2, textureData);
 	}
 }
 /**

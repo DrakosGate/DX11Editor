@@ -248,11 +248,13 @@ CResourceManager::LoadPrefabTypes(ID3D11Device* _pDevice, CEntityManager* _pEnti
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
+* @return Returns the new texture
 *
 */
-void 
+ID3D11ShaderResourceView*
 CResourceManager::CreateTextureFromData(ID3D11Device* _pDevice, unsigned char* _pcData, std::string& _sTextureString, int _iWidth, int _iHeight)
 {
+	
 	ID3D11Texture2D* pNewTexture;
 	TTexturePoolData* pNewPoolData = new TTexturePoolData();
 
@@ -284,6 +286,8 @@ CResourceManager::CreateTextureFromData(ID3D11Device* _pDevice, unsigned char* _
 	pNewPoolData->sName = _sTextureString;
 	m_TexturePool.push_back(pNewPoolData);
 	pNewTexture->Release();
+	
+	return pNewPoolData->pTexture;
 }
 /**
 *

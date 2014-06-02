@@ -15,6 +15,7 @@ struct GS_DATA
 	float3 worldPos : POSITION;
 	float4 colour	: COLOR;
 	float3 normal	: NORMAL;
+	float3 grassNormal: GRASSNORMAL;
 	float3 tangent	: TANGENT;
 	float3 binormal	: BINORMAL;
 	float2 texC		: TEXCOORD;
