@@ -35,7 +35,6 @@ public:
 	void ProcessAStarMovement(int _iPathLength, float _fDeltaTime);
 	void CheckWaypointReached();
 	
-	D3DXVECTOR3& GetRandomVector(D3DXVECTOR3& _rMin, D3DXVECTOR3& _rMax);
 	D3DXVECTOR3& GetCurrentWaypoint();
 	void SetAIType(EAIType _eAIType);
 	CRenderEntity* GetEntity() const;
@@ -53,6 +52,8 @@ private:
 	D3DXVECTOR3 m_vecAStarActivePoint;
 	float m_fMovementSpeed;
 	float m_fRotationSpeed;
+	float m_fThoughtDelay;
+	int m_iCurrentWaypointIndex;
 
 	EAIType m_eAIType;
 	

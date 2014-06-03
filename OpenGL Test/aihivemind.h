@@ -35,8 +35,20 @@ struct TAIDescription
 };
 struct TGridNode
 {
+	TGridNode()
+	{
+		pUp = 0;
+		pDown = 0;
+		pLeft = 0;
+		pRight = 0;
+	}
 	D3DXVECTOR3 vecPosition;
 	bool bIsActive;
+
+	TGridNode* pUp;
+	TGridNode* pDown;
+	TGridNode* pLeft;
+	TGridNode* pRight;
 }; 
 struct TAIThreadData
 {
@@ -86,6 +98,7 @@ public:
 
 	void CreateNavigationGrid(ID3D11Device* _pDevice, CEntityManager* _pEntityManager, CShader* _pShader, float _fGridScale, int _iWidth, int _iHeight);
 	D3DXVECTOR3& GetRandomWaypoint() const;
+	D3DXVECTOR3& GetNextWaypoint(D3DXVECTOR3& _rVecTarget, int& _iCurrentWaypoint);
 	TGridNode* GetNavigationGrid();
 	CAIController* GetAI(int _iIndex) const;
 	int GetNavigationGridSize() const;

@@ -131,8 +131,7 @@ CAIHiveMind::Process(CThreadPool* _pThreadPool, float _fDeltaTime)
 		{
 			for (int iAI = 0; iAI < m_iNumAI; ++iAI)
 			{
-				//m_pAI[iAI]->ProcessAStarMovement(_fDeltaTime, 10);
-				m_pAI[iAI]->ProcessWaypointMovement(_fDeltaTime);
+				m_pAI[iAI]->ProcessAStarMovement(10, _fDeltaTime);
 				ProcessIndividualAIController(iAI, _fDeltaTime);
 			}					 
 			break;
@@ -283,6 +282,14 @@ CAIHiveMind::CreateNavigationGrid(ID3D11Device* _pDevice, CEntityManager* _pEnti
 	}
 	_pEntityManager->AddEntity(m_pNavigationGridMesh, SCENE_DEBUG);
 }
+/**
+*
+* CAIHiveMind class Returns a random waypoint
+* (Task ID: n/a)
+*
+* @author Christopher Howlett
+*
+*/
 D3DXVECTOR3&
 CAIHiveMind::GetRandomWaypoint() const
 {
@@ -294,6 +301,24 @@ CAIHiveMind::GetRandomWaypoint() const
 		bActivePositionFound = m_pNavigationGrid[iRandomIndex].bIsActive;
 	}
 	return (m_pNavigationGrid[iRandomIndex].vecPosition);
+}
+/**
+*
+* CAIHiveMind class Returns the next A* waypoint
+* (Task ID: n/a)
+*
+* @author Christopher Howlett
+*
+*/
+D3DXVECTOR3& 
+CAIHiveMind::GetNextWaypoint(D3DXVECTOR3& _rVecTarget, int& _iCurrentWaypoint)
+{
+	++_iCurrentWaypoint;
+	if (_iCurrentWaypoint >= m_iGridSize)
+	{
+		_iCurrentWaypoint = 0;
+	}
+	return (m_pNavigationGrid[_iCurrentWaypoint].vecPosition);
 }
 TGridNode*
 CAIHiveMind::GetNavigationGrid()
