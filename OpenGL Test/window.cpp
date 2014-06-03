@@ -175,7 +175,7 @@ CWindow::Initialise(HINSTANCE _hInstance, ERendererType _eRenderer)
 	//Setup game clock
 	m_pClock = new CClock();
 	m_pClock->Initialise();
-	m_pClock->LimitFramesPerSecond(60.0f);
+	//m_pClock->LimitFramesPerSecond(60.0f);
 
 	m_pConsoleWindow = new CConsoleWindow();
 	m_pConsoleWindow->InitialiseConsole();
