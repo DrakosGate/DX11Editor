@@ -134,7 +134,7 @@ CGrass::RecreateGrassMesh(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDeviceC
 		unsigned int iNumEntities = _pEntities.size();
 		for (unsigned int iEntity = 0; iEntity < iNumEntities; ++iEntity)
 		{
-			fAvoidanceRange = _pEntities[iEntity]->GetRadius() * _pEntities[iEntity]->GetRadius();
+			fAvoidanceRange = _pEntities[iEntity]->GetRadius();
 	
 			vecToEntity = _pEntities[iEntity]->GetPosition() - m_pVertices[iVertex].pos;
 			float fDistanceToEntity = D3DXVec3LengthSq(&vecToEntity);

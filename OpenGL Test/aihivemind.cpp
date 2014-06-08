@@ -190,6 +190,15 @@ CAIHiveMind::ProcessIndividualAIController(int _iAIIndex, float _fDeltaTime)
 	vecAvoidance.y = 0.0f;
 	m_pAI[_iAIIndex]->Process(_fDeltaTime, vecAvoidance);
 }
+/**
+*
+* CAIHiveMind class Sends data, processes calculation and receives data from OpenCL
+* (Task ID: n/a)
+*
+* @author Christopher Howlett
+* @param _fDeltaTime Game time elapsed since last frame
+*
+*/
 void
 CAIHiveMind::ProcessOpenCLKernel(float _fDeltaTime)
 {
@@ -275,8 +284,25 @@ CAIHiveMind::CreateNavigationGrid(ID3D11Device* _pDevice, CEntityManager* _pEnti
 			m_pNavigationGrid[iCurrentGrid].vecPosition = D3DXVECTOR3(m_pNavigationGrid[iCurrentGrid].vecPosition.x * vecGridScale.x, m_pNavigationGrid[iCurrentGrid].vecPosition.y, m_pNavigationGrid[iCurrentGrid].vecPosition.z * vecGridScale.z);
 			m_pNavigationGrid[iCurrentGrid].bIsActive = true;
 
+			//Inform this node of the surrounding nodes
+			if (iHeight > 0)
+			{
+				m_pNavigationGrid[iCurrentGrid].pUp = &m_pNavigationGrid[iCurrentGrid - m_iHeight];
+			}
+			if (iHeight < m_iHeight - 1)
+			{
+				m_pNavigationGrid[iCurrentGrid].pDown = &m_pNavigationGrid[iCurrentGrid + m_iHeight];
+			}
+			if (iWidth > 0)
+			{
+				m_pNavigationGrid[iCurrentGrid].pLeft = &m_pNavigationGrid[iCurrentGrid - 1];
+			}
+			if (iWidth < m_iWidth - 1)
+			{
+				m_pNavigationGrid[iCurrentGrid].pRight = &m_pNavigationGrid[iCurrentGrid + 1];
+			}
+			//Create a point sprite to display this node
 			m_pNavigationGridMesh->AddPointSprite(_pDevice, m_pNavigationGrid[iCurrentGrid].vecPosition, D3DXVECTOR3(0.0f, 0.1f, 0.0f), D3DXVECTOR2(100.0f, 100.0f), lineColour, 0.0f, 0);
-			
 			++iCurrentGrid;
 		}
 	}
@@ -308,6 +334,7 @@ CAIHiveMind::GetRandomWaypoint() const
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
+* @return
 *
 */
 D3DXVECTOR3& 
@@ -320,31 +347,97 @@ CAIHiveMind::GetNextWaypoint(D3DXVECTOR3& _rVecTarget, int& _iCurrentWaypoint)
 	}
 	return (m_pNavigationGrid[_iCurrentWaypoint].vecPosition);
 }
+/**
+*
+* CAIHiveMind class Calculates the value of the current node using A*
+* (Task ID: n/a)
+*
+* @author Christopher Howlett
+*
+*/
+float
+CAIHiveMind::GetAStarNodeValue(D3DXVECTOR3& _rVecTarget, int& _iCurrentWaypoint)
+{
+
+}
+/**
+*
+* CAIHiveMind class Returns a pointer to the navigation grid
+* (Task ID: n/a)
+*
+* @author Christopher Howlett
+* @return Returns the navigation grid
+*
+*/
 TGridNode*
 CAIHiveMind::GetNavigationGrid()
 {
 	return m_pNavigationGrid;
 }
+/**
+*
+* CAIHiveMind class Returns the specified AI controller
+* (Task ID: n/a)
+*
+* @author Christopher Howlett
+* @return Returns the AI controller
+*
+*/
 CAIController* 
 CAIHiveMind::GetAI(int _iIndex) const
 {
 	return m_pAI[_iIndex];
 }
+/**
+*
+* CAIHiveMind class Returns the size of the navigation grid
+* (Task ID: n/a)
+*
+* @author Christopher Howlett
+* @return Returns the grid size
+*
+*/
 int
 CAIHiveMind::GetNavigationGridSize() const
 {
 	return m_iGridSize;
 }
+/**
+*
+* CAIHiveMind class Returns the number of AI controllers
+* (Task ID: n/a)
+*
+* @author Christopher Howlett
+* @return Returns the AI controller count
+*
+*/
 int 
 CAIHiveMind::GetAICount() const
 {
 	return m_iNumAI;
 }
+/**
+*
+* CAIHiveMind class Returns a struct defining a specific AI
+* (Task ID: n/a)
+*
+* @author Christopher Howlett
+* @return Returns the AI description struct
+*
+*/
 TAIDescription& 
 CAIHiveMind::GetAIDesc(EAIType _eAIType)
 {
 	return m_pAIDescriptions[_eAIType];
 }
+/**
+*
+* CAIHiveMind class Clears the hivemind of all controllers and obstacles
+* (Task ID: n/a)
+*
+* @author Christopher Howlett
+*
+*/
 void 
 CAIHiveMind::ClearHivemind()
 {
@@ -361,11 +454,29 @@ CAIHiveMind::ClearHivemind()
 	}
 	m_vecStaticObstacles.clear();
 }
+/**
+*
+* CAIHiveMind class Change the processing method used for AI calculation
+* (Task ID: n/a)
+*
+* @author Christopher Howlett
+* @param _eProcessingMethod Processing method
+*
+*/
 void
 CAIHiveMind::ChangeProcessingMethod(EProcessingMethod _eProcessingMethod)
 {
 	m_eProcessingMethod = _eProcessingMethod;
 }
+/**
+*
+* CAIHiveMind class Recalculates the navigation grid (usually called after changes have been made)
+* (Task ID: n/a)
+*
+* @author Christopher Howlett
+* @param _pDevice DX11 Device
+*
+*/
 void
 CAIHiveMind::RecalculateNavGrid(ID3D11Device* _pDevice)
 {
