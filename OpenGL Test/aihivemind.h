@@ -98,8 +98,8 @@ public:
 
 	void CreateNavigationGrid(ID3D11Device* _pDevice, CEntityManager* _pEntityManager, CShader* _pShader, float _fGridScale, int _iWidth, int _iHeight);
 	D3DXVECTOR3& GetRandomWaypoint() const;
-	D3DXVECTOR3& GetNextWaypoint(D3DXVECTOR3& _rVecTarget, int& _iCurrentWaypoint);
-	float GetAStarNodeValue(D3DXVECTOR3& _rVecTarget, int& _iCurrentWaypoint);
+	D3DXVECTOR3* GetNextWaypoint(D3DXVECTOR3& _rVecTarget, int& _iCurrentWaypoint);
+	float GetAStarNodeValue(TGridNode* _pCurrentNode, TGridNode* _pPreviousNode, D3DXVECTOR3& _rVecTarget, int _iTreeDepth);
 	TGridNode* GetNavigationGrid();
 	CAIController* GetAI(int _iIndex) const;
 	int GetNavigationGridSize() const;
@@ -123,6 +123,7 @@ private:
 	int m_iNumAI;
 
 	TAIDescription* m_pAIDescriptions;
+	TAIThreadData* m_pThreadData;
 
 	TGridNode* m_pNavigationGrid;
 	CPointSprite* m_pNavigationGridMesh;

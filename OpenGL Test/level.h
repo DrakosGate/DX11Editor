@@ -74,7 +74,7 @@ public:
 	virtual void Process(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDeviceContext, CClock* _pClock, float _fDeltaTime);
 	virtual bool ProcessInput(ID3D11Device* _pDevice, float _fDeltaTime);
 	virtual void Draw(ID3D11DeviceContext* _pDevice);
-	virtual void DrawScene(ID3D11DeviceContext* _pDevice, CCamera* _pCurrentCamera, EGameScene _EGameScene);
+	virtual void DrawScene(ID3D11DeviceContext* _pDevice, CShader* _pSceneShader, CCamera* _pCurrentCamera, EGameScene _EGameScene);
 	
 	virtual void AddTextToSceneGraph(TEntityNode* _pEntityNode, int& _iTextOffset, int _iTabCount);
 	virtual void CreateRenderTargets(ID3D11Device* _pDevice);

@@ -44,6 +44,7 @@
 #include "fontrenderer.h"
 #include "network.h"
 #include "performancegraph.h"
+#include "aicontroller.h"
 
 // This Include
 #include "level.h"
@@ -221,8 +222,8 @@ CLevel::Initialise(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext, CD
 	//m_pPlayer = new CPlayer();
 	//m_pPlayer->Initialise(m_pInput, m_pCamera, m_pCursor);
 	
-	CAudioPlayer::GetInstance().Initialise(false);
-	CAudioPlayer::GetInstance().Play3DSound(SOUND_BIRDCHIRP, D3DXVECTOR3(0.0f, 0.0f, 0.0f));
+	CAudioPlayer::GetInstance().Initialise();
+	CAudioPlayer::GetInstance().Play3DSound(SOUND_BIRDCHIRP, D3DXVECTOR3(-1.0f, 0.0f, 0.0f));
 
 	float fFieldOfView = static_cast<float>(D3DX_PI)* 0.25f;
 	float fScreenAspect = static_cast<float>(_iScreenWidth) / static_cast<float>(_iScreenHeight);
@@ -242,7 +243,7 @@ CLevel::Initialise(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext, CD
 }
 /**
 *
-* CDirectXRenderer class CreateEntities
+* CLevel class CreateEntities
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -268,13 +269,13 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	//Setup AI Hivemind
 	m_pHivemind = new CAIHiveMind();
 	m_pHivemind->Initialise();
-	m_pHivemind->CreateNavigationGrid(_pDevice, m_pEntityManager, &m_pShaderCollection[SHADER_POINTSPRITE], 20.0f, 60, 60);
+	m_pHivemind->CreateNavigationGrid(_pDevice, m_pEntityManager, &m_pShaderCollection[SHADER_POINTSPRITE], 20.0f, 40, 40);
 	m_pEntityManager->SetLevelInformation(m_pHivemind, m_pLightManager);
 
 	//Create thread pool for parallel task management
 	m_pThreadPool = new CThreadPool();
 	//std::thread::hardware_concurrency() is the recommended thread usage for this system
-	m_pThreadPool->Initialise(2, 20);// std::thread::hardware_concurrency(), 20);
+	m_pThreadPool->Initialise(std::thread::hardware_concurrency());
 
 	m_pOpenCLKernel = new COpenCLKernel();
 	m_pOpenCLKernel->InitialiseOpenCL();
@@ -373,7 +374,7 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	m_pEntityManager->AddEntity(m_pEditor, SCENE_UI);
 	
 	m_pGraph = new CPerformanceGraph();
-	m_pGraph->Initialise(_pDevice, D3DXVECTOR3(WINDOW_WIDTH * 0.01f, WINDOW_HEIGHT * 0.2f, 0.0f), D3DXVECTOR3(WINDOW_WIDTH * 0.3f, WINDOW_HEIGHT * 0.2f, 1.0f), 150);
+	m_pGraph->Initialise(_pDevice, D3DXVECTOR3(WINDOW_WIDTH * 0.01f, WINDOW_HEIGHT * 0.2f, 0.0f), D3DXVECTOR3(WINDOW_WIDTH * 0.3f, WINDOW_HEIGHT * 0.2f, 1.0f), 100);
 	m_pGraph->SetGraphRange(0.0f, 0.0000000001f);
 	m_pGraph->SetObjectShader(&m_pShaderCollection[SHADER_POINTSPRITE]);
 	m_pGraph->SetDiffuseMap(m_pResourceManager->GetTexture(std::string("menu_button")));
@@ -418,6 +419,7 @@ CLevel::Process(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDeviceContext, CC
 	//Process entities
 	if (m_pEditor->IsActive() == false)
 	{
+	//	m_pHivemind->GetAI(0)->SetAStarTarget(m_pCursor->GetPosition());
 		m_pHivemind->Process(m_pThreadPool, _fDeltaTime);
 	}
 	//Process entity selection
@@ -690,94 +692,69 @@ CLevel::Draw(ID3D11DeviceContext* _pDevice)
 
 		// Render to MRT
 
-		//=== DRAW ANIMATED CHARACTERS ===
-		_pDevice->VSSetShader(m_pShaderCollection[SHADER_ANIMOBJECT].GetVertexShader(), NULL, 0);
-		_pDevice->GSSetShader(NULL, NULL, 0);
-		_pDevice->PSSetShader(m_pShaderCollection[SHADER_ANIMOBJECT].GetPixelShader(), NULL, 0);
+		//============================ DRAW ANIMATED CHARACTERS ================================
 		_pDevice->IASetInputLayout(m_pVertexLayout[VERTEX_ANIMATED]);
-		DrawScene(_pDevice, m_pCamera, SCENE_3DANIM);
+		DrawScene(_pDevice, &m_pShaderCollection[SHADER_ANIMOBJECT], m_pCamera, SCENE_3DANIM);
 
-		//=== DRAW STILL CHARACTERS ===
-		_pDevice->VSSetShader(m_pShaderCollection[SHADER_MRT].GetVertexShader(), NULL, 0);
-		_pDevice->GSSetShader(NULL, NULL, 0);
-		_pDevice->PSSetShader(m_pShaderCollection[SHADER_MRT].GetPixelShader(), NULL, 0);
+		//============================ DRAW STILL CHARACTERS ================================
 		_pDevice->IASetInputLayout(m_pVertexLayout[VERTEX_STATIC]);
-		DrawScene(_pDevice, m_pCamera, SCENE_3DSCENE);
-		DrawScene(_pDevice, m_pCamera, SCENE_PERMANENTSCENE);
+		DrawScene(_pDevice, &m_pShaderCollection[SHADER_MRT], m_pCamera, SCENE_3DSCENE);
+		DrawScene(_pDevice, &m_pShaderCollection[SHADER_MRT], m_pCamera, SCENE_PERMANENTSCENE);
 
-		//=== DRAW GRASS ===
+		//============================ DRAW GRASS================================
 		if (m_eGrassState != GRASS_OFF)
 		{
 			m_pRenderer->SetBlendState(BLEND_ALPHATOCOVERAGE);
 			_pDevice->RSSetState(m_pGrassRasteriser);
-			_pDevice->VSSetShader(m_pShaderCollection[SHADER_GRASS].GetVertexShader(), NULL, 0);
-			_pDevice->GSSetShader(m_pShaderCollection[SHADER_GRASS].GetGeometryShader(), NULL, 0);
-			_pDevice->PSSetShader(m_pShaderCollection[SHADER_GRASS].GetPixelShader(), NULL, 0);
 			_pDevice->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_POINTLIST);
-			DrawScene(_pDevice, m_pCamera, SCENE_GRASS);
+			DrawScene(_pDevice, &m_pShaderCollection[SHADER_GRASS], m_pCamera, SCENE_GRASS);
 			_pDevice->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 			_pDevice->RSSetState(m_pRasteriserState);
 			m_pRenderer->SetBlendState(BLEND_TRANSPARENT);
 		}
 
-		//============================ Deferred Render ================================
-		_pDevice->VSSetShader(m_pShaderCollection[SHADER_DEFERRED].GetVertexShader(), NULL, 0);
-		_pDevice->GSSetShader(NULL, NULL, 0);
-		_pDevice->PSSetShader(m_pShaderCollection[SHADER_DEFERRED].GetPixelShader(), NULL, 0);
+		//============================ DEFERRED RENDER ================================
 		m_pRenderTargets[RENDER_DEFERRED].SetRenderTarget(_pDevice, 1, m_pDiffuseMRT->GetDepthStencilView());
 		m_pRenderTargets[RENDER_DEFERRED].ClearRenderTarget(_pDevice, m_pDiffuseMRT->GetDepthStencilView(), m_pClearColour);
 
 		//Send MRT texture data to shader
-		ID3D11ShaderResourceView* const texture[3] = {	m_pDiffuseMRT->GetRenderShaderResource(),
+		ID3D11ShaderResourceView* const texture[4] = {	m_pDiffuseMRT->GetRenderShaderResource(),
 														m_pNormalsMRT->GetRenderShaderResource(),
-														m_pPositionMRT->GetRenderShaderResource() };
-		_pDevice->PSSetShaderResources(0, 3, texture);
+														m_pPositionMRT->GetRenderShaderResource(),
+														m_pDepthMRT->GetRenderShaderResource() };
+		_pDevice->PSSetShaderResources(0, 4, texture);
 
 
 		m_pRenderTarget->SetDiffuseMap(m_pDiffuseMRT->GetRenderShaderResource());
-		DrawScene(_pDevice, m_pOrthoCamera, SCENE_FINAL);
+		DrawScene(_pDevice, &m_pShaderCollection[SHADER_DEFERRED], m_pOrthoCamera, SCENE_FINAL);
 		m_pRenderTarget->SetDiffuseMap(m_pRenderTargets[RENDER_DEFERRED].GetRenderShaderResource());
 
 		//============================ FINAL PASS ================================
 		m_pRenderTargets[RENDER_POST].SetRenderTarget(_pDevice, 1, m_pDiffuseMRT->GetDepthStencilView());
 		m_pRenderTargets[RENDER_POST].ClearRenderTarget(_pDevice, m_pDiffuseMRT->GetDepthStencilView(), m_pClearColour);
-		_pDevice->VSSetShader(m_pShaderCollection[SHADERPOST_RADIALBLUR].GetVertexShader(), NULL, 0);
-		_pDevice->GSSetShader(NULL, NULL, 0);
-		_pDevice->PSSetShader(m_pShaderCollection[SHADERPOST_RADIALBLUR].GetPixelShader(), NULL, 0);
-		DrawScene(_pDevice, m_pOrthoCamera, SCENE_FINAL);
+		DrawScene(_pDevice, &m_pShaderCollection[SHADERPOST_RADIALBLUR], m_pOrthoCamera, SCENE_FINAL);
 		m_pRenderTarget->SetDiffuseMap(m_pRenderTargets[RENDER_POST].GetRenderShaderResource());
 
 		m_pRenderer->PrepareLastScene();
 		//Prepare swapchain buffers
-		_pDevice->VSSetShader(m_pShaderCollection[SHADER_FINALOUTPUT].GetVertexShader(), NULL, 0);
-		_pDevice->GSSetShader(NULL, NULL, 0);
-		_pDevice->PSSetShader(m_pShaderCollection[SHADER_FINALOUTPUT].GetPixelShader(), NULL, 0);
-		DrawScene(_pDevice, m_pOrthoCamera, SCENE_FINAL);
+		DrawScene(_pDevice, &m_pShaderCollection[SHADERPOST_RADIALBLUR], m_pOrthoCamera, SCENE_FINAL);
 	}
 	if (m_eRenderState >= RENDERSTATE_DEBUG)
 	{
+		//============================ FONT RENDER ================================
 		_pDevice->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
 		_pDevice->IASetInputLayout(m_pVertexLayout[VERTEX_FONT]);
-		//Render debug lines to screen
-		_pDevice->VSSetShader(m_pShaderCollection[SHADER_FONT].GetVertexShader(), NULL, 0);
-		_pDevice->GSSetShader(m_pShaderCollection[SHADER_FONT].GetGeometryShader(), NULL, 0);
-		_pDevice->PSSetShader(m_pShaderCollection[SHADER_FONT].GetPixelShader(), NULL, 0);
-		DrawScene(_pDevice, m_pOrthoCamera, SCENE_FONT);
+		DrawScene(_pDevice, &m_pShaderCollection[SHADER_FONT], m_pOrthoCamera, SCENE_FONT);
 		_pDevice->IASetInputLayout(m_pVertexLayout[VERTEX_POINT]);
-		//Render debug lines to screen
-		_pDevice->VSSetShader(m_pShaderCollection[SHADER_LINERENDERER].GetVertexShader(), NULL, 0);
-		_pDevice->GSSetShader(m_pShaderCollection[SHADER_LINERENDERER].GetGeometryShader(), NULL, 0);
-		_pDevice->PSSetShader(m_pShaderCollection[SHADER_LINERENDERER].GetPixelShader(), NULL, 0);
-		DrawScene(_pDevice, m_pCamera, SCENE_DEBUG);
+		
+		//============================ DEBUG LINE RENDER ================================
+		DrawScene(_pDevice, &m_pShaderCollection[SHADER_LINERENDERER], m_pCamera, SCENE_DEBUG);
 		if (m_eRenderState >= RENDERSTATE_EDITOR)
 		{
 			_pDevice->IASetInputLayout(m_pVertexLayout[VERTEX_POINT]);
 			//Render UI objects to screen
-			_pDevice->VSSetShader(m_pShaderCollection[SHADER_POINTSPRITE].GetVertexShader(), NULL, 0);
-			_pDevice->GSSetShader(m_pShaderCollection[SHADER_POINTSPRITE].GetGeometryShader(), NULL, 0);
-			_pDevice->PSSetShader(m_pShaderCollection[SHADER_POINTSPRITE].GetPixelShader(), NULL, 0);
 			m_pResourceManager->SendTextureDataToShader(_pDevice);
-			DrawScene(_pDevice, m_pOrthoCamera, SCENE_UI);
+			DrawScene(_pDevice, &m_pShaderCollection[SHADER_POINTSPRITE], m_pOrthoCamera, SCENE_UI);
 		}
 	}
 
@@ -795,8 +772,13 @@ CLevel::Draw(ID3D11DeviceContext* _pDevice)
 * @param _pCurrentCamera Camera to render from
 *
 */
-void CLevel::DrawScene(ID3D11DeviceContext* _pDevice, CCamera* _pCurrentCamera, EGameScene _EGameScene)
+void CLevel::DrawScene(ID3D11DeviceContext* _pDevice, CShader* _pSceneShader, CCamera* _pCurrentCamera, EGameScene _EGameScene)
 {
+	//Set shaders for this scene
+	_pDevice->VSSetShader(_pSceneShader->GetVertexShader(), NULL, 0);
+	_pDevice->GSSetShader(_pSceneShader->GetGeometryShader(), NULL, 0);
+	_pDevice->PSSetShader(_pSceneShader->GetPixelShader(), NULL, 0);
+	
 	//Draw all entities in scene
 	m_pEntityManager->Draw(_pDevice, _pCurrentCamera, _EGameScene);
 }
@@ -1171,6 +1153,7 @@ CLevel::LoadLevel(ID3D11Device* _pDevice, char* _pcLevelFilename)
 	}
 	m_pLevelEntities.clear();
 
+	m_pLightManager->AddPoint(D3DXVECTOR3(0.0f, 2.4f, 0.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f), D3DXVECTOR3(1.0f, 0.5f, 0.5f), 1.0f);
 	//Open file containing level information
 	rapidxml::file<> xmlFile(_pcLevelFilename);
 	rapidxml::xml_document<> xmlDoc;

@@ -100,6 +100,8 @@ CGrass::Initialise(ID3D11Device* _pDevice, CResourceManager* _pResourceManager, 
 void
 CGrass::RecreateGrassMesh(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDeviceContext, D3DXVECTOR3& _rCameraPos, std::vector<CRenderEntity*>& _pEntities, float _fDeltaTime)
 {
+	m_fGrassSpeed = 5.0f;
+	m_fGrassStiffness = 2.0f;
 	float fHalfScale = m_fModelScale * 0.5f;
 	//Delete and recreate vertex buffer data
 	m_pVertexBuffer->Release();
@@ -107,7 +109,7 @@ CGrass::RecreateGrassMesh(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDeviceC
 
 	for (int iVertex = 0; iVertex < m_iVertexCount; ++iVertex)
 	{
-		m_pVertices[iVertex].normal += (vecNormalTarget - m_pVertices[iVertex].normal) * m_fGrassSpeed * _fDeltaTime;
+		m_pVertices[iVertex].normal += (vecNormalTarget - m_pVertices[iVertex].normal) * m_fGrassStiffness * _fDeltaTime;
 		//Width
 		if (m_pVertices[iVertex].pos.x > _rCameraPos.x + fHalfScale)
 		{
@@ -134,13 +136,13 @@ CGrass::RecreateGrassMesh(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDeviceC
 		unsigned int iNumEntities = _pEntities.size();
 		for (unsigned int iEntity = 0; iEntity < iNumEntities; ++iEntity)
 		{
-			fAvoidanceRange = _pEntities[iEntity]->GetRadius();
+			fAvoidanceRange = (_pEntities[iEntity]->GetRadius() * _pEntities[iEntity]->GetRadius()) * 0.75f;
 	
 			vecToEntity = _pEntities[iEntity]->GetPosition() - m_pVertices[iVertex].pos;
 			float fDistanceToEntity = D3DXVec3LengthSq(&vecToEntity);
 			if (fDistanceToEntity < fAvoidanceRange)
 			{
-				m_pVertices[iVertex].normal -= (vecToEntity * (fAvoidanceRange - fDistanceToEntity) * 4.0f) * m_fGrassSpeed * _fDeltaTime;
+				m_pVertices[iVertex].normal -= (vecToEntity * (fAvoidanceRange - fDistanceToEntity)) * m_fGrassSpeed * _fDeltaTime;
 			}
 		}
 		if(m_pVertices[iVertex].normal.y < 0.5f)

@@ -39,7 +39,8 @@ float4 ToScreenSpace(float4 _vector, matrix _world, matrix _view, matrix _projec
 float4 CalculateGeneralLight(TLight _light, float3 _worldPos, float3 _direction, float3 _normal, float3 _cameraPos)
 {
 	float3 LightDirection = -_direction;
-	float3 Normal = normalize(_light.pos - _worldPos);//normalize(_normal);
+	float3 Normal = normalize(_light.pos - _worldPos);
+	Normal = normalize(Normal);
 
 	float fDiffuseFactor = dot(Normal, LightDirection);
 

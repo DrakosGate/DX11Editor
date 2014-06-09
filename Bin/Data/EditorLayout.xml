@@ -87,14 +87,14 @@
 		<backgroundtexture>menu_windowBG</backgroundtexture>
 		<position x="0.8" y="0.1" z="0.5"></position>
 		<scale x="0.2" y="0.9"></scale>
-		<canmove>true</canmove>
+		<canmove>false</canmove>
 		
 		<button id="Close">
 			<options>human</options>
 			<maintexture>menu_close</maintexture>
 			<bgtexture>menu_button</bgtexture>
-			<position x="0.89" y="0.01" z="0"></position>
-			<scale x="0.1" y="0.1"></scale>
+			<position x="0.83" y="0.015" z="0"></position>
+			<scale x="0.15" y="0.15"></scale>
 		</button>
 	</window>
 </resources>

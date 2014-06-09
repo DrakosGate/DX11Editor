@@ -1,135 +1,134 @@
 //
-//  File Name   :   CThreadPool.cpp
-//  Description :   Definition for CThreadPool class
+//  File Name   :   threadpool.cpp
+//  Description :   Code for CThreadPool
 //  Author      :   Christopher Howlett
 //  Mail        :   drakos_gate@yahoo.com
 //
 
+// Library Includes
+
+// Local Includes
+
+// This Include
 #include "threadpool.h"
 
+// Static Variables
 
-void PrintSomething(void* _pSomething)
+// Static Function Prototypes
+
+// Implementation
+void PrintSomething(void* _pData, int _iThreadID)
 {
-	int* pSomething = reinterpret_cast<int*>(_pSomething);
-	printf("Processing %i\n", *pSomething);
+	TSetupJob* pJob = reinterpret_cast<TSetupJob*>(_pData);
+	printf("Thread %i: %i\n", _iThreadID, pJob->iData);
 }
-
+/**
+*
+* CThreadPool class Constructor
+* (Task ID: n/a)
+*
+* @author Christopher Howlett
+*
+*/
 CThreadPool::CThreadPool()
+: m_bKillThreads(false)
 {
 
 }
+/**
+*
+* CThreadPool class Destructor
+* (Task ID: n/a)
+*
+* @author Christopher Howlett
+*
+*/
 CThreadPool::~CThreadPool()
 {
-	//Notify all active threads that the program is shutting down
-	m_bKillThreads = true;
-	m_jobNotification.notify_all(); 
+	{//Lock mutex
+		std::unique_lock<std::mutex> lockMutex(m_jobMutex);
+		m_bKillThreads = true;
+	}//Unlock mutex
+	m_condition.notify_all();
 
-	//Set all threads to join - main thread will wait for all threads to finish before closing
-	for (int iThread = 0; iThread < m_iThreadCount; ++iThread)
+	//Join all threads back to the main thread
+	for (unsigned int iThread = 0; iThread < m_vecThreadPool.size(); ++iThread)
 	{
-		m_threads[iThread]->join();
-		delete m_threads[iThread];
-		m_threads[iThread] = 0;
+		m_vecThreadPool[iThread].join();
 	}
 }
-bool
-CThreadPool::Initialise(int _iThreadCount, int _iMaxJobCount)
+/**
+*
+* CThreadPool class Initialises the thread pool with a number of threads
+* (Task ID: n/a)
+*
+* @author Christopher Howlett
+* @param _iThreadCount Initial thread count
+*
+*/
+void
+CThreadPool::Initialise(int _iThreadCount)
 {
-	printf("\n==== INITIALISING THREAD POOL WITH %i THREADS ====\n\n", _iThreadCount);
-	m_iThreadCount = _iThreadCount;
-	m_iMaxJobCount = _iMaxJobCount;
-
-	m_bKillThreads = false;
-	//Add threads to the vector of threads
+	//Add initial threads to the thread pool
 	for (int iThread = 0; iThread < _iThreadCount; ++iThread)
 	{
-		//Assign the threads with the Run function - loop forever until killed
-		m_threads.push_back(new std::thread(&CThreadPool::Run, this, iThread));
+		m_vecThreadPool.push_back(std::thread(&CThreadPool::ThreadLoop, this, iThread));
 	}
-
-	for (int iJob = 0; iJob < 100; ++iJob)
-	{
-		AddJobToPool(PrintSomething, &iJob);
-	}
-
-	return true;
 }
+/**
+*
+* CThreadPool class Main thread loop function
+* (Task ID: n/a)
+*
+* @author Christopher Howlett
+* @param _iThreadIndex Unique ID for this thread
+*
+*/
 void
-CThreadPool::AddJobToPool(JOB_TYPE _job, void* _pParameters)
+CThreadPool::ThreadLoop(int _iThreadIndex)
 {
-	std::unique_lock<std::mutex> lockList(m_jobLock);
-	m_jobList.push(new TTaskDescription(_job, _pParameters));
-	m_jobNotification.notify_one();
-}
-//Each thread will process this to find a an active job in the job list
-void
-CThreadPool::Run(int _iThreadIndex)
-{
-	TTaskDescription* pJob = 0;
+	printf("Thread %i Loop started\n", _iThreadIndex);
+	TQueuedJob currentJob;
 	while (true)
 	{
-		std::unique_lock<std::mutex> lockList(m_jobLock);
-		while (true)
-		{
+		{//Lock mutex
+			std::unique_lock<std::mutex> threadLock(m_jobMutex);
+
+			//Check if the job list is empty
+			while (m_bKillThreads == false && m_jobList.empty())
+			{
+				m_condition.wait(threadLock);
+			}
+			//Check if the thread pool is still alive
 			if (m_bKillThreads)
 			{
-				return;
-			}
-			if (m_jobList.empty() == false)
-			{
-				pJob = m_jobList.front();
-				m_jobList.pop();
 				break;
 			}
-			m_jobNotification.wait(lockList);
-		}
-		if (pJob)
-		{
-			pJob->job(pJob->pParameter);
-			delete pJob;
-			pJob = 0;
-		}
+
+			//Get tasks from the queue
+			currentJob = m_jobList.front();
+			m_jobList.pop();
+		}//Unlock mutex
+		currentJob.job(currentJob.parameters, _iThreadIndex);
 	}
-	//Run forever until threads are killed
-	//while (m_bKillThreads == false)
-	//{
-	//	TTaskDescription* pActiveJob = 0;
-	//	{	//Lock this portion 
-	//		std::unique_lock<std::mutex> lockList(m_jobLock);
-	//
-	//		//Loop until a new job has been found
-	//		bool bHasJob = false;
-	//		while (bHasJob == false)
-	//		{
-	//			//Check if the program has exited
-	//			if (m_bKillThreads)
-	//			{
-	//				break;
-	//			}
-	//			//Check if there are jobs in the job list at the moment
-	//			if (m_jobList.empty() == false)
-	//			{
-	//				//New job has been retrieved from the list!
-	//				pActiveJob = m_jobList.front();
-	//				m_jobList.pop();
-	//				bHasJob = true;
-	//				break;
-	//			}
-	//
-	//			//Wait for a job to be added
-	//			m_jobNotification.wait(lockList);
-	//		}
-	//	}
-	//	//Carry out active job
-	//	if (pActiveJob)
-	//	{
-	//		std::unique_lock<std::mutex> lockList(m_jobLock);
-	//		pActiveJob->job(pActiveJob->pParameter);
-	//		delete pActiveJob;
-	//		pActiveJob = 0;
-	//
-	//		m_jobNotification.notify_one();
-	//	}
-	//}
-	//printf("Killing thread %i\n", _iThreadIndex);
+}
+/**
+*
+* CThreadPool class Adds a job to the list of thread jobs
+* (Task ID: n/a)
+*
+* @author Christopher Howlett
+* @param _JobType Job Function pointer
+* @param _rParameters Parameters assigned to this job
+*
+*/
+void
+CThreadPool::AddJob(JOB_TYPE _JobType, PARAMETER_TYPE _rParameters)
+{
+	{//Lock mutex
+		std::unique_lock<std::mutex> threadLock(m_jobMutex);
+
+		m_jobList.push(TQueuedJob(_JobType, _rParameters));
+	}//Unlock mutex
+	m_condition.notify_one();
 }

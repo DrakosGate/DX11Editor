@@ -120,7 +120,7 @@ CAIController::ProcessWaypointMovement(float _fDeltaTime)
 	{
 		D3DXVECTOR3 vecForward = m_pEntity->GetForward();
 		D3DXVECTOR3 vecCurrentPos = m_pEntity->GetPosition();
-		D3DXVECTOR3 vecToWaypoint = m_vecWaypoint - vecCurrentPos;
+		D3DXVECTOR3 vecToWaypoint = m_vecAStarActivePoint - vecCurrentPos;
 		vecToWaypoint.y = 0.0f;
 		vecForward += vecToWaypoint * m_fRotationSpeed * _fDeltaTime;
 		D3DXVec3Normalize(&vecForward, &vecForward);
@@ -157,6 +157,11 @@ CAIController::ProcessAStarMovement(int _iPathLength, float _fDeltaTime)
 		m_pEntity->SetForward(vecForward);
 	}
 }
+void
+CAIController::SetAStarTarget(D3DXVECTOR3& _rVecTarget)
+{
+	m_vecWaypoint = _rVecTarget;
+}
 /**
 *
 * CAIController class Checks if this controller has reached its waypoint. If so, get a new one
@@ -174,8 +179,13 @@ CAIController::CheckWaypointReached()
 	float fDistanceToWaypoint = D3DXVec3LengthSq(&vecToWaypoint);
 	if (fDistanceToWaypoint < 0.5f)
 	{
-		m_fThoughtDelay = 1.0f;
-		m_vecAStarActivePoint = m_pHivemind->GetNextWaypoint(m_vecWaypoint, m_iCurrentWaypointIndex);
+		m_fThoughtDelay = 0.0f;
+		m_vecAStarActivePoint = m_pHivemind->GetRandomWaypoint();
+		//D3DXVECTOR3* pWaypoint = m_pHivemind->GetNextWaypoint(m_vecWaypoint, m_iCurrentWaypointIndex);
+		//if (pWaypoint)
+		//{
+		//	m_vecAStarActivePoint = *pWaypoint;
+		//}
 	}
 }
 /**

@@ -154,16 +154,19 @@ CRenderEntity::Process(float _fDeltaTime, D3DXMATRIX* _pParentMatrix)
 			//Process all children of this entity
 			if (m_pNode)
 			{
-				for (unsigned int iChild = 0; iChild < m_pNode->vecChildren.size(); ++iChild)
+				if (m_pNode->pEntity)
 				{
-					m_pNode->vecChildren[iChild]->pEntity->Process(_fDeltaTime, &m_matWorld);
-				}
-				//Process all lights attached to this entity
-				for (unsigned int iLight = 0; iLight < m_pNode->vecLights.size(); ++iLight)
-				{
-					CLight* pCurrentLight = m_pNode->vecLights[iLight];
-					pCurrentLight->SetPosition(GetPosition() + pCurrentLight->GetOffset());
-					pCurrentLight->SetDirection(GetForward());
+					for (unsigned int iChild = 0; iChild < m_pNode->vecChildren.size(); ++iChild)
+					{
+						m_pNode->vecChildren[iChild]->pEntity->Process(_fDeltaTime, &m_matWorld);
+					}
+					//Process all lights attached to this entity
+					for (unsigned int iLight = 0; iLight < m_pNode->vecLights.size(); ++iLight)
+					{
+						CLight* pCurrentLight = m_pNode->vecLights[iLight];
+						pCurrentLight->SetPosition(GetPosition() + pCurrentLight->GetOffset());
+						pCurrentLight->SetDirection(GetForward());
+					}
 				}
 			}
 		}

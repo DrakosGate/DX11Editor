@@ -4,6 +4,7 @@
 Texture2D diffuseMap;
 Texture2D normalMap;
 Texture2D positionMap;
+Texture2D depthMap;
 SamplerState textureSampler;
 
 //Lighting
@@ -39,6 +40,7 @@ float4 DeferredPS(PS_IN _input) : SV_TARGET
 	float4 diffuse = diffuseMap.Sample(textureSampler, _input.texC);
 	float3 normal = normalMap.Sample(textureSampler, _input.texC).xyz;
 	float3 position = positionMap.Sample(textureSampler, _input.texC).xyz;
+	float fDepth = depthMap.Sample(textureSampler, _input.texC).r;
 	float fAlpha = diffuse.a;
 
 	// Map [0,1] --> [0,256]

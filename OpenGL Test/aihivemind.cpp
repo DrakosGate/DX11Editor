@@ -24,7 +24,6 @@
 // Static Function Prototypes
 
 // Implementation
-
 void ThreadedAI(void* _pParameters)
 {
 	TAIThreadData* pParam = reinterpret_cast<TAIThreadData*>(_pParameters);
@@ -104,8 +103,8 @@ CAIHiveMind::Initialise()
 
 	//Create AI descriptions
 	m_pAIDescriptions = new TAIDescription[AI_MAX];
-	m_pAIDescriptions[AI_HUMAN] = TAIDescription(1.0f, 1.0f);
-	m_pAIDescriptions[AI_CHICKEN] = TAIDescription(0.3f, 0.1f);
+	m_pAIDescriptions[AI_HUMAN] = TAIDescription(1.5f, 2.0f);
+	m_pAIDescriptions[AI_CHICKEN] = TAIDescription(1.0f, 0.5f);
 
 	m_pCLKernel = new CAICLKernel();
 	m_pCLKernel->InitialiseOpenCL();
@@ -131,7 +130,8 @@ CAIHiveMind::Process(CThreadPool* _pThreadPool, float _fDeltaTime)
 		{
 			for (int iAI = 0; iAI < m_iNumAI; ++iAI)
 			{
-				m_pAI[iAI]->ProcessAStarMovement(10, _fDeltaTime);
+				m_pAI[iAI]->ProcessWaypointMovement(_fDeltaTime);
+				//m_pAI[iAI]->ProcessAStarMovement(10, _fDeltaTime);
 				ProcessIndividualAIController(iAI, _fDeltaTime);
 			}					 
 			break;
@@ -142,6 +142,14 @@ CAIHiveMind::Process(CThreadPool* _pThreadPool, float _fDeltaTime)
 			for (int iAI = 0; iAI < m_iNumAI; ++iAI)
 			{
 				ProcessIndividualAIController(iAI, _fDeltaTime);
+			}
+			break;
+		}
+	case PROCESSING_THREADPOOL:
+		{
+			for (int iAI = 0; iAI < m_iNumAI; ++iAI)
+			{
+			//  _pThreadPool->AddJob();
 			}
 			break;
 		}
@@ -173,20 +181,20 @@ CAIHiveMind::ProcessIndividualAIController(int _iAIIndex, float _fDeltaTime)
 {
 	D3DXVECTOR3 vecAvoidance;
 	vecAvoidance *= 0.0f;
-	for (int iOther = _iAIIndex; iOther < m_iNumAI; ++iOther)
-	{
-		if (m_pAI[_iAIIndex]->GetEntity()->HasCollided(m_pAI[iOther]->GetEntity()))
-		{
-			vecAvoidance += (m_pAI[_iAIIndex]->GetEntity()->GetPosition() - m_pAI[iOther]->GetEntity()->GetPosition()) * 0.75f;
-		}
-	}
-	for (unsigned int iStatic = 0; iStatic < m_vecStaticObstacles.size(); ++iStatic)
-	{
-		if (m_pAI[_iAIIndex]->GetEntity()->HasCollided(m_vecStaticObstacles[iStatic]))
-		{
-			vecAvoidance += (m_pAI[_iAIIndex]->GetEntity()->GetPosition() - m_vecStaticObstacles[iStatic]->GetPosition()) * 0.75f;
-		}
-	}
+	//for (int iOther = _iAIIndex; iOther < m_iNumAI; ++iOther)
+	//{
+	//	if (m_pAI[_iAIIndex]->GetEntity()->HasCollided(m_pAI[iOther]->GetEntity()))
+	//	{
+	//		vecAvoidance += (m_pAI[_iAIIndex]->GetEntity()->GetPosition() - m_pAI[iOther]->GetEntity()->GetPosition()) * 0.5f;
+	//	}
+	//}
+	//for (unsigned int iStatic = 0; iStatic < m_vecStaticObstacles.size(); ++iStatic)
+	//{
+	//	if (m_pAI[_iAIIndex]->GetEntity()->HasCollided(m_vecStaticObstacles[iStatic]))
+	//	{
+	//		vecAvoidance += (m_pAI[_iAIIndex]->GetEntity()->GetPosition() - m_vecStaticObstacles[iStatic]->GetPosition()) * 0.5f;
+	//	}
+	//}
 	vecAvoidance.y = 0.0f;
 	m_pAI[_iAIIndex]->Process(_fDeltaTime, vecAvoidance);
 }
@@ -337,15 +345,57 @@ CAIHiveMind::GetRandomWaypoint() const
 * @return
 *
 */
-D3DXVECTOR3& 
+D3DXVECTOR3*
 CAIHiveMind::GetNextWaypoint(D3DXVECTOR3& _rVecTarget, int& _iCurrentWaypoint)
 {
-	++_iCurrentWaypoint;
-	if (_iCurrentWaypoint >= m_iGridSize)
+	float fBestValue = FLT_MAX;
+	int iBestWaypoint = 0;
+	int iTreeSearchDepth = 10;
+
+	float fInactivePenalty = 500000;
+	//Check UP
+	if (m_pNavigationGrid[_iCurrentWaypoint].pUp)
 	{
-		_iCurrentWaypoint = 0;
+		float fUpValue = GetAStarNodeValue(m_pNavigationGrid[_iCurrentWaypoint].pUp, &m_pNavigationGrid[_iCurrentWaypoint], _rVecTarget, iTreeSearchDepth);
+		fUpValue += (m_pNavigationGrid[_iCurrentWaypoint].pUp->bIsActive == false) * fInactivePenalty;
+		fBestValue = fUpValue;
+		iBestWaypoint = _iCurrentWaypoint - m_iHeight;
 	}
-	return (m_pNavigationGrid[_iCurrentWaypoint].vecPosition);
+	//Check DOWN
+	if (m_pNavigationGrid[_iCurrentWaypoint].pDown)
+	{
+		float fDownValue = GetAStarNodeValue(m_pNavigationGrid[_iCurrentWaypoint].pDown, &m_pNavigationGrid[_iCurrentWaypoint], _rVecTarget, iTreeSearchDepth);
+		fDownValue += (m_pNavigationGrid[_iCurrentWaypoint].pDown->bIsActive == false) * fInactivePenalty;
+		if (fDownValue < fBestValue)
+		{
+			fBestValue = fDownValue;
+			iBestWaypoint = _iCurrentWaypoint + m_iHeight;
+		}
+	}
+	//Check LEFT
+	if (m_pNavigationGrid[_iCurrentWaypoint].pLeft)
+	{
+		float fLeftValue = GetAStarNodeValue(m_pNavigationGrid[_iCurrentWaypoint].pLeft, &m_pNavigationGrid[_iCurrentWaypoint], _rVecTarget, iTreeSearchDepth);
+		fLeftValue += (m_pNavigationGrid[_iCurrentWaypoint].pLeft->bIsActive == false) * fInactivePenalty;
+		if (fLeftValue < fBestValue)
+		{
+			fBestValue = fLeftValue;
+			iBestWaypoint = _iCurrentWaypoint - 1;
+		}
+	}
+	//Check RIGHT
+	if (m_pNavigationGrid[_iCurrentWaypoint].pRight)
+	{
+		float fRightValue = GetAStarNodeValue(m_pNavigationGrid[_iCurrentWaypoint].pRight, &m_pNavigationGrid[_iCurrentWaypoint], _rVecTarget, iTreeSearchDepth);
+		fRightValue += (m_pNavigationGrid[_iCurrentWaypoint].pRight->bIsActive == false) * fInactivePenalty;
+		if (fRightValue < fBestValue)
+		{
+			fBestValue = fRightValue;
+			iBestWaypoint = _iCurrentWaypoint + 1;
+		}
+	}
+	_iCurrentWaypoint = iBestWaypoint;
+	return (&m_pNavigationGrid[_iCurrentWaypoint].vecPosition);
 }
 /**
 *
@@ -356,9 +406,67 @@ CAIHiveMind::GetNextWaypoint(D3DXVECTOR3& _rVecTarget, int& _iCurrentWaypoint)
 *
 */
 float
-CAIHiveMind::GetAStarNodeValue(D3DXVECTOR3& _rVecTarget, int& _iCurrentWaypoint)
+CAIHiveMind::GetAStarNodeValue(TGridNode* _pCurrentNode, TGridNode* _pPreviousNode, D3DXVECTOR3& _rVecTarget, int _iTreeDepth)
 {
+	float fChildValue = 0.0f;
+	float fNodeValue = 0.0f;
+	if(_iTreeDepth >= 0)
+	{
+		//Check if the target node has been reached
+		if (D3DXVec3LengthSq(&(_rVecTarget - _pCurrentNode->vecPosition)) > 0.5f)
+		{
+			//Find best child node
+			TGridNode* pNextNode = 0;
+			//Calculate value of this node
+			float fCostFromStart = 0.0f;
+			if (_pPreviousNode)
+			{
+				fCostFromStart = D3DXVec3LengthSq(&(_pCurrentNode->vecPosition - _pPreviousNode->vecPosition));
+			}
+			float fCostToDestination = D3DXVec3LengthSq(&(_rVecTarget - _pCurrentNode->vecPosition));
+			fNodeValue = fCostFromStart + fCostToDestination;
 
+			//Check UP
+			if (_pCurrentNode->pUp)
+			{
+				float fUpValue = GetAStarNodeValue(_pCurrentNode->pUp, _pCurrentNode, _rVecTarget, _iTreeDepth - 1);
+				fChildValue = fUpValue;
+				pNextNode = _pCurrentNode->pUp;
+			}
+			//Check DOWN
+			if (_pCurrentNode->pDown)
+			{
+				float fDownValue = GetAStarNodeValue(_pCurrentNode->pDown, _pCurrentNode, _rVecTarget, _iTreeDepth - 1);
+				if (fDownValue < fChildValue)
+				{
+					fChildValue = fDownValue;
+					pNextNode = _pCurrentNode->pDown;
+				}
+			}
+			//Check LEFT
+			if (_pCurrentNode->pLeft)
+			{
+				float fLeftValue = GetAStarNodeValue(_pCurrentNode->pLeft, _pCurrentNode, _rVecTarget, _iTreeDepth - 1);
+				if (fLeftValue < fChildValue)
+				{
+					fChildValue = fLeftValue;
+					pNextNode = _pCurrentNode->pLeft;
+				}
+			}
+			//Check RIGHT
+			if (_pCurrentNode->pRight)
+			{
+				float fRightValue = GetAStarNodeValue(_pCurrentNode->pRight, _pCurrentNode, _rVecTarget, _iTreeDepth - 1);
+				if (fRightValue < fChildValue)
+				{
+					fChildValue = fRightValue;
+					pNextNode = _pCurrentNode->pRight;
+				}
+			}
+		}
+	}
+
+	return (fNodeValue + fChildValue);
 }
 /**
 *

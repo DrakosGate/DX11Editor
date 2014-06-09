@@ -7,28 +7,45 @@
 
 #pragma once
 
-#ifndef __CThreadPool_H__
-#define __CThreadPool_H__
+#ifndef __THREADPOOL_H__
+#define __THREADPOOL_H__
 
-#include <thread>
+#define PARAMETER_TYPE void*
+#define JOB_TYPE std::function<void(PARAMETER_TYPE, int)>
+
+// Library Includes
 #include <vector>
+#include <thread>
 #include <queue>
 #include <mutex>
 #include <condition_variable>
-#include <atomic>
 
-#define JOB_TYPE std::function<void(void*)>
+// Local Includes
 
-struct TTaskDescription
+// Types
+struct TQueuedJob
 {
-	TTaskDescription(JOB_TYPE& _rJob, void* _pParameters)
+	TQueuedJob(){}
+	TQueuedJob(JOB_TYPE& _job, PARAMETER_TYPE& _parameters)
 	{
-		job = _rJob;
-		pParameter = _pParameters;
+		job = _job;
+		parameters = _parameters;
 	}
 	JOB_TYPE job;
-	void* pParameter;
+	PARAMETER_TYPE parameters;
 };
+struct TSetupJob
+{
+	TSetupJob(int Data)
+	{
+		iData = Data;
+	}
+	int iData;
+};
+// Constants
+
+// Prototypes
+class CThread;
 
 class CThreadPool
 {
@@ -37,28 +54,23 @@ public:
 	CThreadPool();
 	~CThreadPool();
 
-	bool Initialise(int _iThreadCount, int _iMaxJobCount);
-	void AddJobToPool(JOB_TYPE _job, void* _pParameters);	
-	
+	void Initialise(int _iThreadCount);
+	void AddJob(JOB_TYPE _JobType, PARAMETER_TYPE _rParameters);
+
+//Private functions
 private:
-	void Run(int _iThreadIndex);
+	void ThreadLoop(int _iThreadIndex);
 
 //Member variables
 private:
-	std::vector<std::thread*> m_threads;
+	std::vector<std::thread> m_vecThreadPool;
 
-	std::queue<TTaskDescription*> m_jobList;
+	std::queue<TQueuedJob> m_jobList;
 
-	std::mutex m_jobLock;
-	std::condition_variable m_jobNotification;
-
-	std::atomic<bool> m_bKillThreads;
-
-	std::mutex m_threadLock[2];
-
-	int m_iThreadCount;
-	int m_iMaxJobCount;
+	std::mutex m_jobMutex;
+	std::condition_variable m_condition;
+	bool m_bKillThreads;
 };
 
 
-#endif//__CThreadPool_H__
+#endif//__THREADPOOL_H__

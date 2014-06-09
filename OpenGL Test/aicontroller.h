@@ -33,6 +33,7 @@ public:
 	void Process(float _fDeltaTime, D3DXVECTOR3& _rAvoidance);
 	void ProcessWaypointMovement(float _fDeltaTime);
 	void ProcessAStarMovement(int _iPathLength, float _fDeltaTime);
+	void SetAStarTarget(D3DXVECTOR3& _rVecTarget);
 	void CheckWaypointReached();
 	
 	D3DXVECTOR3& GetCurrentWaypoint();
