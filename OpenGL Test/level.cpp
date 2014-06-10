@@ -1,11 +1,4 @@
 //
-// Bachelor of Software Engineering - Year 2
-// Media Design School
-// Auckland 
-// New Zealand
-//
-// (c) 2013 Media Design School
-//
 //  File Name   :   level.cpp
 //  Description :   Code for CLevel
 //  Author      :   Christopher Howlett
@@ -291,7 +284,7 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	//Load font
 	m_pFont = new CFontRenderer[FONT_MAX];
 	m_pFont[FONT_DEBUG].Initialise("Something", 16, 6, D3DXVECTOR3(10.0f, WINDOW_HEIGHT * 0.1f, 2.0f), D3DXVECTOR2(12.0f, 15.0f), D3DXCOLOR(0.5f, 0.5f, 1.0f, 1.0f));
-	m_pFont[FONT_SCENEGRAPH].Initialise("Something", 16, 6, D3DXVECTOR3(WINDOW_WIDTH * 0.81f, WINDOW_HEIGHT * 0.11f, 0.6f), D3DXVECTOR2(12.0f, 15.0f), D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f));
+	m_pFont[FONT_SCENEGRAPH].Initialise("Something", 16, 6, D3DXVECTOR3(WINDOW_WIDTH * 0.81f, WINDOW_HEIGHT * 0.11f, 0.0f), D3DXVECTOR2(12.0f, 15.0f), D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f));
 	m_pFont[FONT_PERFORMANCE].Initialise("Something", 16, 6, D3DXVECTOR3(WINDOW_WIDTH * 0.01f, WINDOW_HEIGHT * 0.41f, 0.6f), D3DXVECTOR2(10.0f, 12.0f), D3DXCOLOR(0.7f, 0.9f, 0.7f, 1.0f));
 	for (int iFont = 0; iFont < FONT_MAX; ++iFont)
 	{
@@ -317,7 +310,7 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 			++iCurrentPixel;
 		}
 	}
-	m_pResourceManager->CreateTextureFromData(_pDevice, reinterpret_cast<unsigned char*>(pTerrainTexture), sTextureName, iTextureWidth, iTextureHeight);
+	//m_pResourceManager->CreateTextureFromData(_pDevice, reinterpret_cast<unsigned char*>(pTerrainTexture), sTextureName, iTextureWidth, iTextureHeight);
 	delete[] pTerrainTexture;
 
 	m_pRenderTarget = new CModel();
@@ -345,7 +338,6 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	m_pGrass->Initialise(_pDevice, m_pResourceManager, 80, 80, m_fGrassScale, D3DXVECTOR2(10.0f, 10.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
 	m_pGrass->SetObjectShader(&m_pShaderCollection[SHADER_GRASS]);
 	m_pGrass->SetDiffuseMap(m_pResourceManager->GetTexture(std::string("grassblades")));
-	m_pGrass->SetNormalMap(m_pResourceManager->GetTexture(std::string("grassnormals")));
 	m_pGrass->SetRadius(FLT_MAX);
 	m_pEntityManager->AddEntity(m_pGrass, SCENE_GRASS);
 	m_eGrassState = GRASS_OFF;
@@ -437,7 +429,7 @@ CLevel::Process(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDeviceContext, CC
 			else
 			{
 				D3DXVECTOR3 vecCursor = m_pCursor->GetPosition();
-				vecCursor.y = m_pSelectedObject->GetScale().y * 0.5f;
+				vecCursor.y = m_pSelectedObject->GetPosition().y;
 				m_pSelectedObject->SetPosition(vecCursor);
 			}
 		}
@@ -677,7 +669,7 @@ CLevel::Draw(ID3D11DeviceContext* _pDevice)
 	_pDevice->IASetInputLayout(m_pVertexLayout[VERTEX_STATIC]);
 	_pDevice->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	//RENDER GAME ENTITIES
+	//============================ RENDER GAME ENTITIES ================================
 	if (m_eRenderState >= RENDERSTATE_GAME)
 	{
 		//============================ Multiple Render Texture ================================
@@ -689,8 +681,6 @@ CLevel::Draw(ID3D11DeviceContext* _pDevice)
 		m_pNormalsMRT->ClearRenderTarget(_pDevice, m_pRenderer->GetDepthStencilView(), m_pClearColour);
 		m_pPositionMRT->ClearRenderTarget(_pDevice, m_pRenderer->GetDepthStencilView(), m_pClearColour);
 		m_pDepthMRT->ClearRenderTarget(_pDevice, m_pRenderer->GetDepthStencilView(), m_pClearColour);
-
-		// Render to MRT
 
 		//============================ DRAW ANIMATED CHARACTERS ================================
 		_pDevice->IASetInputLayout(m_pVertexLayout[VERTEX_ANIMATED]);
@@ -723,39 +713,40 @@ CLevel::Draw(ID3D11DeviceContext* _pDevice)
 														m_pPositionMRT->GetRenderShaderResource(),
 														m_pDepthMRT->GetRenderShaderResource() };
 		_pDevice->PSSetShaderResources(0, 4, texture);
-
-
+		
 		m_pRenderTarget->SetDiffuseMap(m_pDiffuseMRT->GetRenderShaderResource());
 		DrawScene(_pDevice, &m_pShaderCollection[SHADER_DEFERRED], m_pOrthoCamera, SCENE_FINAL);
 		m_pRenderTarget->SetDiffuseMap(m_pRenderTargets[RENDER_DEFERRED].GetRenderShaderResource());
 
-		//============================ FINAL PASS ================================
+		//============================ POST PROCESSING EFFECTS ================================
 		m_pRenderTargets[RENDER_POST].SetRenderTarget(_pDevice, 1, m_pDiffuseMRT->GetDepthStencilView());
 		m_pRenderTargets[RENDER_POST].ClearRenderTarget(_pDevice, m_pDiffuseMRT->GetDepthStencilView(), m_pClearColour);
 		DrawScene(_pDevice, &m_pShaderCollection[SHADERPOST_RADIALBLUR], m_pOrthoCamera, SCENE_FINAL);
 		m_pRenderTarget->SetDiffuseMap(m_pRenderTargets[RENDER_POST].GetRenderShaderResource());
 
-		m_pRenderer->PrepareLastScene();
 		//Prepare swapchain buffers
+		m_pRenderer->PrepareLastScene();
 		DrawScene(_pDevice, &m_pShaderCollection[SHADERPOST_RADIALBLUR], m_pOrthoCamera, SCENE_FINAL);
 	}
+	//============================ DRAW DEBUG INFORMATION ================================
 	if (m_eRenderState >= RENDERSTATE_DEBUG)
 	{
-		//============================ FONT RENDER ================================
 		_pDevice->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
-		_pDevice->IASetInputLayout(m_pVertexLayout[VERTEX_FONT]);
-		DrawScene(_pDevice, &m_pShaderCollection[SHADER_FONT], m_pOrthoCamera, SCENE_FONT);
 		_pDevice->IASetInputLayout(m_pVertexLayout[VERTEX_POINT]);
 		
 		//============================ DEBUG LINE RENDER ================================
 		DrawScene(_pDevice, &m_pShaderCollection[SHADER_LINERENDERER], m_pCamera, SCENE_DEBUG);
 		if (m_eRenderState >= RENDERSTATE_EDITOR)
 		{
-			_pDevice->IASetInputLayout(m_pVertexLayout[VERTEX_POINT]);
 			//Render UI objects to screen
 			m_pResourceManager->SendTextureDataToShader(_pDevice);
 			DrawScene(_pDevice, &m_pShaderCollection[SHADER_POINTSPRITE], m_pOrthoCamera, SCENE_UI);
 		}
+		//============================ FONT RENDER ================================
+		_pDevice->IASetInputLayout(m_pVertexLayout[VERTEX_FONT]);
+		DrawScene(_pDevice, &m_pShaderCollection[SHADER_FONT], m_pOrthoCamera, SCENE_FONT);
+		_pDevice->IASetInputLayout(m_pVertexLayout[VERTEX_POINT]);
+
 	}
 
 	//Unbind all render targets and shader resources prior to next frame
@@ -900,8 +891,6 @@ CLevel::LoadShaderData(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	m_pShaderCollection[SHADER_FONT].CompileVertexShader(_pDevice, L"Shaders/fontshader_vs.hlsl", "FontVS");
 	m_pShaderCollection[SHADER_FONT].CompileGeometryShader(_pDevice, L"Shaders/fontshader_gs.hlsl", "FontGS");
 	m_pShaderCollection[SHADER_FONT].CompilePixelShader(_pDevice, L"Shaders/fontshader_ps.hlsl", "FontPS");
-
-
 }
 /**
 *

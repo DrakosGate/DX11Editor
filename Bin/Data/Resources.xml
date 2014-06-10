@@ -29,17 +29,17 @@
 	</animations>
 	<textures>
 		<fileprefix>Assets/Textures/</fileprefix>
-		<texture id="human">
-			<filename>human.png</filename>
-		</texture>
-		<texture id="tree">
-			<filename>treeModel.png</filename>
-		</texture>
 		<texture id="grass">
 			<filename>grass.png</filename>
 		</texture>
 		<texture id="grassblades">
 			<filename>grassBlades.png</filename>
+		</texture>
+		<texture id="human">
+			<filename>human.png</filename>
+		</texture>
+		<texture id="tree">
+			<filename>treeModel.png</filename>
 		</texture>
 		<texture id="chicken">
 			<filename>chickenModel.png</filename>

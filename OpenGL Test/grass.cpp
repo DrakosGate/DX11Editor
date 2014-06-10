@@ -1,11 +1,4 @@
 //
-// Bachelor of Software Engineering - Year 2
-// Media Design School
-// Auckland 
-// New Zealand
-//
-// (c) 2013 Media Design School
-//
 //  File Name   :   grass.cpp
 //  Description :   Code for class CGrass
 //  Author      :   Christopher Howlett
@@ -84,7 +77,7 @@ CGrass::Initialise(ID3D11Device* _pDevice, CResourceManager* _pResourceManager, 
 			++iCurrentPixel;
 		}
 	}
-	SetNormalMap(_pResourceManager->CreateTextureFromData(_pDevice, reinterpret_cast<unsigned char*>(pTerrainTexture), sTextureName, _iTerrainWidth, _iTerrainHeight));
+	//SetNormalMap(_pResourceManager->CreateTextureFromData(_pDevice, reinterpret_cast<unsigned char*>(pTerrainTexture), sTextureName, _iTerrainWidth, _iTerrainHeight));
 	delete[] pTerrainTexture;
 
 	return true;

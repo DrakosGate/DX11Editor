@@ -115,7 +115,7 @@ public:
 
 	virtual bool Initialise(HWND _hWindow, CLevel* _pLevel);
 	virtual void Process(float _fDeltaTime);
-	virtual bool ProcessInput(ID3D11Device* _pDevice, TInputStruct* _pKeys, float _fDT);
+	virtual bool ProcessInput(ID3D11Device* _pDevice, TInputStruct* _pKeys, float _fDeltaTime);
 	virtual EEditorState GetEditorState() const;
 	virtual std::string& GetSelectedPrefab();
 

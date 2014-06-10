@@ -2,9 +2,9 @@
 <level>
 	<child>
 		<type>human</type>
-		<position x="5.26" y="0.00" z="-2.09"/>
+		<position x="-4.14" y="0.50" z="-9.50"/>
 		<scale x="1.00" y="1.00" z="1.00"/>
-		<rotation x="0.00" y="-1.19" z="0.00"/>
+		<rotation x="0.00" y="-0.19" z="0.00"/>
 		<colour r="1.0f" g="1.0f" b="1.0f" a="1.0f"/>
 		<light>
 			<type>point</type>
@@ -47,7 +47,7 @@
 	</child>
 	<child>
 		<type>PlayerCursor</type>
-		<position x="4.10" y="-0.25" z="556.26"/>
+		<position x="3.79" y="-0.25" z="514.76"/>
 		<scale x="-0.00" y="-0.00" z="-0.00"/>
 		<rotation x="0.00" y="-3.13" z="0.00"/>
 		<colour r="1.0f" g="1.0f" b="1.0f" a="1.0f"/>
@@ -393,58 +393,58 @@
 	</child>
 	<child>
 		<type>chicken</type>
-		<position x="-0.06" y="0.00" z="0.73"/>
+		<position x="-3.56" y="0.00" z="2.79"/>
 		<scale x="1.00" y="1.00" z="1.00"/>
-		<rotation x="0.00" y="3.07" z="0.00"/>
+		<rotation x="0.00" y="1.97" z="0.00"/>
 		<colour r="1.0f" g="1.0f" b="1.0f" a="1.0f"/>
 	</child>
 	<child>
 		<type>chicken</type>
-		<position x="-0.74" y="0.00" z="0.58"/>
+		<position x="-9.36" y="0.00" z="-1.89"/>
 		<scale x="1.00" y="1.00" z="1.00"/>
-		<rotation x="0.00" y="-0.95" z="0.00"/>
+		<rotation x="0.00" y="-2.62" z="0.00"/>
 		<colour r="1.0f" g="1.0f" b="1.0f" a="1.0f"/>
 	</child>
 	<child>
 		<type>chicken</type>
-		<position x="-0.10" y="0.00" z="-1.69"/>
+		<position x="5.68" y="0.00" z="8.07"/>
 		<scale x="1.00" y="1.00" z="1.00"/>
-		<rotation x="0.00" y="0.06" z="0.00"/>
+		<rotation x="0.00" y="3.05" z="0.00"/>
 		<colour r="1.0f" g="1.0f" b="1.0f" a="1.0f"/>
 	</child>
 	<child>
 		<type>chicken</type>
-		<position x="-0.05" y="0.00" z="-4.55"/>
+		<position x="3.75" y="0.00" z="-7.28"/>
 		<scale x="1.00" y="1.00" z="1.00"/>
-		<rotation x="0.00" y="0.01" z="0.00"/>
+		<rotation x="0.00" y="-1.68" z="0.00"/>
 		<colour r="1.0f" g="1.0f" b="1.0f" a="1.0f"/>
 	</child>
 	<child>
 		<type>chicken</type>
-		<position x="0.49" y="0.00" z="0.25"/>
+		<position x="-4.40" y="0.00" z="6.44"/>
 		<scale x="1.00" y="1.00" z="1.00"/>
-		<rotation x="0.00" y="2.02" z="0.00"/>
+		<rotation x="0.00" y="-1.74" z="0.00"/>
 		<colour r="1.0f" g="1.0f" b="1.0f" a="1.0f"/>
 	</child>
 	<child>
 		<type>chicken</type>
-		<position x="-0.18" y="0.00" z="-0.92"/>
+		<position x="-1.94" y="0.00" z="-3.18"/>
 		<scale x="1.00" y="1.00" z="1.00"/>
-		<rotation x="0.00" y="3.13" z="0.00"/>
+		<rotation x="0.00" y="0.96" z="0.00"/>
 		<colour r="1.0f" g="1.0f" b="1.0f" a="1.0f"/>
 	</child>
 	<child>
 		<type>chicken</type>
-		<position x="0.19" y="0.00" z="-1.36"/>
+		<position x="-1.66" y="0.00" z="1.05"/>
 		<scale x="1.00" y="1.00" z="1.00"/>
-		<rotation x="0.00" y="-0.14" z="0.00"/>
+		<rotation x="0.00" y="2.53" z="0.00"/>
 		<colour r="1.0f" g="1.0f" b="1.0f" a="1.0f"/>
 	</child>
 	<child>
 		<type>chicken</type>
-		<position x="0.64" y="0.00" z="-3.29"/>
+		<position x="6.04" y="0.00" z="-6.05"/>
 		<scale x="1.00" y="1.00" z="1.00"/>
-		<rotation x="0.00" y="-0.19" z="0.00"/>
+		<rotation x="0.00" y="1.26" z="0.00"/>
 		<colour r="1.0f" g="1.0f" b="1.0f" a="1.0f"/>
 	</child>
 	<child>
@@ -463,13 +463,104 @@
 	</child>
 	<child>
 		<type>PlayerCursor</type>
-		<position x="0.00" y="0.40" z="0.00"/>
+		<position x="-668.64" y="0.00" z="1856.59"/>
 		<scale x="-0.00" y="-0.00" z="-0.00"/>
-		<rotation x="0.00" y="-0.50" z="0.00"/>
+		<rotation x="0.00" y="2.57" z="0.00"/>
 		<colour r="1.0f" g="1.0f" b="1.0f" a="1.0f"/>
 		<light>
 			<type>point</type>
 		</light>
+	</child>
+	<child>
+		<type>chicken</type>
+		<position x="-1.97" y="0.00" z="-7.41"/>
+		<scale x="1.00" y="1.00" z="1.00"/>
+		<rotation x="0.00" y="0.26" z="0.00"/>
+		<colour r="1.0f" g="1.0f" b="1.0f" a="1.0f"/>
+	</child>
+	<child>
+		<type>chicken</type>
+		<position x="-1.19" y="0.00" z="-7.63"/>
+		<scale x="1.00" y="1.00" z="1.00"/>
+		<rotation x="0.00" y="0.15" z="0.00"/>
+		<colour r="1.0f" g="1.0f" b="1.0f" a="1.0f"/>
+	</child>
+	<child>
+		<type>chicken</type>
+		<position x="-1.72" y="0.00" z="-9.94"/>
+		<scale x="1.00" y="1.00" z="1.00"/>
+		<rotation x="0.00" y="0.17" z="0.00"/>
+		<colour r="1.0f" g="1.0f" b="1.0f" a="1.0f"/>
+	</child>
+	<child>
+		<type>chicken</type>
+		<position x="-3.01" y="0.00" z="-8.96"/>
+		<scale x="1.00" y="1.00" z="1.00"/>
+		<rotation x="0.00" y="0.32" z="0.00"/>
+		<colour r="1.0f" g="1.0f" b="1.0f" a="1.0f"/>
+	</child>
+	<child>
+		<type>human</type>
+		<position x="-2.51" y="0.00" z="-5.55"/>
+		<scale x="1.00" y="1.00" z="1.00"/>
+		<rotation x="0.00" y="0.42" z="0.00"/>
+		<colour r="1.0f" g="1.0f" b="1.0f" a="1.0f"/>
+	</child>
+	<child>
+		<type>human</type>
+		<position x="-2.08" y="0.00" z="-7.75"/>
+		<scale x="1.00" y="1.00" z="1.00"/>
+		<rotation x="0.00" y="0.26" z="0.00"/>
+		<colour r="1.0f" g="1.0f" b="1.0f" a="1.0f"/>
+	</child>
+	<child>
+		<type>human</type>
+		<position x="-2.02" y="0.00" z="-9.75"/>
+		<scale x="1.00" y="1.00" z="1.00"/>
+		<rotation x="0.00" y="0.20" z="0.00"/>
+		<colour r="1.0f" g="1.0f" b="1.0f" a="1.0f"/>
+	</child>
+	<child>
+		<type>human</type>
+		<position x="-0.36" y="0.00" z="-10.06"/>
+		<scale x="1.00" y="1.00" z="1.00"/>
+		<rotation x="0.00" y="0.04" z="0.00"/>
+		<colour r="1.0f" g="1.0f" b="1.0f" a="1.0f"/>
+	</child>
+	<child>
+		<type>tree</type>
+		<position x="-1.44" y="0.00" z="-12.65"/>
+		<scale x="1.00" y="1.00" z="1.00"/>
+		<rotation x="0.00" y="236.00" z="0.00"/>
+		<colour r="1.0f" g="1.0f" b="1.0f" a="1.0f"/>
+	</child>
+	<child>
+		<type>tree</type>
+		<position x="-2.01" y="0.00" z="-14.03"/>
+		<scale x="1.00" y="1.00" z="1.00"/>
+		<rotation x="0.00" y="274.00" z="0.00"/>
+		<colour r="1.0f" g="1.0f" b="1.0f" a="1.0f"/>
+	</child>
+	<child>
+		<type>tree</type>
+		<position x="-5.52" y="0.00" z="-11.61"/>
+		<scale x="1.00" y="1.00" z="1.00"/>
+		<rotation x="0.00" y="275.00" z="0.00"/>
+		<colour r="1.0f" g="1.0f" b="1.0f" a="1.0f"/>
+	</child>
+	<child>
+		<type>tree</type>
+		<position x="-4.72" y="0.00" z="-14.13"/>
+		<scale x="1.00" y="1.00" z="1.00"/>
+		<rotation x="0.00" y="222.00" z="0.00"/>
+		<colour r="1.0f" g="1.0f" b="1.0f" a="1.0f"/>
+	</child>
+	<child>
+		<type>tree</type>
+		<position x="-3.53" y="0.00" z="-13.25"/>
+		<scale x="1.00" y="1.00" z="1.00"/>
+		<rotation x="0.00" y="126.00" z="0.00"/>
+		<colour r="1.0f" g="1.0f" b="1.0f" a="1.0f"/>
 	</child>
 </level>
 
