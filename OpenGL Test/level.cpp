@@ -1138,6 +1138,8 @@ CLevel::LoadLevel(ID3D11Device* _pDevice, char* _pcLevelFilename)
 	m_pLightManager->DestroyLights();
 	m_vecGrassEntities.clear();
 	m_pSelectedObject = 0;
+	m_bHasSelectedObject = false;
+
 	m_bCreateObject = false;
 
 	m_pRootNode->Clear();
@@ -1230,7 +1232,7 @@ CLevel::AddChildToXMLNode(rapidxml::xml_document<>* _pDocument, rapidxml::xml_no
 	rapidxml::xml_node<>* pPosition = _pDocument->allocate_node(rapidxml::node_element, "position");
 	sprintf_s(cBuffer, 32, "%.2f", pCurrentEntity->GetPosition().x);
 	pPosition->append_attribute(_pDocument->allocate_attribute("x", _pDocument->allocate_string(cBuffer)));
-	sprintf_s(cBuffer, 32, "%.2f", (pCurrentEntity->GetPosition().y - pCurrentEntity->GetScale().y * 0.5f)); // Lower the model by half its scale
+	sprintf_s(cBuffer, 32, "%.2f", pCurrentEntity->GetPosition().y); // Lower the model by half its scale
 	pPosition->append_attribute(_pDocument->allocate_attribute("y", _pDocument->allocate_string(cBuffer)));
 	sprintf_s(cBuffer, 32, "%.2f", pCurrentEntity->GetPosition().z);
 	pPosition->append_attribute(_pDocument->allocate_attribute("z", _pDocument->allocate_string(cBuffer)));
