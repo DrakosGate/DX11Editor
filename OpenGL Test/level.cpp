@@ -477,7 +477,7 @@ CLevel::Process(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDeviceContext, CC
 	{
 		m_pEntityManager->Process(_fDeltaTime, SCENE_GRASS);
 		float fGrassOffset = m_fGrassScale * 0.5f;
-		D3DXVECTOR3 vecGrassPosition = m_pCamera->GetPosition() + (m_pCamera->GetLook() * fGrassOffset);
+		D3DXVECTOR3 vecGrassPosition = D3DXVECTOR3(0.0f, 0.0f, 0.0f);// m_pCamera->GetPosition() + (m_pCamera->GetLook() * fGrassOffset);
 		vecGrassPosition.y = 0.0f;
 		//Calculate grass offsets
 		m_pGrass->SendCollisionData(&m_vecGrassEntities);

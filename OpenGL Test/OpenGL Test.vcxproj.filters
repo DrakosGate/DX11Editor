@@ -354,5 +354,8 @@
     <None Include="..\Bin\OpenCLKernels\ai.cl">
       <Filter>Resource Files\OpenCL Kernels</Filter>
     </None>
+    <None Include="..\Bin\OpenCLKernels\grass.cl">
+      <Filter>Resource Files\OpenCL Kernels</Filter>
+    </None>
   </ItemGroup>
 </Project>
