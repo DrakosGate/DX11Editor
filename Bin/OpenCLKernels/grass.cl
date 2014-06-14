@@ -1,10 +1,8 @@
-__kernel void ProcessAI(__global float4* _pPositions, 
-						__global float4* _pDirection, 
-						__global float4* _pWaypoints,
-						__global float4* _pAIData,
+__kernel void ProcessGrass(	__global float4* _pGrassPositions, 
+							__global float4* _pGrassDirections,
+							__global float4* _pObjectPositions,
 
-						__global float4* _pOutPositions,
-						__global float4* _pOutDirections)
+							__global float4* _pOutDirections)
 {
 	/*
 	int iStartingPosition = _iSection * m_iDivisionSize;

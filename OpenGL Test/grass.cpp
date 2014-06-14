@@ -9,6 +9,7 @@
 #include <d3d11.h>
 
 // Local Includes
+#include "grassclkernel.h"
 #include "resourcemanager.h"
 
 // This Include
@@ -29,6 +30,7 @@
 */
 CGrass::CGrass()
 : m_pCollisionObjects(0)
+, m_pGrassCLKernel(0)
 {
 	m_fGrassSpeed = 1.0f;
 	m_fGrassStiffness = 1.0f;
@@ -44,7 +46,7 @@ CGrass::CGrass()
 */
 CGrass::~CGrass()
 {
-	
+	SAFEDELETE(m_pGrassCLKernel);
 }
 /**
 *
@@ -83,8 +85,18 @@ CGrass::Initialise(ID3D11Device* _pDevice, CResourceManager* _pResourceManager, 
 
 	m_fGrassSpeed = 5.0f;
 	m_fGrassStiffness = 2.0f;
+	m_pGrassCLKernel = new CGrassCLKernel();
+	m_pGrassCLKernel->InitialiseOpenCL();
+	m_pGrassCLKernel->LoadProgram("OpenCLKernels/grass.cl", "ProcessGrass");
 
 	return true;
+}
+void
+CGrass::ProcessOpenCL(float _fDeltaTime)
+{
+	m_pGrassCLKernel->SendDataToGPU(this, _fDeltaTime);
+	m_pGrassCLKernel->Run();
+	m_pGrassCLKernel->RetrieveOpenCLResults(this);
 }
 void 
 CGrass::SendCollisionData(std::vector<CRenderEntity*>* _pCollisionObjects)

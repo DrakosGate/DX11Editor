@@ -120,6 +120,7 @@
     <ClInclude Include="entitymanager.h" />
     <ClInclude Include="fontrenderer.h" />
     <ClInclude Include="grass.h" />
+    <ClInclude Include="grassclkernel.h" />
     <ClInclude Include="irenderer.h" />
     <ClInclude Include="level.h" />
     <ClInclude Include="light.h" />
@@ -160,6 +161,7 @@
     <ClCompile Include="entitymanager.cpp" />
     <ClCompile Include="fontrenderer.cpp" />
     <ClCompile Include="grass.cpp" />
+    <ClCompile Include="grassclkernel.cpp" />
     <ClCompile Include="level.cpp" />
     <ClCompile Include="light.cpp" />
     <ClCompile Include="lightmanager.cpp" />

@@ -228,10 +228,10 @@ CLevel::Initialise(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext, CD
 
 	m_eRenderState = RENDERSTATE_DEBUG;
 	m_pcProcessingMethodName = new std::string[PROCESSING_MAX];
-	m_pcProcessingMethodName[PROCESSING_SEQUENTIAL] = "Sequential";
-	m_pcProcessingMethodName[PROCESSING_THREADPOOL] = "Thread Pool";
-	m_pcProcessingMethodName[PROCESSING_OPENCL] = "GPU [OpenCL]";
-	m_pcProcessingMethodName[PROCESSING_DISTRIBUTED] = "Distributed";
+	m_pcProcessingMethodName[PROCESSING_SEQUENTIAL]		= "Sequential";
+	m_pcProcessingMethodName[PROCESSING_THREADPOOL]		= "Thread Pool";
+	m_pcProcessingMethodName[PROCESSING_OPENCL]			= "GPU [OpenCL]";
+	m_pcProcessingMethodName[PROCESSING_DISTRIBUTED]	= "Distributed";
 
 	SetFocus(_hWindow);
 
@@ -492,6 +492,10 @@ CLevel::Process(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDeviceContext, CC
 				m_pGrassJobs[iSection].fDeltaTime = _fDeltaTime;
 				m_pThreadPool->AddJobToPool(&GrassProcessingThread, &m_pGrassJobs[iSection]);
 			}
+			else
+			{
+				m_pGrass->ProcessOpenCL(_fDeltaTime);
+			}
 		}
 		//Recreate the grass vertex buffer with new vertex information
 		m_pGrass->RecreateGrassMesh(_pDevice,
@@ -499,6 +503,7 @@ CLevel::Process(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDeviceContext, CC
 									vecGrassPosition,
 									m_vecGrassEntities,
 									_fDeltaTime);
+
 		m_pFont[FONT_DEBUG].Write(std::string("Grass State: On With Collisions (Press G to toggle)"), 2);
 	}
 	else
