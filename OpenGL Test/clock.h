@@ -50,21 +50,23 @@ public:
 protected:
 	bool m_bUsingPerformanceCounter;
 	bool m_bIsCounting;
-	float m_fStartTime;
-	float m_fEndTime;
-	float m_fDeltaTime;
-	float m_fLastTime;
-	float m_fCurrentTime;
+	double m_fStartTime;
+	double m_fEndTime;
+	double m_fDeltaTime;
+	double m_fLastTime;
+	double m_fCurrentTime;
+
+	double m_fTimerFrequency;
 
 	//Count FPS
-	float m_fTimeElapsed;
+	double m_fTimeElapsed;
 	int m_iFramesPerSecond;
 	int m_iFrameCount;	
 	
-	float m_fTotalAverageTimeElapsed;
-	float m_fFramesCounted;
+	double m_fTotalAverageTimeElapsed;
+	double m_fFramesCounted;
 	
-	float m_fFramesPerSecondLimit;
+	double m_fFramesPerSecondLimit;
 	bool m_bIsLimittingFPS;
 
 private:

@@ -77,6 +77,7 @@ CClock::Initialise()
 	if(QueryPerformanceFrequency(&m_iTimerFrequency))
 	{
 		m_bUsingPerformanceCounter = true;
+		m_fTimerFrequency = 1.0 / (static_cast<double>(m_iTimerFrequency.QuadPart) * 0.001);
 	}
 	else
 	{
@@ -101,7 +102,7 @@ CClock::Process()
 	if(m_bUsingPerformanceCounter)
 	{
 		QueryPerformanceCounter(&m_iNumCounts);
-		m_fCurrentTime = static_cast<float>(m_iNumCounts.QuadPart / static_cast<float>(m_iTimerFrequency.QuadPart));
+		m_fCurrentTime = static_cast<double>(m_iNumCounts.QuadPart * m_fTimerFrequency);
 	}
 
 	if (m_fLastTime == 0.0f)
@@ -109,7 +110,7 @@ CClock::Process()
 		m_fLastTime = m_fCurrentTime;
 	}
 
-	m_fDeltaTime = m_fCurrentTime - m_fLastTime;
+	m_fDeltaTime = (m_fCurrentTime - m_fLastTime) * 0.001f;
 	//Count time elapsed - calculate FPS
 	++m_iFrameCount;
 	m_fTimeElapsed += m_fDeltaTime;
@@ -143,7 +144,7 @@ CClock::Process()
 float
 CClock::GetDeltaTick()
 {
-	return(m_fDeltaTime);
+	return(static_cast<float>(m_fDeltaTime));
 }
 /**
 *
@@ -169,7 +170,7 @@ void
 CClock::StartTimer()
 {
 	QueryPerformanceCounter(&m_iNumCounts);
-	m_fStartTime = static_cast<float>(m_iNumCounts.QuadPart / static_cast<float>(m_iTimerFrequency.QuadPart));;
+	m_fStartTime = static_cast<double>(m_iNumCounts.QuadPart) * m_fTimerFrequency;
 }
 /**
 *
@@ -182,7 +183,7 @@ void
 CClock::EndTimer()
 {
 	QueryPerformanceCounter(&m_iNumCounts);
-	m_fEndTime = static_cast<float>(m_iNumCounts.QuadPart / static_cast<float>(m_iTimerFrequency.QuadPart));
+	m_fEndTime = static_cast<double>(m_iNumCounts.QuadPart) * m_fTimerFrequency;
 
 	++m_fFramesCounted;
 	m_fTotalAverageTimeElapsed += m_fEndTime - m_fStartTime;
@@ -197,10 +198,10 @@ CClock::EndTimer()
 float
 CClock::GetTimeElapsed()
 {
-	float fTimeElapsed = m_fTotalAverageTimeElapsed / m_fFramesCounted;
+	double fTimeElapsed = m_fTotalAverageTimeElapsed / m_fFramesCounted;
 	m_fTotalAverageTimeElapsed = 0.0f;
 	m_fFramesCounted = 0.0f;
-	return (fTimeElapsed);
+	return (static_cast<float>(fTimeElapsed * 0.001f));
 }
 /**
 *

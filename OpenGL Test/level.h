@@ -39,6 +39,7 @@ enum EGrassState
 struct ID3D11RasterizerState;
 struct ID3D11SamplerState;
 struct TEntityNode;
+struct TGrassThread;
 
 class CClock;
 class CModel;
@@ -100,6 +101,9 @@ private:
 	CDirectXRenderer* m_pRenderer;
 	CResourceManager* m_pResourceManager;
 	CThreadPool* m_pThreadPool;
+	int m_iThreadCount;
+	TGrassThread* m_pGrassJobs;
+
 	COpenCLKernel* m_pOpenCLKernel;
 	CFontRenderer* m_pFont;
 	CNetwork* m_pNetwork;

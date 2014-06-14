@@ -14,6 +14,7 @@
 
 // Library Includes
 #include <D3D11.h>
+#include <fstream>
 
 // Local Includes
 
@@ -40,6 +41,9 @@ CPerformanceGraph::CPerformanceGraph()
 , m_fMaxRange(0.000001f)
 , m_fScaleOffset(0.0f)
 , m_iNumNodes(0)
+, m_pcLogFilename(0)
+, m_pcLogDescription(0)
+, m_bDoLogPerformance(false)
 {
 
 }
@@ -55,6 +59,8 @@ CPerformanceGraph::CPerformanceGraph()
 CPerformanceGraph::~CPerformanceGraph()
 {
 	SAFEDELETEARRAY(m_pNodeValues);
+
+	OutputLog();
 }
 /**
 *
@@ -85,6 +91,31 @@ CPerformanceGraph::Initialise(ID3D11Device* _pDevice, D3DXVECTOR3& _rPosition, D
 	AddPointSprite(_pDevice, m_vecGraphPos, D3DXVECTOR3(10.0f, 0.0f, 0.0f), D3DXVECTOR2(_rScale.x, _rScale.y), D3DXCOLOR(0.2f, 0.2f, 1.0f, 0.3f), 0.0f, 0);
 
 	return true;
+}
+void
+CPerformanceGraph::LogPerformance(char* _pcLogFilename, char* _pcLogDescription)
+{
+	m_bDoLogPerformance = true;
+	m_pcLogFilename = _pcLogFilename;
+	m_pcLogDescription = _pcLogDescription;
+}
+void
+CPerformanceGraph::OutputLog()
+{
+	if (m_bDoLogPerformance)
+	{
+		std::ofstream logFile;
+		logFile.open(m_pcLogFilename);
+		if (logFile.is_open())
+		{
+			logFile.write(m_pcLogDescription, strlen(m_pcLogDescription));
+			for (unsigned int iLog = 0; iLog < m_performanceLog.size(); ++iLog)
+			{
+				logFile << m_performanceLog[iLog] << std::endl;
+			}
+		}
+		logFile.close();
+	}
 }
 /**
 *
@@ -135,6 +166,11 @@ CPerformanceGraph::SetGraphRange(float _fMinRange, float _fMaxRange)
 void
 CPerformanceGraph::AddNode(ID3D11Device* _pDevice, float _fValue)
 {
+	//Add this value to the log file
+	if (m_bDoLogPerformance)
+	{
+		m_performanceLog.push_back(_fValue);
+	}
 	//Ensure value is in range
 	float fValue = _fValue;
 	if (fValue < m_fMinRange)

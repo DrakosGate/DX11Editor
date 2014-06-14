@@ -33,6 +33,18 @@ struct TAIDescription
 	float fMovementSpeed;
 	float fRotationSpeed;
 };
+struct TAIThreadData
+{
+	TAIThreadData(CAIHiveMind* _pHivemind, int _iAIIndex, float _fDeltaTime)
+	{
+		pThis = _pHivemind;
+		iAIIndex = _iAIIndex;
+		fDeltaTime = _fDeltaTime;
+	}
+	CAIHiveMind* pThis;
+	int iAIIndex;
+	float fDeltaTime;
+};
 struct TGridNode
 {
 	TGridNode()
@@ -50,18 +62,6 @@ struct TGridNode
 	TGridNode* pLeft;
 	TGridNode* pRight;
 }; 
-struct TAIThreadData
-{
-	TAIThreadData(CAIHiveMind* _pHivemind, int _iAIIndex, float _fDeltaTime)
-	{
-		pThis = _pHivemind;
-		iAIIndex = _iAIIndex;
-		fDeltaTime = _fDeltaTime;
-	}
-	CAIHiveMind* pThis;
-	int iAIIndex;
-	float fDeltaTime;
-};
 enum ENavigationMethod
 {
 	NAVIGATION_INVALID = -1,
@@ -91,6 +91,7 @@ public:
 
 	virtual bool Initialise();
 	void Process(CThreadPool* _pCThreadPool, float _fDeltaTime);
+	void ProcessIndividualAIMovement(int _iAIIndex, float _fDeltaTime);
 	void ProcessIndividualAIController(int _iAIIndex, float _fDeltaTime);
 	void ProcessOpenCLKernel(float _fDeltaTime);
 	void AddAI(CRenderEntity* _pEntity, EAIType _eAIType);
@@ -123,7 +124,7 @@ private:
 	int m_iNumAI;
 
 	TAIDescription* m_pAIDescriptions;
-	TAIThreadData* m_pThreadData;
+	std::vector<TAIThreadData*> m_vecThreadData;
 
 	TGridNode* m_pNavigationGrid;
 	CPointSprite* m_pNavigationGridMesh;

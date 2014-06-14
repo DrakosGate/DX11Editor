@@ -19,7 +19,6 @@
 // Static Function Prototypes
 
 // Implementation
-
 /**
 *
 * CGrass class constructor
@@ -29,6 +28,7 @@
 *
 */
 CGrass::CGrass()
+: m_pCollisionObjects(0)
 {
 	m_fGrassSpeed = 1.0f;
 	m_fGrassStiffness = 1.0f;
@@ -58,9 +58,10 @@ CGrass::~CGrass()
 *
 */
 bool
-CGrass::Initialise(ID3D11Device* _pDevice, CResourceManager* _pResourceManager, int _iTerrainWidth, int _iTerrainHeight, float _fScale, D3DXVECTOR2& _rVecTiling, D3DXCOLOR& _rColour)
+CGrass::Initialise(ID3D11Device* _pDevice, CResourceManager* _pResourceManager, int _iTerrainWidth, int _iTerrainHeight, float _fScale, D3DXVECTOR2& _rVecTiling, D3DXCOLOR& _rColour, int _iProcessingDivisionSize)
 {
 	LoadTerrain(_pDevice, _iTerrainWidth, _iTerrainHeight, _fScale, _rVecTiling, _rColour);
+	m_iDivisionSize = m_iVertexCount / _iProcessingDivisionSize;
 
 	//Create texture for grass normal data
 	int iCurrentPixel = 0;
@@ -80,7 +81,50 @@ CGrass::Initialise(ID3D11Device* _pDevice, CResourceManager* _pResourceManager, 
 	//SetNormalMap(_pResourceManager->CreateTextureFromData(_pDevice, reinterpret_cast<unsigned char*>(pTerrainTexture), sTextureName, _iTerrainWidth, _iTerrainHeight));
 	delete[] pTerrainTexture;
 
+	m_fGrassSpeed = 5.0f;
+	m_fGrassStiffness = 2.0f;
+
 	return true;
+}
+void 
+CGrass::SendCollisionData(std::vector<CRenderEntity*>* _pCollisionObjects)
+{
+	m_pCollisionObjects = _pCollisionObjects;
+}
+void
+CGrass::ProcessGrassSection(int _iSection, float _fDeltaTime)
+{
+	if (m_pCollisionObjects)
+	{
+		int iStartingPosition = _iSection * m_iDivisionSize;
+		for (int iBlade = 0; iBlade < m_iDivisionSize; ++iBlade)
+		{
+			int iCurrentVertex = iStartingPosition + iBlade;
+			if (iCurrentVertex < m_iVertexCount)
+			{
+				//Avoid entities
+				D3DXVECTOR3 vecToEntity;
+				float fAvoidanceRange = 1.0f;
+				unsigned int iNumEntities = m_pCollisionObjects->size();
+				for (unsigned int iEntity = 0; iEntity < iNumEntities; ++iEntity)
+				{
+					fAvoidanceRange = ((*m_pCollisionObjects)[iEntity]->GetRadius() * (*m_pCollisionObjects)[iEntity]->GetRadius()) * 0.75f;
+
+					vecToEntity = (*m_pCollisionObjects)[iEntity]->GetPosition() - m_pVertices[iCurrentVertex].pos;
+					float fDistanceToEntity = D3DXVec3LengthSq(&vecToEntity);
+					if (fDistanceToEntity < fAvoidanceRange)
+					{
+						m_pVertices[iCurrentVertex].normal -= (vecToEntity * (fAvoidanceRange - fDistanceToEntity)) * m_fGrassSpeed * _fDeltaTime;
+					}
+				}
+				if (m_pVertices[iCurrentVertex].normal.y < 0.5f)
+				{
+					m_pVertices[iCurrentVertex].normal.y = 0.5f;
+				}
+				D3DXVec3Normalize(&m_pVertices[iCurrentVertex].normal, &m_pVertices[iCurrentVertex].normal);
+			}
+		}
+	}
 }
 /**
 *
@@ -93,13 +137,11 @@ CGrass::Initialise(ID3D11Device* _pDevice, CResourceManager* _pResourceManager, 
 void
 CGrass::RecreateGrassMesh(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDeviceContext, D3DXVECTOR3& _rCameraPos, std::vector<CRenderEntity*>& _pEntities, float _fDeltaTime)
 {
-	m_fGrassSpeed = 5.0f;
-	m_fGrassStiffness = 2.0f;
 	float fHalfScale = m_fModelScale * 0.5f;
 	//Delete and recreate vertex buffer data
 	m_pVertexBuffer->Release();
 	D3DXVECTOR3 vecNormalTarget = D3DXVECTOR3(0.0f, m_fGrassStiffness, 0.0f);
-
+	
 	for (int iVertex = 0; iVertex < m_iVertexCount; ++iVertex)
 	{
 		m_pVertices[iVertex].normal += (vecNormalTarget - m_pVertices[iVertex].normal) * m_fGrassStiffness * _fDeltaTime;
@@ -121,29 +163,8 @@ CGrass::RecreateGrassMesh(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDeviceC
 		{
 			m_pVertices[iVertex].pos.z += m_fModelScale;
 		}
-	
-
-		//Avoid entities
-		D3DXVECTOR3 vecToEntity;
-		float fAvoidanceRange = 1.0f;
-		unsigned int iNumEntities = _pEntities.size();
-		for (unsigned int iEntity = 0; iEntity < iNumEntities; ++iEntity)
-		{
-			fAvoidanceRange = (_pEntities[iEntity]->GetRadius() * _pEntities[iEntity]->GetRadius()) * 0.75f;
-	
-			vecToEntity = _pEntities[iEntity]->GetPosition() - m_pVertices[iVertex].pos;
-			float fDistanceToEntity = D3DXVec3LengthSq(&vecToEntity);
-			if (fDistanceToEntity < fAvoidanceRange)
-			{
-				m_pVertices[iVertex].normal -= (vecToEntity * (fAvoidanceRange - fDistanceToEntity)) * m_fGrassSpeed * _fDeltaTime;
-			}
-		}
-		if(m_pVertices[iVertex].normal.y < 0.5f)
-		{
-			m_pVertices[iVertex].normal.y = 0.5f;
-		}
-		D3DXVec3Normalize(&m_pVertices[iVertex].normal, &m_pVertices[iVertex].normal);
 	}
+	
 	//Recreate texture based on new normal data
 	//ID3D11Resource* pNormalTexture = 0;
 	//D3D11_MAPPED_SUBRESOURCE* pTextureData = new D3D11_MAPPED_SUBRESOURCE;

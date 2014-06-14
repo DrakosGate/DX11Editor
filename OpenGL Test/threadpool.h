@@ -42,9 +42,30 @@ struct TSetupJob
 	}
 	int iData;
 };
+class CGrass;
+class CAIHiveMind;
+struct TGrassThread
+{
+	TGrassThread(){}
+	TGrassThread(CGrass* _pGrass, int _iGrassSection, float _fDeltaTime)
+	{
+		pGrass = _pGrass;
+		iGrassSection = _iGrassSection;
+		fDeltaTime = _fDeltaTime;
+	}
+	CGrass* pGrass;
+	int iGrassSection;
+	float fDeltaTime;
+};
 // Constants
 
 // Prototypes
+
+//Thread Function Declarations
+void GrassProcessingThread(void* _pData, int _iThreadID);
+void PrintSomething(void* _pData, int _iThreadID);
+void AIProcessingThread(void* _pData, int _iThreadID);
+
 class CThread;
 
 class CThreadPool
@@ -55,7 +76,8 @@ public:
 	~CThreadPool();
 
 	void Initialise(int _iThreadCount);
-	void AddJob(JOB_TYPE _JobType, PARAMETER_TYPE _rParameters);
+	void AddJobToPool(JOB_TYPE _JobType, PARAMETER_TYPE _rParameters);
+	void JoinWithMainThread();
 
 //Private functions
 private:

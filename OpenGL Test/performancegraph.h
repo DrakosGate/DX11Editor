@@ -20,12 +20,14 @@
 
 class CPerformanceGraph : public CPointSprite
 {
-	//Member functions
+//Member functions
 public:
 	CPerformanceGraph();
 	virtual ~CPerformanceGraph();
 
 	virtual bool Initialise(ID3D11Device* _pDevice, D3DXVECTOR3& _rPosition, D3DXVECTOR3& _rScale, int _iNumNodes);
+	void LogPerformance(char* _pcLogFilename, char* _pcLogDescription);
+	void OutputLog();
 
 	void Draw(ID3D11DeviceContext* _pDevice);
 	void SetGraphRange(float _fMinRange, float _fMaxRange);
@@ -33,6 +35,7 @@ public:
 	float GetMin() const;
 	float GetMax() const;
 
+//Member variables
 protected:
 	D3DXVECTOR3 m_vecGraphPos;
 	D3DXVECTOR3 m_vecGraphScale;
@@ -45,6 +48,12 @@ protected:
 	float m_fHeightPercentage;
 
 	float m_fScaleOffset;
+
+	//Performance Log
+	std::vector<float> m_performanceLog;
+	char* m_pcLogFilename;
+	char* m_pcLogDescription;
+	bool m_bDoLogPerformance;
 };
 
 #endif //PERFORMANCEGRAPH_H__

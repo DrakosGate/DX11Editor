@@ -24,11 +24,6 @@
 // Static Function Prototypes
 
 // Implementation
-void ThreadedAI(void* _pParameters)
-{
-	TAIThreadData* pParam = reinterpret_cast<TAIThreadData*>(_pParameters);
-	pParam->pThis->ProcessIndividualAIController(pParam->iAIIndex, pParam->fDeltaTime);
-}
 /**
 *
 * CAIHiveMind class constructor
@@ -58,6 +53,13 @@ CAIHiveMind::CAIHiveMind()
 */
 CAIHiveMind::~CAIHiveMind()
 {
+	//Delete thread data
+	for (unsigned int iThread = 0; iThread < m_vecThreadData.size(); ++iThread)
+	{
+		delete m_vecThreadData[iThread];
+		m_vecThreadData[iThread] = 0;
+	}
+	m_vecThreadData.clear();
 	m_vecStaticObstacles.clear();
 	if (m_pCLKernel)
 	{
@@ -149,7 +151,8 @@ CAIHiveMind::Process(CThreadPool* _pThreadPool, float _fDeltaTime)
 		{
 			for (int iAI = 0; iAI < m_iNumAI; ++iAI)
 			{
-			//  _pThreadPool->AddJob();
+				m_vecThreadData[iAI]->fDeltaTime = _fDeltaTime;
+				_pThreadPool->AddJobToPool(&AIProcessingThread, m_vecThreadData[iAI]);
 			}
 			break;
 		}
@@ -166,6 +169,20 @@ CAIHiveMind::Process(CThreadPool* _pThreadPool, float _fDeltaTime)
 	//	ProcessIndividualAIController(iAI, _fDeltaTime);
 	//	//	//_pThreadPool->AddJobToPool(aiFunction, &TAIThreadData(this, iAI, _fDeltaTime));
 	//}
+}
+/**
+*
+* CAIHiveMind class Processes an individual AI controller based on the Index given
+* (Task ID : n / a)
+*
+* @author Christopher Howlett
+* @param _fDeltaTime Game time elapsed
+*
+*/
+void
+CAIHiveMind::ProcessIndividualAIMovement(int _iAIIndex, float _fDeltaTime)
+{
+	m_pAI[_iAIIndex]->ProcessWaypointMovement(_fDeltaTime);
 }
 /**
 *
@@ -238,6 +255,8 @@ CAIHiveMind::AddAI(CRenderEntity* _pEntity, EAIType _eAIType)
 	m_pAI[m_iNumAI - 1] = new CAIController();
 	m_pAI[m_iNumAI - 1]->Initialise(this, _pEntity, pThisAI->fMovementSpeed, pThisAI->fRotationSpeed);
 	m_pAI[m_iNumAI - 1]->SetAIType(_eAIType);
+
+	m_vecThreadData.push_back(new TAIThreadData(this, m_iNumAI - 1, 0.0f));
 
 	delete[] pOldArray;
 	pOldArray = 0;

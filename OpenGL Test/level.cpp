@@ -64,7 +64,8 @@ CLevel::CLevel()
 //, m_pPlayer(0)
 , m_pCursor(0)
 , m_pTerrain(0)
-//, m_pGrass(0)
+, m_pGrass(0)
+, m_pGrassJobs(0)
 , m_pHivemind(0)
 , m_pCamera(0)
 , m_pOrthoCamera(0)
@@ -92,6 +93,7 @@ CLevel::CLevel()
 , m_pGraph(0)
 , m_fGraphDelay(0.0f)
 , m_pcProcessingMethodName(0)
+, m_iThreadCount(0)
 , m_bCreateObject(false)
 , m_bHasSelectedObject(false)
 , m_eGrassState(GRASS_OFF)
@@ -135,6 +137,7 @@ CLevel::~CLevel()
 	SAFEDELETE(m_pCamera);
 	SAFEDELETE(m_pOrthoCamera);
 	SAFEDELETEARRAY(m_pFont);
+	SAFEDELETEARRAY(m_pGrassJobs);
 
 	//Clear render targets
 	SAFEDELETE(m_pDiffuseMRT);
@@ -267,9 +270,10 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 
 	//Create thread pool for parallel task management
 	m_pThreadPool = new CThreadPool();
+	m_iThreadCount = std::thread::hardware_concurrency();
 	//std::thread::hardware_concurrency() is the recommended thread usage for this system
-	m_pThreadPool->Initialise(std::thread::hardware_concurrency());
-
+	m_pThreadPool->Initialise(m_iThreadCount);
+	
 	m_pOpenCLKernel = new COpenCLKernel();
 	m_pOpenCLKernel->InitialiseOpenCL();
 	m_pOpenCLKernel->LoadProgram("OpenCLKernels/test.cl", "ArrayAdd");
@@ -335,13 +339,18 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 
 	m_fGrassScale = 20.0f;
 	m_pGrass = new CGrass();
-	m_pGrass->Initialise(_pDevice, m_pResourceManager, 80, 80, m_fGrassScale, D3DXVECTOR2(10.0f, 10.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
+	m_pGrass->Initialise(_pDevice, m_pResourceManager, 80, 80, m_fGrassScale, D3DXVECTOR2(10.0f, 10.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f), m_iThreadCount);
 	m_pGrass->SetObjectShader(&m_pShaderCollection[SHADER_GRASS]);
 	m_pGrass->SetDiffuseMap(m_pResourceManager->GetTexture(std::string("grassblades")));
 	m_pGrass->SetRadius(FLT_MAX);
 	m_pEntityManager->AddEntity(m_pGrass, SCENE_GRASS);
 	m_eGrassState = GRASS_OFF;
-	
+	m_pGrassJobs = new TGrassThread[m_iThreadCount];
+	for (int iJob = 0; iJob < m_iThreadCount; ++iJob)
+	{
+		m_pGrassJobs[iJob] = TGrassThread(m_pGrass, iJob, 0.0f);
+	}
+
 	//Load Default level data
 	LoadLevel(_pDevice, "Data/Levels/level1.xml");
 
@@ -358,6 +367,7 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	m_pCursor->GetNode()->vecLights.push_back(m_pLightManager->AddPoint(D3DXVECTOR3(0.0f, 0.4f, 0.0f), D3DXCOLOR(0.3f, 0.3f, 0.8f, 1.0f), D3DXVECTOR3(0.05f, 0.2f, 4.0f), 100.0f));
 	m_pEntityManager->AddEntity(m_pCursor, SCENE_PERMANENTSCENE);
 
+	//Create the level editor interface
 	m_pEditor = new CEditorInterface();
 	m_pEditor->Initialise(_hWindow, this);
 	m_pEditor->LoadFromXML(_pDevice, m_pResourceManager, "Data/EditorLayout.xml");
@@ -365,20 +375,24 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	m_pEditor->SetDiffuseMap(m_pResourceManager->GetTexture(std::string("menu_button")));
 	m_pEntityManager->AddEntity(m_pEditor, SCENE_UI);
 	
+	//Create performance graph
 	m_pGraph = new CPerformanceGraph();
 	m_pGraph->Initialise(_pDevice, D3DXVECTOR3(WINDOW_WIDTH * 0.01f, WINDOW_HEIGHT * 0.2f, 0.0f), D3DXVECTOR3(WINDOW_WIDTH * 0.3f, WINDOW_HEIGHT * 0.2f, 1.0f), 100);
 	m_pGraph->SetGraphRange(0.0f, 0.0000000001f);
 	m_pGraph->SetObjectShader(&m_pShaderCollection[SHADER_POINTSPRITE]);
 	m_pGraph->SetDiffuseMap(m_pResourceManager->GetTexture(std::string("menu_button")));
+	m_pGraph->LogPerformance("performancelog.txt", "==== Performance over 10 frames ====\n\n");
 	m_pEntityManager->AddEntity(m_pGraph, SCENE_UI);
 
+	//Create a selection cursor to indicate the selected model
 	m_pSelectionCursor = new CModel();
 	m_pSelectionCursor->Initialise();
 	m_pSelectionCursor->LoadSquare(_pDevice, 1.0f, D3DXVECTOR2(1.0f, 1.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
 	m_pSelectionCursor->SetPosition(D3DXVECTOR3(0.0f, 0.4f, 0.0f));
+	m_pSelectionCursor->SetRotation(D3DXVECTOR3(static_cast<float>(D3DX_PI) * 0.5f, 0.0f, 0.0f));
 	m_pSelectionCursor->SetObjectShader(&m_pShaderCollection[SHADER_MRT]);
 	m_pSelectionCursor->SetDiffuseMap(m_pResourceManager->GetTexture(std::string("selectionbox")));
-	m_pSelectionCursor->ToggleBillboarded(true);
+	m_pSelectionCursor->ToggleBillboarded(false);
 	m_pEntityManager->AddEntity(m_pSelectionCursor, SCENE_PERMANENTSCENE);
 
 	_pDevContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -428,13 +442,20 @@ CLevel::Process(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDeviceContext, CC
 			}
 			else
 			{
-				D3DXVECTOR3 vecCursor = m_pCursor->GetPosition();
-				vecCursor.y = m_pSelectedObject->GetPosition().y;
-				m_pSelectedObject->SetPosition(vecCursor);
+				//Check if cursor is within drag range
+				D3DXVECTOR3 vecToObject = m_pSelectedObject->GetPosition() - m_pCursor->GetPosition();
+				vecToObject.y = 0.0f;
+				if (D3DXVec3LengthSq(&vecToObject) < m_pSelectedObject->GetRadius() * m_pSelectedObject->GetRadius())
+				{
+					//Drag object
+					D3DXVECTOR3 vecCursor = m_pCursor->GetPosition();
+					vecCursor.y = m_pSelectedObject->GetPosition().y;
+					m_pSelectedObject->SetPosition(vecCursor);
+				}
 			}
 		}
-		m_pSelectionCursor->SetPosition(m_pSelectedObject->GetPosition());
-		m_pSelectionCursor->SetScale(m_pSelectedObject->GetScale());
+		m_pSelectionCursor->SetPosition(m_pSelectedObject->GetPosition() - D3DXVECTOR3(0.0f, m_pSelectedObject->GetPosition().y - 0.1f, 0.0f));
+		m_pSelectionCursor->SetScale(D3DXVECTOR3(m_pSelectedObject->GetScale().x, m_pSelectedObject->GetScale().z, 1.0f));
 		m_pHivemind->RecalculateNavGrid(_pDevice);
 	}
 	
@@ -458,6 +479,21 @@ CLevel::Process(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDeviceContext, CC
 		float fGrassOffset = m_fGrassScale * 0.5f;
 		D3DXVECTOR3 vecGrassPosition = m_pCamera->GetPosition() + (m_pCamera->GetLook() * fGrassOffset);
 		vecGrassPosition.y = 0.0f;
+		//Calculate grass offsets
+		m_pGrass->SendCollisionData(&m_vecGrassEntities);
+		for (int iSection = 0; iSection < m_iThreadCount; ++iSection)
+		{
+			if (m_eProcessingMethod == PROCESSING_SEQUENTIAL)
+			{
+				m_pGrass->ProcessGrassSection(iSection, _fDeltaTime);
+			}
+			else if (m_eProcessingMethod == PROCESSING_THREADPOOL)
+			{
+				m_pGrassJobs[iSection].fDeltaTime = _fDeltaTime;
+				m_pThreadPool->AddJobToPool(&GrassProcessingThread, &m_pGrassJobs[iSection]);
+			}
+		}
+		//Recreate the grass vertex buffer with new vertex information
 		m_pGrass->RecreateGrassMesh(_pDevice,
 									_pDeviceContext,
 									vecGrassPosition,
@@ -477,7 +513,7 @@ CLevel::Process(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDeviceContext, CC
 		}
 	}
 	//Process audio
-	CAudioPlayer::GetInstance().SetListenerPosition(m_pCamera->GetPosition(), m_pCamera->GetLook(), D3DXVECTOR3(0.0f, 1.0f, 0.0f));
+	CAudioPlayer::GetInstance().SetListenerPosition(D3DXVECTOR3(0.0f, 0.0f, 0.0f), m_pCamera->GetLook(), D3DXVECTOR3(0.0f, 1.0f, 0.0f));
 	CAudioPlayer::GetInstance().Process();
 
 	//Print FPS
@@ -498,10 +534,10 @@ CLevel::Process(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDeviceContext, CC
 	}
 	_pClock->EndTimer();
 	//Send data to performance graph
-	m_fGraphDelay -= _fDeltaTime;
+	m_fGraphDelay -= 1.0f;// _fDeltaTime;
 	if (m_fGraphDelay < 0.0f)
 	{
-		m_fGraphDelay = 0.02f;
+		m_fGraphDelay = 10.0f;
 		float fGraphMeasurement = _pClock->GetTimeElapsed();//_pClock->GetFPS();//  sinf(m_fGameTimeElapsed * 2.0f);
 		m_pGraph->SetGraphRange(fGraphMeasurement, fGraphMeasurement);
 		m_pGraph->AddNode(_pDevice, fGraphMeasurement);
@@ -511,6 +547,12 @@ CLevel::Process(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDeviceContext, CC
 		m_pFont[FONT_PERFORMANCE].Write(std::string(cBuffer), 1);
 		sprintf_s(cBuffer, 64, "Min:     %f", m_pGraph->GetMin());
 		m_pFont[FONT_PERFORMANCE].Write(std::string(cBuffer), 2);
+	}
+
+	//Wait for thread pool
+	if (m_eProcessingMethod == PROCESSING_THREADPOOL)
+	{
+	//	m_pThreadPool->JoinWithMainThread();
 	}
 }
 /**
