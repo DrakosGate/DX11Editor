@@ -36,7 +36,7 @@ float4 RadialBlurPS(PS_IN _input) : SV_Target
 {
 	// Get materials from texture maps.
 	float4 diffuse = diffuseMap.Sample(textureSampler, _input.texC);
-	float4 fDepth = depthMap.Sample(textureSampler, _input.texC);
+	float fDepth = depthMap.Sample(textureSampler, _input.texC).r;
 	int iNumSamples = 5;
 	//Calculate distance of pixel from centre of screen
 	float fRatio = length(float2(0.5f, 0.5f) - _input.texC);
@@ -59,7 +59,7 @@ float4 RadialBlurPS(PS_IN _input) : SV_Target
 		iSampleCount += 8;
 	}
 	diffuse = (blur / iSampleCount);
-	diffuse.rgb = fDepth;
+	//diffuse.rgb = fDepth;
 	diffuse.a = 1.0f;
 
 	return diffuse;
