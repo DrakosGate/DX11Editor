@@ -82,6 +82,7 @@ class CPointSprite;
 class CEntityManager;
 class CThreadPool;
 class CAICLKernel;
+class COpenCLContext;
 
 class CAIHiveMind
 {
@@ -89,11 +90,11 @@ public:
 	CAIHiveMind();
 	virtual ~CAIHiveMind();
 
-	virtual bool Initialise();
-	void Process(CThreadPool* _pCThreadPool, float _fDeltaTime);
+	virtual bool Initialise(COpenCLContext* _pCLKernel);
+	void Process(COpenCLContext* _pCLKernel, CThreadPool* _pCThreadPool, float _fDeltaTime);
 	void ProcessIndividualAIMovement(int _iAIIndex, float _fDeltaTime);
 	void ProcessIndividualAIController(int _iAIIndex, float _fDeltaTime);
-	void ProcessOpenCLKernel(float _fDeltaTime);
+	void ProcessOpenCLKernel(COpenCLContext* _pCLKernel, float _fDeltaTime);
 	void AddAI(CRenderEntity* _pEntity, EAIType _eAIType);
 	void AddStaticObject(ID3D11Device* _pDevice, CRenderEntity* _pObject);
 

@@ -15,6 +15,7 @@
 #include "entitymanager.h"
 #include "threadpool.h"
 #include "aiclkernel.h"
+#include "openclcontext.h"
 
 // This Include
 #include "aihivemind.h"
@@ -99,7 +100,7 @@ CAIHiveMind::~CAIHiveMind()
 *
 */
 bool 
-CAIHiveMind::Initialise()
+CAIHiveMind::Initialise(COpenCLContext* _pCLKernel)
 {
 	bool bResult = false;
 
@@ -109,8 +110,7 @@ CAIHiveMind::Initialise()
 	m_pAIDescriptions[AI_CHICKEN] = TAIDescription(1.0f, 0.5f);
 
 	m_pCLKernel = new CAICLKernel();
-	m_pCLKernel->InitialiseOpenCL();
-	m_pCLKernel->LoadProgram("OpenCLKernels/ai.cl", "ProcessAI");
+	_pCLKernel->LoadProgram(m_pCLKernel->GetCLProgram(), m_pCLKernel->GetCLKernel(), "OpenCLKernels/ai.cl", "ProcessAI");
 	
 	return true;
 }
@@ -124,7 +124,7 @@ CAIHiveMind::Initialise()
 *
 */
 void 
-CAIHiveMind::Process(CThreadPool* _pThreadPool, float _fDeltaTime)
+CAIHiveMind::Process(COpenCLContext* _pCLKernel, CThreadPool* _pThreadPool, float _fDeltaTime)
 {
 	switch (m_eProcessingMethod)
 	{
@@ -140,7 +140,7 @@ CAIHiveMind::Process(CThreadPool* _pThreadPool, float _fDeltaTime)
 		}
 	case PROCESSING_OPENCL:
 		{
-			ProcessOpenCLKernel(_fDeltaTime);
+			ProcessOpenCLKernel(_pCLKernel, _fDeltaTime);
 			for (int iAI = 0; iAI < m_iNumAI; ++iAI)
 			{
 				ProcessIndividualAIController(iAI, _fDeltaTime);
@@ -225,11 +225,11 @@ CAIHiveMind::ProcessIndividualAIController(int _iAIIndex, float _fDeltaTime)
 *
 */
 void
-CAIHiveMind::ProcessOpenCLKernel(float _fDeltaTime)
+CAIHiveMind::ProcessOpenCLKernel(COpenCLContext* _pCLKernel, float _fDeltaTime)
 {
-	m_pCLKernel->SendDataToGPU(this, _fDeltaTime);
-	m_pCLKernel->Run();
-	m_pCLKernel->RetrieveOpenCLResults(this);
+	m_pCLKernel->SendDataToGPU(_pCLKernel, this, _fDeltaTime);
+	_pCLKernel->Run(m_pCLKernel->GetCLKernel());
+	m_pCLKernel->RetrieveOpenCLResults(_pCLKernel, this);
 }
 /**
 *

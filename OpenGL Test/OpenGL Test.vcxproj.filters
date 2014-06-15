@@ -19,9 +19,6 @@
     <Filter Include="Source Files\Editor">
       <UniqueIdentifier>{e3910d81-1414-4af7-ad93-fbacff0f81b1}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\AI">
-      <UniqueIdentifier>{23175b16-7542-48ba-93c2-03337051de0a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\AI">
       <UniqueIdentifier>{4a2de967-97b1-4371-bba1-9f7c37d3c4c3}</UniqueIdentifier>
     </Filter>
@@ -61,6 +58,15 @@
     <Filter Include="Source Files\Networking">
       <UniqueIdentifier>{c08b261f-602a-4140-bf78-6826b4c9f866}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Audio">
+      <UniqueIdentifier>{6ad89972-7725-4098-8a5e-27ff6819522f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\AI">
+      <UniqueIdentifier>{23175b16-7542-48ba-93c2-03337051de0a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Audio">
+      <UniqueIdentifier>{0de7987b-9658-45ec-8034-03de190a37a4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="defines.h">
@@ -80,9 +86,6 @@
     </ClInclude>
     <ClInclude Include="aihivemind.h">
       <Filter>Header Files\AI</Filter>
-    </ClInclude>
-    <ClInclude Include="audioplayer.h">
-      <Filter>Header Files\Engine</Filter>
     </ClInclude>
     <ClInclude Include="camera.h">
       <Filter>Header Files\Engine</Filter>
@@ -159,9 +162,6 @@
     <ClInclude Include="threadpool.h">
       <Filter>Header Files\Parallel</Filter>
     </ClInclude>
-    <ClInclude Include="openclkernel.h">
-      <Filter>Header Files\Parallel</Filter>
-    </ClInclude>
     <ClInclude Include="fontrenderer.h">
       <Filter>Header Files\Rendering</Filter>
     </ClInclude>
@@ -179,6 +179,15 @@
     </ClInclude>
     <ClInclude Include="grassclkernel.h">
       <Filter>Header Files\Parallel</Filter>
+    </ClInclude>
+    <ClInclude Include="openclcontext.h">
+      <Filter>Header Files\Parallel</Filter>
+    </ClInclude>
+    <ClInclude Include="openclkernel.h">
+      <Filter>Header Files\Parallel</Filter>
+    </ClInclude>
+    <ClInclude Include="audioplayer.h">
+      <Filter>Header Files\Audio</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -213,9 +222,6 @@
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
     <ClCompile Include="window.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="audioplayer.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
     <ClCompile Include="animatedmodel.cpp">
@@ -266,9 +272,6 @@
     <ClCompile Include="threadpool.cpp">
       <Filter>Source Files\Parallel</Filter>
     </ClCompile>
-    <ClCompile Include="openclkernel.cpp">
-      <Filter>Source Files\Parallel</Filter>
-    </ClCompile>
     <ClCompile Include="fontrenderer.cpp">
       <Filter>Source Files\Rendering</Filter>
     </ClCompile>
@@ -292,6 +295,15 @@
     </ClCompile>
     <ClCompile Include="grassclkernel.cpp">
       <Filter>Source Files\Parallel</Filter>
+    </ClCompile>
+    <ClCompile Include="openclcontext.cpp">
+      <Filter>Source Files\Parallel</Filter>
+    </ClCompile>
+    <ClCompile Include="openclkernel.cpp">
+      <Filter>Source Files\Parallel</Filter>
+    </ClCompile>
+    <ClCompile Include="audioplayer.cpp">
+      <Filter>Source Files\Audio</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

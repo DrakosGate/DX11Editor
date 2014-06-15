@@ -126,6 +126,7 @@
     <ClInclude Include="light.h" />
     <ClInclude Include="lightmanager.h" />
     <ClInclude Include="network.h" />
+    <ClInclude Include="openclcontext.h" />
     <ClInclude Include="openclkernel.h" />
     <ClInclude Include="performancegraph.h" />
     <ClInclude Include="pointsprite.h" />
@@ -167,6 +168,7 @@
     <ClCompile Include="lightmanager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="network.cpp" />
+    <ClCompile Include="openclcontext.cpp" />
     <ClCompile Include="openclkernel.cpp" />
     <ClCompile Include="performancegraph.cpp" />
     <ClCompile Include="pointsprite.cpp" />

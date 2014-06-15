@@ -24,7 +24,7 @@ struct GS_DATA
 [maxvertexcount(12)]
 void GrassGS(point GS_DATA input[1], inout TriangleStream<GS_DATA> gsOut)
 {
-	float3 vecGrassScale = float3(0.25f, 0.5f, 0.25f);
+	float3 vecGrassScale = float3(0.25f, 0.35f, 0.25f);
 	float3 vertPos;
 
 	//==================================================================================

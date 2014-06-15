@@ -22,6 +22,7 @@
 
 // Prototypes
 class CGrassCLKernel;
+class COpenCLContext;
 class CResourceManager;
 
 class CGrass : public CModel
@@ -30,13 +31,15 @@ class CGrass : public CModel
 public:
 	CGrass();
 	virtual ~CGrass();
-	bool Initialise(ID3D11Device* _pDevice, CResourceManager* _pResourceManager, int _iTerrainWidth, int _iTerrainHeight, float _fScale, D3DXVECTOR2& _rVecTiling, D3DXCOLOR& _rColour, int _iProcessingDivisionSize);
+	bool Initialise(ID3D11Device* _pDevice, COpenCLContext* _pCLKernel, CResourceManager* _pResourceManager, int _iGrassDimensions, float _fScale, D3DXVECTOR2& _rVecTiling, D3DXCOLOR& _rColour, int _iProcessingDivisionSize);
 	
-	void ProcessOpenCL(float _fDeltaTime);
+	void ProcessOpenCL(COpenCLContext* _pCLKernel, float _fDeltaTime);
 	void SendCollisionData(std::vector<CRenderEntity*>* _pCollisionObjects);
 	void ProcessGrassSection(int _iSection, float _fDeltaTime);
 	void RecreateGrassMesh(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDeviceContext, D3DXVECTOR3& _rCameraPos, std::vector<CRenderEntity*>& _pEntities, float _fDeltaTime);
 	
+	int GetDimensionSize() const;
+
 	//Member variables
 protected:
 	std::vector<CRenderEntity*>* m_pCollisionObjects;
@@ -45,6 +48,7 @@ protected:
 	float m_fGrassSpeed;
 	float m_fGrassStiffness;
 
+	int m_iGrassDimensions;
 	int m_iDivisionSize;
 };
 

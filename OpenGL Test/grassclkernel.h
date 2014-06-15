@@ -11,6 +11,8 @@
 #define __GRASSCLKERNEL_H__
 
 // Library Includes
+#include <vector>
+#include <D3DX10.h>
 
 // Local Includes
 #include "openclkernel.h"
@@ -21,7 +23,9 @@
 
 // Prototypes
 class CGrass;
+class COpenCLContext;
 class CAIHiveMind;
+class CRenderEntity;
 
 class CGrassCLKernel : public COpenCLKernel
 {
@@ -30,20 +34,22 @@ public:
 	CGrassCLKernel();
 	virtual ~CGrassCLKernel();
 	 
-	virtual void SendDataToGPU(CGrass* _pGrass, float _fDeltaTime);
-	void RetrieveOpenCLResults(CGrass* _pGrass);
+	virtual void CreateBuffers(COpenCLContext* _pOpenCL, CGrass* _pGrass);
+	virtual void SendDataToGPU(COpenCLContext* _pOpenCL, CGrass* _pGrass, std::vector<CRenderEntity*>* _pCollisionObjects, float _fDeltaTime);
+	void RetrieveOpenCLResults(COpenCLContext* _pOpenCL, CGrass* _pGrass);
 
 //Member variables
-private:	
+protected:	
 	//Memory 
 	cl_mem m_clInPos;
 	cl_mem m_clInDir;
-	cl_mem m_clInWaypoint;
-	cl_mem m_clAIData;
-
-	cl_mem m_clOutPos;
+	cl_mem m_clInObjects;
 	cl_mem m_clOutDir;
-	int m_iArraySize;
+
+	D3DXVECTOR4* m_pPositions;
+	D3DXVECTOR4* m_pDirections;
+	D3DXVECTOR4* m_pObjectData;
+	D3DXVECTOR4* m_pOutDirections;
 };
 
 #endif//__GRASSCLKERNEL_H__

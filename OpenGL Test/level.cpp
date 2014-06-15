@@ -33,7 +33,7 @@
 #include "resourcemanager.h"
 #include "editorinterface.h"
 #include "threadpool.h"
-#include "openclkernel.h"
+#include "openclcontext.h"
 #include "fontrenderer.h"
 #include "network.h"
 #include "performancegraph.h"
@@ -87,7 +87,7 @@ CLevel::CLevel()
 , m_iScreenHeight(0)
 , m_pResourceManager(0)
 , m_pThreadPool(0)
-, m_pOpenCLKernel(0)
+, m_pCLKernel(0)
 , m_pSelectedObject(0)
 , m_pFont(0)
 , m_pGraph(0)
@@ -127,7 +127,7 @@ CLevel::~CLevel()
 	SAFEDELETE(m_pGrass);
 	SAFEDELETE(m_pNetwork);
 	SAFEDELETE(m_pThreadPool);
-	SAFEDELETE(m_pOpenCLKernel);
+	SAFEDELETE(m_pCLKernel);
 	SAFEDELETE(m_pEditor);
 	SAFEDELETE(m_pCursor);
 	SAFEDELETE(m_pSelectionCursor);
@@ -262,9 +262,13 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	m_pNetwork->Initialise();
 	m_pNetwork->CreateServer();
 
+	//Setup OpenCL
+	m_pCLKernel = new COpenCLContext();
+	m_pCLKernel->InitialiseOpenCL();
+
 	//Setup AI Hivemind
 	m_pHivemind = new CAIHiveMind();
-	m_pHivemind->Initialise();
+	m_pHivemind->Initialise(m_pCLKernel);
 	m_pHivemind->CreateNavigationGrid(_pDevice, m_pEntityManager, &m_pShaderCollection[SHADER_POINTSPRITE], 20.0f, 40, 40);
 	m_pEntityManager->SetLevelInformation(m_pHivemind, m_pLightManager);
 
@@ -274,12 +278,6 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	//std::thread::hardware_concurrency() is the recommended thread usage for this system
 	m_pThreadPool->Initialise(m_iThreadCount);
 	
-	m_pOpenCLKernel = new COpenCLKernel();
-	m_pOpenCLKernel->InitialiseOpenCL();
-	m_pOpenCLKernel->LoadProgram("OpenCLKernels/test.cl", "ArrayAdd");
-	m_pOpenCLKernel->SendDataToGPU();
-	m_pOpenCLKernel->Run();
-
 	//Read level resources
 	m_pResourceManager = new CResourceManager();
 	m_pResourceManager->Initialise(_pDevice, "Data/Resources.xml");
@@ -339,7 +337,7 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 
 	m_fGrassScale = 20.0f;
 	m_pGrass = new CGrass();
-	m_pGrass->Initialise(_pDevice, m_pResourceManager, 80, 80, m_fGrassScale, D3DXVECTOR2(10.0f, 10.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f), m_iThreadCount);
+	m_pGrass->Initialise(_pDevice, m_pCLKernel, m_pResourceManager, 100, m_fGrassScale, D3DXVECTOR2(10.0f, 10.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f), m_iThreadCount);
 	m_pGrass->SetObjectShader(&m_pShaderCollection[SHADER_GRASS]);
 	m_pGrass->SetDiffuseMap(m_pResourceManager->GetTexture(std::string("grassblades")));
 	m_pGrass->SetRadius(FLT_MAX);
@@ -426,7 +424,7 @@ CLevel::Process(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDeviceContext, CC
 	if (m_pEditor->IsActive() == false)
 	{
 	//	m_pHivemind->GetAI(0)->SetAStarTarget(m_pCursor->GetPosition());
-		m_pHivemind->Process(m_pThreadPool, _fDeltaTime);
+		m_pHivemind->Process(m_pCLKernel, m_pThreadPool, _fDeltaTime);
 	}
 	//Process entity selection
 	if (m_bHasSelectedObject)
@@ -494,7 +492,7 @@ CLevel::Process(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDeviceContext, CC
 			}
 			else
 			{
-				m_pGrass->ProcessOpenCL(_fDeltaTime);
+				m_pGrass->ProcessOpenCL(m_pCLKernel, _fDeltaTime);
 			}
 		}
 		//Recreate the grass vertex buffer with new vertex information
@@ -558,6 +556,10 @@ CLevel::Process(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDeviceContext, CC
 	if (m_eProcessingMethod == PROCESSING_THREADPOOL)
 	{
 	//	m_pThreadPool->JoinWithMainThread();
+	}
+	else if (m_eProcessingMethod == PROCESSING_OPENCL)
+	{
+	//	m_pCLKernel->WaitForFinish();
 	}
 }
 /**

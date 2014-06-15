@@ -59,7 +59,7 @@ class CDirectXRenderer;
 class CResourceManager;
 class CEditorInterface;
 class CThreadPool;
-class COpenCLKernel;
+class COpenCLContext;
 class CFontRenderer;
 class CNetwork;
 class CPerformanceGraph;
@@ -100,11 +100,11 @@ private:
 	
 	CDirectXRenderer* m_pRenderer;
 	CResourceManager* m_pResourceManager;
+	COpenCLContext* m_pCLKernel;
 	CThreadPool* m_pThreadPool;
 	int m_iThreadCount;
 	TGrassThread* m_pGrassJobs;
 
-	COpenCLKernel* m_pOpenCLKernel;
 	CFontRenderer* m_pFont;
 	CNetwork* m_pNetwork;
 	CPerformanceGraph* m_pGraph;

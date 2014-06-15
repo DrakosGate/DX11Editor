@@ -1,77 +1,93 @@
 #include "grass.h"
+#include "openclcontext.h"
 
 #include "grassclkernel.h"
 
 CGrassCLKernel::CGrassCLKernel()
+: m_pPositions(0)
+, m_pDirections(0)
+, m_pObjectData(0)
+, m_pOutDirections(0)
 {
 
 }
 CGrassCLKernel::~CGrassCLKernel()
 {
-	
+	SAFEDELETEARRAY(m_pPositions);
+	SAFEDELETEARRAY(m_pDirections);
+	SAFEDELETEARRAY(m_pObjectData);
+	SAFEDELETEARRAY(m_pOutDirections);
 }
-void
-CGrassCLKernel::SendDataToGPU(CGrass* _pGrass, float _fDeltaTime)
+void 
+CGrassCLKernel::CreateBuffers(COpenCLContext* _pOpenCL, CGrass* _pGrass)
 {
-	//cl_int iError = 0;
-	//m_iArraySize = _pHiveMind->GetAICount();
-	//D3DXVECTOR4* pPositions = new D3DXVECTOR4[m_iArraySize];
-	//D3DXVECTOR4* pDirections = new D3DXVECTOR4[m_iArraySize];
-	//D3DXVECTOR4* pWaypoints = new D3DXVECTOR4[m_iArraySize];
-	//D3DXVECTOR4* pAIData = new D3DXVECTOR4[m_iArraySize];
-	//for (int i = 0; i < m_iArraySize; ++i)
-	//{
-	//	CRenderEntity* pCurrentAI = _pHiveMind->GetAI(i)->GetEntity();
-	//	TAIDescription* pAIType = &_pHiveMind->GetAIDesc(_pHiveMind->GetAI(i)->GetAIType());
-	//	pPositions[i] = D3DXVECTOR4(pCurrentAI->GetPosition().x, pCurrentAI->GetPosition().y, pCurrentAI->GetPosition().z, _fDeltaTime);
-	//	pDirections[i] = D3DXVECTOR4(pCurrentAI->GetForward().x, pCurrentAI->GetForward().y, pCurrentAI->GetForward().z, _fDeltaTime);
-	//	pWaypoints[i] = D3DXVECTOR4(_pHiveMind->GetAI(i)->GetCurrentWaypoint().x, _pHiveMind->GetAI(i)->GetCurrentWaypoint().y, _pHiveMind->GetAI(i)->GetCurrentWaypoint().z, _fDeltaTime);
-	//	pAIData[i] = D3DXVECTOR4(pAIType->fMovementSpeed, pAIType->fRotationSpeed, pCurrentAI->GetRadius(), 1.0f);
-	//}
-	////Input buffers
-	//m_clInPos = clCreateBuffer(m_clContext, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(D3DXVECTOR4)* m_iArraySize, pPositions, &iError);
-	//m_clInDir = clCreateBuffer(m_clContext, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(D3DXVECTOR4)* m_iArraySize, pDirections, &iError);
-	//m_clInWaypoint = clCreateBuffer(m_clContext, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(D3DXVECTOR4)* m_iArraySize, pWaypoints, &iError);
-	//m_clAIData = clCreateBuffer(m_clContext, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(D3DXVECTOR4)* m_iArraySize, pAIData, &iError);
-	////Output buffers
-	//m_clOutPos = clCreateBuffer(m_clContext, CL_MEM_READ_ONLY, sizeof(D3DXVECTOR4)* m_iArraySize, NULL, &iError);
-	//m_clOutDir = clCreateBuffer(m_clContext, CL_MEM_READ_ONLY, sizeof(D3DXVECTOR4)* m_iArraySize, NULL, &iError);
-	//
-	////Bind buffers to kernel
-	//iError = clSetKernelArg(m_clKernel, 0, sizeof(cl_mem), (void*)&m_clInPos);
-	//iError = clSetKernelArg(m_clKernel, 1, sizeof(cl_mem), (void*)&m_clInDir);
-	//iError = clSetKernelArg(m_clKernel, 2, sizeof(cl_mem), (void*)&m_clInWaypoint);
-	//iError = clSetKernelArg(m_clKernel, 3, sizeof(cl_mem), (void*)&m_clAIData);
-	//iError = clSetKernelArg(m_clKernel, 4, sizeof(cl_mem), (void*)&m_clOutPos);
-	//iError = clSetKernelArg(m_clKernel, 5, sizeof(cl_mem), (void*)&m_clOutDir);
-	//
-	//workGroupSize[0] = m_iArraySize;
-	//
-	//delete[] pPositions;
-	//delete[] pDirections;
-	//delete[] pWaypoints;
-	//delete[] pAIData;
+	cl_int iError = 0;
+	m_iArraySize = _pGrass->GetVertexCount();
+	m_pPositions = new D3DXVECTOR4[m_iArraySize];
+	m_pDirections = new D3DXVECTOR4[m_iArraySize];
+	m_pOutDirections = new D3DXVECTOR4[m_iArraySize];
+	//Create OpenCL buffers that WONT change
+	m_clInPos = clCreateBuffer(_pOpenCL->GetCLContext(), CL_MEM_READ_ONLY, sizeof(D3DXVECTOR4)* m_iArraySize, NULL, &iError);
+	m_clInDir = clCreateBuffer(_pOpenCL->GetCLContext(), CL_MEM_READ_ONLY, sizeof(D3DXVECTOR4)* m_iArraySize, NULL, &iError);
+
+	m_pWorkGroup = new size_t[3];
 }
 void
-CGrassCLKernel::RetrieveOpenCLResults(CGrass* _pGrass)
+CGrassCLKernel::SendDataToGPU(COpenCLContext* _pOpenCL, CGrass* _pGrass, std::vector<CRenderEntity*>* _pCollisionObjects, float _fDeltaTime)
+{
+	/*	__global float4* _pGrassPositions, 
+		__global float4* _pGrassDirections,
+		__global float4* _pObjectPositions,
+
+		__global float4* _pOutDirections*/
+	cl_int iError = 0;
+	unsigned int iNumObstacles = _pCollisionObjects->size();
+	m_pObjectData = new D3DXVECTOR4[iNumObstacles];
+	//Vertex data contains vector + delta time
+	for (int iVertex = 0; iVertex < m_iArraySize; ++iVertex)
+	{
+		m_pPositions[iVertex] = D3DXVECTOR4(_pGrass->GetVertexData(iVertex)->pos.x, _pGrass->GetVertexData(iVertex)->pos.y, _pGrass->GetVertexData(iVertex)->pos.z, _fDeltaTime);
+		m_pDirections[iVertex] = D3DXVECTOR4(_pGrass->GetVertexData(iVertex)->normal.x, _pGrass->GetVertexData(iVertex)->normal.y, _pGrass->GetVertexData(iVertex)->normal.z, _fDeltaTime);
+	}
+	//Object data contains position + radius
+	for (unsigned int iObject = 0; iObject < iNumObstacles; ++iObject)
+	{
+		m_pObjectData[iObject] = D3DXVECTOR4((*_pCollisionObjects)[iObject]->GetPosition().x, (*_pCollisionObjects)[iObject]->GetPosition().y, (*_pCollisionObjects)[iObject]->GetPosition().z, (*_pCollisionObjects)[iObject]->GetRadius());
+	}
+
+	//Input buffers
+	//clEnqueueWriteBuffer(_pOpenCL->GetCLCommandQueue(), m_clInPos, CL_TRUE, 0, sizeof(D3DXVECTOR4)* m_iArraySize, m_pPositions, 0, NULL, &_pOpenCL->GetCLEvent());
+	//clReleaseEvent(_pOpenCL->GetCLEvent());
+	//clEnqueueWriteBuffer(_pOpenCL->GetCLCommandQueue(), m_clInDir, CL_TRUE, 0, sizeof(D3DXVECTOR4)* m_iArraySize, m_pDirections, 0, NULL, &_pOpenCL->GetCLEvent());
+	//clReleaseEvent(_pOpenCL->GetCLEvent());
+	m_clInPos = clCreateBuffer(_pOpenCL->GetCLContext(), CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(D3DXVECTOR4)* m_iArraySize, m_pPositions, &iError);
+	m_clInDir = clCreateBuffer(_pOpenCL->GetCLContext(), CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(D3DXVECTOR4)* m_iArraySize, m_pDirections, &iError);
+	m_clInObjects = clCreateBuffer(_pOpenCL->GetCLContext(), CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(D3DXVECTOR4)* iNumObstacles, m_pObjectData, &iError);
+	
+	//Output buffers
+	m_clOutDir = clCreateBuffer(_pOpenCL->GetCLContext(), CL_MEM_WRITE_ONLY, sizeof(D3DXVECTOR4)* m_iArraySize, NULL, &iError);
+	
+	//Bind buffers to kernel
+	iError = clSetKernelArg(m_clKernel, 0, sizeof(cl_mem), (void*)&m_clInPos);
+	iError = clSetKernelArg(m_clKernel, 1, sizeof(cl_mem), (void*)&m_clInDir);
+	iError = clSetKernelArg(m_clKernel, 2, sizeof(cl_mem), (void*)&m_clInObjects);
+	iError = clSetKernelArg(m_clKernel, 3, sizeof(cl_mem), (void*)&m_clOutDir);
+	
+	m_pWorkGroup[0] = m_iArraySize;
+	m_pWorkGroup[1] = iNumObstacles;
+	_pOpenCL->SetCLWorkGroupSize(m_pWorkGroup, 2);
+	SAFEDELETEARRAY(m_pObjectData);
+}
+void
+CGrassCLKernel::RetrieveOpenCLResults(COpenCLContext* _pOpenCL, CGrass* _pGrass)
 {
 	//Retrieve data from calculations
-	//D3DXVECTOR4* pOutPositions = new D3DXVECTOR4[m_iArraySize];
-	//D3DXVECTOR4* pOutDirections = new D3DXVECTOR4[m_iArraySize];
-	//cl_int iError = 0;
-	//iError = clEnqueueReadBuffer(m_clCommandQueue, m_clOutPos, CL_TRUE, 0, sizeof(D3DXVECTOR4)* m_iArraySize, pOutPositions, 0, NULL, &m_clEvent);
-	//clReleaseEvent(m_clEvent);
-	//iError = clEnqueueReadBuffer(m_clCommandQueue, m_clOutDir, CL_TRUE, 0, sizeof(D3DXVECTOR4)* m_iArraySize, pOutDirections, 0, NULL, &m_clEvent);
-	//clReleaseEvent(m_clEvent);
-	//
-	////Send final output back to AI
-	//for (int iAI = 0; iAI < _pHiveMind->GetAICount(); ++iAI)
-	//{
-	//	CRenderEntity* pCurrentEntity = _pHiveMind->GetAI(iAI)->GetEntity();
-	//	pCurrentEntity->SetPosition(D3DXVECTOR3(pOutPositions[iAI].x, pOutPositions[iAI].y, pOutPositions[iAI].z));
-	//	pCurrentEntity->SetForward(D3DXVECTOR3(pOutDirections[iAI].x, pOutDirections[iAI].y, pOutDirections[iAI].z));
-	//}
-	//
-	//delete[] pOutPositions;
-	//delete[] pOutDirections;
+	cl_int iError = 0;
+	iError = clEnqueueReadBuffer(_pOpenCL->GetCLCommandQueue(), m_clOutDir, CL_TRUE, 0, sizeof(D3DXVECTOR4)* m_iArraySize, m_pOutDirections, 0, NULL, NULL);
+	
+	//Send final output back to Grass model
+	for (int iBlade = 0; iBlade < _pGrass->GetVertexCount(); ++iBlade)
+	{
+		_pGrass->GetVertexData(iBlade)->normal = D3DXVECTOR3(m_pOutDirections[iBlade].x, m_pOutDirections[iBlade].y, m_pOutDirections[iBlade].z);
+	}
 }

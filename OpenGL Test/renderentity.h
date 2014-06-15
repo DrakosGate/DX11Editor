@@ -100,6 +100,7 @@ public:
 	virtual void SetNormalMap(ID3D11ShaderResourceView* _pNormalMap);
 	virtual void SendTextureDataToShader(ID3D11DeviceContext* _pDevContext);
 
+	virtual TVertex* GetVertexData(int _iVertex);
 	virtual int GetVertexCount() const;
 	virtual void SetObjectShader(CShader* _pObjectShader);
 	virtual CShader* GetObjectShader();

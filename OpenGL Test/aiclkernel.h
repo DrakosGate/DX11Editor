@@ -5,9 +5,12 @@
 #ifndef __AICLKERNEL_H__
 #define __AICLKERNEL_H__
 
+#include <CL\opencl.h>
+
 #include "openclkernel.h"
 
 class CAIHiveMind;
+class COpenCLContext;
 
 class CAICLKernel : public COpenCLKernel
 {
@@ -15,12 +18,12 @@ class CAICLKernel : public COpenCLKernel
 public:
 	CAICLKernel();
 	virtual ~CAICLKernel();
-	 
-	virtual void SendDataToGPU(CAIHiveMind* _pHiveMind, float _fDeltaTime);
-	void RetrieveOpenCLResults(CAIHiveMind* _pHiveMind);
+
+	virtual void SendDataToGPU(COpenCLContext* _pOpenCL, CAIHiveMind* _pHiveMind, float _fDeltaTime);
+	void RetrieveOpenCLResults(COpenCLContext* _pOpenCL, CAIHiveMind* _pHiveMind);
 
 //Member variables
-private:	
+protected:	
 	//Memory 
 	cl_mem m_clInPos;
 	cl_mem m_clInDir;
@@ -29,7 +32,6 @@ private:
 
 	cl_mem m_clOutPos;
 	cl_mem m_clOutDir;
-	int m_iArraySize;
 };
 
 #endif

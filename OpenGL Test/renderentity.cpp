@@ -533,6 +533,21 @@ CRenderEntity::SendTextureDataToShader(ID3D11DeviceContext* _pDevContext)
 }
 /**
 *
+* CRenderEntity class Returns a struct containing vertex data
+* (Task ID: n/a)
+*
+* @author Christopher Howlett
+* @param _iVertex Vertex index
+* @return Returns entity vertex
+*
+*/
+TVertex* 
+CRenderEntity::GetVertexData(int _iVertex)
+{
+	return &m_pVertices[_iVertex];
+}
+/**
+*
 * CRenderEntity class GetVertexCount
 * (Task ID: n/a)
 *

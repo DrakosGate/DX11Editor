@@ -6,19 +6,20 @@
 #include "aihivemind.h"
 #include "aicontroller.h"
 #include "renderentity.h"
+#include "openclcontext.h"
 
 #include "aiclkernel.h"
 
 CAICLKernel::CAICLKernel()
 {
-
+	m_pWorkGroup = new size_t[1];
 }
 CAICLKernel::~CAICLKernel()
 {
 	
 }
 void
-CAICLKernel::SendDataToGPU(CAIHiveMind* _pHiveMind, float _fDeltaTime)
+CAICLKernel::SendDataToGPU(COpenCLContext* _pOpenCL, CAIHiveMind* _pHiveMind, float _fDeltaTime)
 {
 	cl_int iError = 0;
 	m_iArraySize = _pHiveMind->GetAICount();
@@ -36,13 +37,13 @@ CAICLKernel::SendDataToGPU(CAIHiveMind* _pHiveMind, float _fDeltaTime)
 		pAIData[i] = D3DXVECTOR4(pAIType->fMovementSpeed, pAIType->fRotationSpeed, pCurrentAI->GetRadius(), 1.0f);
 	}
 	//Input buffers
-	m_clInPos = clCreateBuffer(m_clContext, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(D3DXVECTOR4)* m_iArraySize, pPositions, &iError);
-	m_clInDir = clCreateBuffer(m_clContext, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(D3DXVECTOR4)* m_iArraySize, pDirections, &iError);
-	m_clInWaypoint = clCreateBuffer(m_clContext, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(D3DXVECTOR4)* m_iArraySize, pWaypoints, &iError);
-	m_clAIData = clCreateBuffer(m_clContext, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(D3DXVECTOR4)* m_iArraySize, pAIData, &iError);
+	m_clInPos = clCreateBuffer(_pOpenCL->GetCLContext(), CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(D3DXVECTOR4)* m_iArraySize, pPositions, &iError);
+	m_clInDir = clCreateBuffer(_pOpenCL->GetCLContext(), CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(D3DXVECTOR4)* m_iArraySize, pDirections, &iError);
+	m_clInWaypoint = clCreateBuffer(_pOpenCL->GetCLContext(), CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(D3DXVECTOR4)* m_iArraySize, pWaypoints, &iError);
+	m_clAIData = clCreateBuffer(_pOpenCL->GetCLContext(), CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(D3DXVECTOR4)* m_iArraySize, pAIData, &iError);
 	//Output buffers
-	m_clOutPos = clCreateBuffer(m_clContext, CL_MEM_READ_ONLY, sizeof(D3DXVECTOR4)* m_iArraySize, NULL, &iError);
-	m_clOutDir = clCreateBuffer(m_clContext, CL_MEM_READ_ONLY, sizeof(D3DXVECTOR4)* m_iArraySize, NULL, &iError);
+	m_clOutPos = clCreateBuffer(_pOpenCL->GetCLContext(), CL_MEM_READ_ONLY, sizeof(D3DXVECTOR4)* m_iArraySize, NULL, &iError);
+	m_clOutDir = clCreateBuffer(_pOpenCL->GetCLContext(), CL_MEM_READ_ONLY, sizeof(D3DXVECTOR4)* m_iArraySize, NULL, &iError);
 
 	//Bind buffers to kernel
 	iError = clSetKernelArg(m_clKernel, 0, sizeof(cl_mem), (void*)&m_clInPos);
@@ -52,7 +53,8 @@ CAICLKernel::SendDataToGPU(CAIHiveMind* _pHiveMind, float _fDeltaTime)
 	iError = clSetKernelArg(m_clKernel, 4, sizeof(cl_mem), (void*)&m_clOutPos);
 	iError = clSetKernelArg(m_clKernel, 5, sizeof(cl_mem), (void*)&m_clOutDir);
 
-	workGroupSize[0] = m_iArraySize;
+	m_pWorkGroup[0] = m_iArraySize;
+	_pOpenCL->SetCLWorkGroupSize(m_pWorkGroup, 1);
 
 	delete[] pPositions;
 	delete[] pDirections;
@@ -60,16 +62,16 @@ CAICLKernel::SendDataToGPU(CAIHiveMind* _pHiveMind, float _fDeltaTime)
 	delete[] pAIData;
 }
 void
-CAICLKernel::RetrieveOpenCLResults(CAIHiveMind* _pHiveMind)
+CAICLKernel::RetrieveOpenCLResults(COpenCLContext* _pOpenCL, CAIHiveMind* _pHiveMind)
 {
 	//Retrieve data from calculations
 	D3DXVECTOR4* pOutPositions = new D3DXVECTOR4[m_iArraySize];
 	D3DXVECTOR4* pOutDirections = new D3DXVECTOR4[m_iArraySize];
 	cl_int iError = 0;
-	iError = clEnqueueReadBuffer(m_clCommandQueue, m_clOutPos, CL_TRUE, 0, sizeof(D3DXVECTOR4)* m_iArraySize, pOutPositions, 0, NULL, &m_clEvent);
-	clReleaseEvent(m_clEvent);
-	iError = clEnqueueReadBuffer(m_clCommandQueue, m_clOutDir, CL_TRUE, 0, sizeof(D3DXVECTOR4)* m_iArraySize, pOutDirections, 0, NULL, &m_clEvent);
-	clReleaseEvent(m_clEvent);
+	iError = clEnqueueReadBuffer(_pOpenCL->GetCLCommandQueue(), m_clOutPos, CL_TRUE, 0, sizeof(D3DXVECTOR4)* m_iArraySize, pOutPositions, 0, NULL, &_pOpenCL->GetCLEvent());
+	clReleaseEvent(_pOpenCL->GetCLEvent());
+	iError = clEnqueueReadBuffer(_pOpenCL->GetCLCommandQueue(), m_clOutDir, CL_TRUE, 0, sizeof(D3DXVECTOR4)* m_iArraySize, pOutDirections, 0, NULL, &_pOpenCL->GetCLEvent());
+	clReleaseEvent(_pOpenCL->GetCLEvent());
 	
 	//Send final output back to AI
 	for (int iAI = 0; iAI < _pHiveMind->GetAICount(); ++iAI)

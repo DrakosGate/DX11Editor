@@ -106,9 +106,24 @@ CPerformanceGraph::OutputLog()
 	{
 		std::ofstream logFile;
 		logFile.open(m_pcLogFilename);
+		char pcBuffer[64];
+
 		if (logFile.is_open())
 		{
+			//Print log description
 			logFile.write(m_pcLogDescription, strlen(m_pcLogDescription));
+
+			//Print total average of log
+			float fLogTotal = 0.0f;
+			for (unsigned int iLog = 0; iLog < m_performanceLog.size(); ++iLog)
+			{
+				fLogTotal += m_performanceLog[iLog];
+			}
+			float fLogAverage = fLogTotal / static_cast<float>(m_performanceLog.size());
+			sprintf_s(pcBuffer, 64, "Total Average: %f\n\n", fLogAverage);
+			logFile.write(pcBuffer, strlen(pcBuffer));
+
+			//Print individual log entries
 			for (unsigned int iLog = 0; iLog < m_performanceLog.size(); ++iLog)
 			{
 				logFile << m_performanceLog[iLog] << std::endl;

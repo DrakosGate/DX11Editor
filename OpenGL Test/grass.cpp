@@ -11,6 +11,7 @@
 // Local Includes
 #include "grassclkernel.h"
 #include "resourcemanager.h"
+#include "openclcontext.h"
 
 // This Include
 #include "grass.h"
@@ -60,18 +61,19 @@ CGrass::~CGrass()
 *
 */
 bool
-CGrass::Initialise(ID3D11Device* _pDevice, CResourceManager* _pResourceManager, int _iTerrainWidth, int _iTerrainHeight, float _fScale, D3DXVECTOR2& _rVecTiling, D3DXCOLOR& _rColour, int _iProcessingDivisionSize)
+CGrass::Initialise(ID3D11Device* _pDevice, COpenCLContext* _pCLKernel, CResourceManager* _pResourceManager, int _iGrassDimensions, float _fScale, D3DXVECTOR2& _rVecTiling, D3DXCOLOR& _rColour, int _iProcessingDivisionSize)
 {
-	LoadTerrain(_pDevice, _iTerrainWidth, _iTerrainHeight, _fScale, _rVecTiling, _rColour);
+	m_iGrassDimensions = _iGrassDimensions;
+	LoadTerrain(_pDevice, _iGrassDimensions, _iGrassDimensions, _fScale, _rVecTiling, _rColour);
 	m_iDivisionSize = m_iVertexCount / _iProcessingDivisionSize;
 
 	//Create texture for grass normal data
 	int iCurrentPixel = 0;
 	std::string sTextureName = "grassnormals";
-	TUCHARColour* pTerrainTexture = new TUCHARColour[_iTerrainWidth * _iTerrainHeight];
-	for (int iHeight = 0; iHeight < _iTerrainHeight; ++iHeight)
+	TUCHARColour* pTerrainTexture = new TUCHARColour[_iGrassDimensions * _iGrassDimensions];
+	for (int iHeight = 0; iHeight < _iGrassDimensions; ++iHeight)
 	{
-		for (int iWidth = 0; iWidth < _iTerrainWidth; ++iWidth)
+		for (int iWidth = 0; iWidth < _iGrassDimensions; ++iWidth)
 		{
 			pTerrainTexture[iCurrentPixel].r = static_cast<unsigned char>(m_pVertices[iCurrentPixel].normal.x * 255.0f);
 			pTerrainTexture[iCurrentPixel].g = static_cast<unsigned char>(m_pVertices[iCurrentPixel].normal.z * 255.0f);
@@ -86,17 +88,17 @@ CGrass::Initialise(ID3D11Device* _pDevice, CResourceManager* _pResourceManager, 
 	m_fGrassSpeed = 5.0f;
 	m_fGrassStiffness = 2.0f;
 	m_pGrassCLKernel = new CGrassCLKernel();
-	m_pGrassCLKernel->InitialiseOpenCL();
-	m_pGrassCLKernel->LoadProgram("OpenCLKernels/grass.cl", "ProcessGrass");
+	m_pGrassCLKernel->CreateBuffers(_pCLKernel, this);
+	_pCLKernel->LoadProgram(m_pGrassCLKernel->GetCLProgram(), m_pGrassCLKernel->GetCLKernel(), "OpenCLKernels/grass.cl", "ProcessGrass");
 
 	return true;
 }
 void
-CGrass::ProcessOpenCL(float _fDeltaTime)
+CGrass::ProcessOpenCL(COpenCLContext* _pCLKernel, float _fDeltaTime)
 {
-	m_pGrassCLKernel->SendDataToGPU(this, _fDeltaTime);
-	m_pGrassCLKernel->Run();
-	m_pGrassCLKernel->RetrieveOpenCLResults(this);
+	m_pGrassCLKernel->SendDataToGPU(_pCLKernel, this, m_pCollisionObjects, _fDeltaTime);
+	_pCLKernel->Run(m_pGrassCLKernel->GetCLKernel());
+	m_pGrassCLKernel->RetrieveOpenCLResults(_pCLKernel, this);
 }
 void 
 CGrass::SendCollisionData(std::vector<CRenderEntity*>* _pCollisionObjects)
@@ -196,4 +198,18 @@ CGrass::RecreateGrassMesh(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDeviceC
 	//delete pTextureData;
 
 	CreateVertexBuffer(_pDevice);
+}
+/**
+*
+* CGrass class Gets the grass DimensionSize
+* (Task ID: n/a)
+*
+* @author Christopher Howlett
+* @return Returns dimension size
+*
+*/
+int
+CGrass::GetDimensionSize() const
+{
+	return m_iGrassDimensions;
 }

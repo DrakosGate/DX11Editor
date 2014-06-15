@@ -108,9 +108,9 @@ CAudioPlayer::LoadSounds()
 	m_bSoundsAreLoaded = true;
 	m_pSound = new FMOD::Sound*[SOUND_MAX];
 	std::string* pFilenames = new std::string[SOUND_MAX];
-	pFilenames[SOUND_BIRDCHIRP] = "SoundFiles/birdChirp.wav";
-	pFilenames[SOUND_FOOTSTEPS] = "SoundFiles/footStep.wav";
-	pFilenames[SOUND_BUTTONPRESS] = "SoundFiles/buttonClick.wav";
+	pFilenames[SOUND_BIRDCHIRP]		= "Assets/SoundFiles/birdChirp.wav";
+	pFilenames[SOUND_FOOTSTEPS]		= "Assets/SoundFiles/footStep.wav";
+	pFilenames[SOUND_BUTTONPRESS]	= "Assets/SoundFiles/buttonClick.wav";
 
 	for(int iSound = 0; iSound < SOUND_MAX; ++iSound)
 	{
