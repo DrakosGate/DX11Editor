@@ -62,7 +62,7 @@ COpenGLRenderer::~COpenGLRenderer()
 *
 */
 bool 
-COpenGLRenderer::Initialise(HWND _hWnd, int _iWindowWidth, int _iWindowHeight, TInputStruct* _pInput)
+COpenGLRenderer::Initialise(HWND _hWnd, TSetupStruct* _pSetupData, int _iWindowWidth, int _iWindowHeight, TInputStruct* _pInput)
 {
 	printf("Initialising OpenGL\n");
 	////Initialise GLEW for additional OpenGL functionality

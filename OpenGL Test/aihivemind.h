@@ -90,7 +90,7 @@ public:
 	CAIHiveMind();
 	virtual ~CAIHiveMind();
 
-	virtual bool Initialise(COpenCLContext* _pCLKernel);
+	virtual bool Initialise(COpenCLContext* _pCLKernel, int _iAStarDepth);
 	void Process(COpenCLContext* _pCLKernel, CThreadPool* _pCThreadPool, float _fDeltaTime);
 	void ProcessIndividualAIMovement(int _iAIIndex, float _fDeltaTime);
 	void ProcessIndividualAIController(int _iAIIndex, float _fDeltaTime);
@@ -132,7 +132,7 @@ private:
 	int m_iGridSize;
 	int m_iWidth;
 	int m_iHeight;
-
+	int m_iAStarDepth;
 	
 };
 

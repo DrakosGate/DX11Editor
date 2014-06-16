@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<setup>
+	<level>
+		<general>
+			<!-- default level to load -->
+			<defaultlevel>Data/Levels/emptylevel.xml</defaultlevel> 
+			<renderstate>0</renderstate>	<!-- 0: Game  1: Editor  2: Debug Info -->
+			<playsound>false</playsound>	<!-- Whether or not to play and load sounds -->
+		</general>
+		<processing>
+			<ai>0</ai>						<!-- 0: Sequential  1: Thread Pool  2: GPU with OpenCL  3: Distributed(not functional) -->
+			<grass>2</grass>				<!-- 0: Sequential  1: Thread Pool  2: GPU with OpenCL  3: Distributed(not functional) -->
+		</processing>
+		<grass>
+			<dimensions>500</dimensions>	<!-- Dimensions of the grass plane -->
+			<state>2</STATE>				<!-- 0: OFF  1: Draw Only  2: Draw with Collisions -->
+		</grass>
+		<ai>
+			<number>10</number>				<!-- Number of AI to spawn at the start-->
+			<astardepth>1</astardepth>		<!-- Depth of search down the A* tree -->
+		</ai>
+		<logging>
+			<dolog>true</dolog>				<!-- Whether or not to output a log -->
+			<duration>100</duration>		<!-- Number of frames to log to file -->
+			<delay>250</delay>				<!-- Frame delay before logging begins (prevents loading time and initial frame delays from being added) -->
+		</logging>
+	</level>
+</setup>

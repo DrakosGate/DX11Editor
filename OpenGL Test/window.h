@@ -41,6 +41,7 @@ public:
 	virtual bool Initialise(HINSTANCE _hInstance, ERendererType _eRenderer);
 	void Run();
 	void ExecuteOneFrame();
+	virtual void ReadProgramSetupFile(char* _pcFilename);
 
 	HINSTANCE GetInstance();
 	HWND GetWindowHandle();
@@ -58,6 +59,7 @@ protected:
 	IRenderer* m_pRenderer;
 	TInputStruct m_tInput;
 	CConsoleWindow* m_pConsoleWindow;
+	TSetupStruct* m_pSetupData;
 
 	HINSTANCE m_hInstance;
 	HWND      m_hMainWnd;

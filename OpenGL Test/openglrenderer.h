@@ -40,7 +40,7 @@ public:
 	COpenGLRenderer();
 	virtual ~COpenGLRenderer();
 
-	virtual bool Initialise(HWND _hWnd, int _iWindowWidth, int _iWindowHeight, TInputStruct* _pInput);
+	virtual bool Initialise(HWND _hWnd, TSetupStruct* _pSetupData, int _iWindowWidth, int _iWindowHeight, TInputStruct* _pInput);
 	virtual void SetupOpenGL(HWND _hWnd);
 
 private:

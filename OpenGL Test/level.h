@@ -25,14 +25,6 @@ enum EFontType
 	FONT_PERFORMANCE,
 	FONT_MAX
 };
-enum EGrassState
-{
-	GRASS_INVALID = -1,
-	GRASS_DRAWWITHCOLLISIONS,
-	GRASS_DRAWONLY,
-	GRASS_OFF,
-	GRASS_MAX
-};
 // Constants
 
 // Prototypes
@@ -70,7 +62,7 @@ public:
 	CLevel();
 	virtual ~CLevel();
 
-	virtual bool Initialise(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext, CDirectXRenderer* _pRenderer, HWND _hWindow, TInputStruct* _pInput, int _iScreenWidth, int _iScreenHeight);
+	virtual bool Initialise(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext, CDirectXRenderer* _pRenderer, TSetupStruct* _pSetupData, HWND _hWindow, TInputStruct* _pInput, int _iScreenWidth, int _iScreenHeight);
 	virtual void CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext, HWND _hWindow);
 	virtual void Process(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDeviceContext, CClock* _pClock, float _fDeltaTime);
 	virtual bool ProcessInput(ID3D11Device* _pDevice, float _fDeltaTime);
@@ -86,7 +78,8 @@ public:
 	void SaveLevel(ID3D11Device* _pDevice, char* _pcLevelFilename);
 	void AddChildToXMLNode(rapidxml::xml_document<>* _pDocument, rapidxml::xml_node<>* _pParentNode, TEntityNode* _pChildNode);
 
-	void ChangeProcessingMethod(EProcessingMethod _eProcessingMethod);
+	void ChangeAIProcessingMethod(EProcessingMethod _eProcessingMethod);
+	void ChangeGrassProcessingMethod(EProcessingMethod _eProcessingMethod);
 
 private:
 	void LoadShaderData(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext);
@@ -95,8 +88,10 @@ private:
 private:
 	EGameScene m_eGameScene;
 	ERenderState m_eRenderState;
-	EProcessingMethod m_eProcessingMethod;
+	EProcessingMethod m_eGrassProcessingMethod;
+	EProcessingMethod m_eAIProcessingMethod;
 	std::string* m_pcProcessingMethodName;
+	TSetupStruct* m_pSetupData;
 	
 	CDirectXRenderer* m_pRenderer;
 	CResourceManager* m_pResourceManager;
@@ -108,11 +103,13 @@ private:
 	CFontRenderer* m_pFont;
 	CNetwork* m_pNetwork;
 	CPerformanceGraph* m_pGraph;
-	float m_fGraphDelay;
+	int m_iGraphDelay;
+	float m_fLogCount;
 
 	CEntityManager* m_pEntityManager;
 	TEntityNode* m_pRootNode;
 	TInputStruct* m_pInput;
+	bool m_bInputIsEnabled;
 	float m_fGameTimeElapsed;
 
 	//Game entities

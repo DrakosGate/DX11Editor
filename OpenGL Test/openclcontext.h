@@ -15,11 +15,8 @@ public:
 	~COpenCLContext();
 
 	virtual void InitialiseOpenCL();
-	virtual void CreateBuffers();
 	virtual void LoadProgram(cl_program& _rProgram, cl_kernel& _rKernel, char* _pcCLProgram, char* _pcFunctionName);
-	virtual void SendDataToGPU();
 	virtual void Run(cl_kernel& _rKernel);
-	virtual void RetrieveOpenCLResults();
 	virtual void WaitForFinish();
 
 	cl_context& GetCLContext();

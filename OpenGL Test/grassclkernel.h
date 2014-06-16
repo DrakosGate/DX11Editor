@@ -34,7 +34,7 @@ public:
 	CGrassCLKernel();
 	virtual ~CGrassCLKernel();
 	 
-	virtual void CreateBuffers(COpenCLContext* _pOpenCL, CGrass* _pGrass);
+	virtual void CreateBuffers(COpenCLContext* _pOpenCL, CGrass* _pGrass, std::vector<CRenderEntity*>* _pCollisionObjects);
 	virtual void SendDataToGPU(COpenCLContext* _pOpenCL, CGrass* _pGrass, std::vector<CRenderEntity*>* _pCollisionObjects, float _fDeltaTime);
 	void RetrieveOpenCLResults(COpenCLContext* _pOpenCL, CGrass* _pGrass);
 
@@ -50,6 +50,8 @@ protected:
 	D3DXVECTOR4* m_pDirections;
 	D3DXVECTOR4* m_pObjectData;
 	D3DXVECTOR4* m_pOutDirections;
+
+	int m_iNumObstacles;
 };
 
 #endif//__GRASSCLKERNEL_H__

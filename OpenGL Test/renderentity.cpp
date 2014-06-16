@@ -751,7 +751,7 @@ CRenderEntity::GetBoundingBox()
 float
 CRenderEntity::GetRadius() const
 {
-	return m_fRadius;
+	return m_fRadius * 0.5f;
 }
 /**
 *
@@ -781,7 +781,7 @@ bool
 CRenderEntity::HasCollided(CRenderEntity* _pOtherEntity)
 {
 	float fRadius = (m_fRadius + _pOtherEntity->GetRadius());
-	return (D3DXVec3LengthSq(&(m_vecPosition - _pOtherEntity->GetPosition())) < (fRadius * 0.5f));
+	return (D3DXVec3LengthSq(&(m_vecPosition - _pOtherEntity->GetPosition())) < (fRadius * 0.25f));
 }
 /**
 *

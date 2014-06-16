@@ -19,6 +19,7 @@
 #include "resourcemanager.h"
 #include "level.h"
 #include "clock.h"
+#include "grass.h"
 
 // This Include
 #include "directxrenderer.h"
@@ -47,6 +48,7 @@ CDirectXRenderer::CDirectXRenderer()
 , m_bVSyncEnabled(false)
 , m_bIsFullscreen(false)
 , m_pLevel(0)
+, m_pSetupData(0)
 {
 	//D3DXMatrixIdentity(&m_matWorld);
 	//D3DXMatrixIdentity(&m_matProjection);
@@ -60,11 +62,8 @@ CDirectXRenderer::CDirectXRenderer()
 */
 CDirectXRenderer::~CDirectXRenderer()
 {
-	if (m_pLevel)
-	{
-		delete m_pLevel;
-		m_pLevel = 0;
-	}
+	SAFEDELETE(m_pSetupData);
+	SAFEDELETE(m_pLevel);
 	
 	//Shutdown DX11
 	CleanUp();
@@ -81,8 +80,9 @@ CDirectXRenderer::~CDirectXRenderer()
 *
 */
 bool 
-CDirectXRenderer::Initialise(HWND _hWnd, int _iWindowWidth, int _iWindowHeight, TInputStruct* _pInput)
+CDirectXRenderer::Initialise(HWND _hWnd, TSetupStruct* _pSetupData, int _iWindowWidth, int _iWindowHeight, TInputStruct* _pInput)
 {
+	m_pSetupData = _pSetupData;
 	printf("Initialising DirectX11\n");
 	m_hWindow = _hWnd;
 	m_iWindowHeight = _iWindowHeight;
@@ -93,7 +93,7 @@ CDirectXRenderer::Initialise(HWND _hWnd, int _iWindowWidth, int _iWindowHeight, 
 	float fAspectRatio = static_cast<float>(_iWindowWidth) / static_cast<float>(_iWindowHeight);
 	
 	m_pLevel = new CLevel();
-	m_pLevel->Initialise(m_pDevice, m_pDeviceContext, this, _hWnd, _pInput, _iWindowWidth, _iWindowHeight);
+	m_pLevel->Initialise(m_pDevice, m_pDeviceContext, this, m_pSetupData, _hWnd, _pInput, _iWindowWidth, _iWindowHeight);
 	
 	m_pClearColour[0] = 0.01f;
 	m_pClearColour[1] = 0.01f;

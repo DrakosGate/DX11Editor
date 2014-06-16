@@ -59,7 +59,8 @@ CLevel::CLevel()
 : m_pInput(0)
 , m_pRenderer(0)
 , m_eGameScene(SCENE_3DSCENE)
-, m_eProcessingMethod(PROCESSING_SEQUENTIAL)
+, m_eGrassProcessingMethod(PROCESSING_SEQUENTIAL)
+, m_eAIProcessingMethod(PROCESSING_SEQUENTIAL)
 , m_pEntityManager(0)
 //, m_pPlayer(0)
 , m_pCursor(0)
@@ -91,12 +92,14 @@ CLevel::CLevel()
 , m_pSelectedObject(0)
 , m_pFont(0)
 , m_pGraph(0)
-, m_fGraphDelay(0.0f)
+, m_iGraphDelay(0)
 , m_pcProcessingMethodName(0)
 , m_iThreadCount(0)
 , m_bCreateObject(false)
 , m_bHasSelectedObject(false)
 , m_eGrassState(GRASS_OFF)
+, m_pSetupData(0)
+, m_bInputIsEnabled(true)
 {
 	D3DXMatrixIdentity(&m_matWorldViewProjection); 
 }
@@ -110,13 +113,13 @@ CLevel::CLevel()
 */
 CLevel::~CLevel()
 {
+	//Wait for parallel processes to finish
+	SAFEDELETE(m_pThreadPool);
+	SAFEDELETE(m_pCLKernel);
+
 	//Cleanup singletons
 	CAudioPlayer::GetInstance().DestroyInstance();
-	//if(m_pPlayer)
-	//{
-	//	delete m_pPlayer;
-	//	m_pPlayer = 0;
-	//}
+
 	for (unsigned int iEntity = 0; iEntity < m_pLevelEntities.size(); ++iEntity)
 	{
 		SAFEDELETE(m_pLevelEntities[iEntity]);
@@ -126,8 +129,6 @@ CLevel::~CLevel()
 	SAFEDELETE(m_pGraph);
 	SAFEDELETE(m_pGrass);
 	SAFEDELETE(m_pNetwork);
-	SAFEDELETE(m_pThreadPool);
-	SAFEDELETE(m_pCLKernel);
 	SAFEDELETE(m_pEditor);
 	SAFEDELETE(m_pCursor);
 	SAFEDELETE(m_pSelectionCursor);
@@ -176,9 +177,22 @@ CLevel::~CLevel()
 *
 */
 bool
-CLevel::Initialise(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext, CDirectXRenderer* _pRenderer, HWND _hWindow, TInputStruct* _pInput, int _iScreenWidth, int _iScreenHeight)
+CLevel::Initialise(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext, CDirectXRenderer* _pRenderer, TSetupStruct* _pSetupData, HWND _hWindow, TInputStruct* _pInput, int _iScreenWidth, int _iScreenHeight)
 {
 	SetFocus(GetConsoleWindow());
+	m_pSetupData = _pSetupData;
+
+	//Set initial processing values
+	m_eGrassProcessingMethod = _pSetupData->eGrassProcessing;
+	m_eAIProcessingMethod = _pSetupData->eAIProcessing;
+	m_eGrassState = _pSetupData->eGrassState;
+	m_eRenderState = _pSetupData->eRenderState;
+
+	//Disable input while logging
+	if (m_pSetupData->bDoLog)
+	{
+		m_bInputIsEnabled = false;
+	}
 
 	m_pRenderer = _pRenderer;
 	m_pInput = _pInput;
@@ -203,6 +217,10 @@ CLevel::Initialise(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext, CD
 	m_pCamera = new CCamera();
 	m_pCamera->Initialise(20.0f, 0.2f, 10.0f, m_iScreenWidth, m_iScreenHeight, true);
 	m_pCamera->SetPosition(D3DXVECTOR3(0.0f, 2.0f, -15.0f));
+	if (m_pSetupData->bDoLog)
+	{
+		m_pCamera->SetPosition(D3DXVECTOR3(0.0f, 10.0f, -15.0f));
+	}
 	D3DXVECTOR3 vecCameraLook;
 	D3DXVec3Normalize(&vecCameraLook, &(D3DXVECTOR3(0.0f, 0.0f, 0.0f) - m_pCamera->GetPosition()));
 	m_pCamera->SetLook(vecCameraLook);
@@ -218,7 +236,7 @@ CLevel::Initialise(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext, CD
 	//m_pPlayer = new CPlayer();
 	//m_pPlayer->Initialise(m_pInput, m_pCamera, m_pCursor);
 	
-	CAudioPlayer::GetInstance().Initialise();
+	CAudioPlayer::GetInstance().Initialise(m_pSetupData->bPlaySound);
 	CAudioPlayer::GetInstance().Play3DSound(SOUND_BIRDCHIRP, D3DXVECTOR3(-1.0f, 0.0f, 0.0f));
 
 	float fFieldOfView = static_cast<float>(D3DX_PI)* 0.25f;
@@ -226,10 +244,11 @@ CLevel::Initialise(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext, CD
 	D3DXMatrixPerspectiveFovLH(&m_matProjection, fFieldOfView, fScreenAspect, 0.1f, 1000.0f);
 	D3DXMatrixIdentity(&m_matWorld);
 
-	m_eRenderState = RENDERSTATE_DEBUG;
+	char cBuffer[64];
 	m_pcProcessingMethodName = new std::string[PROCESSING_MAX];
 	m_pcProcessingMethodName[PROCESSING_SEQUENTIAL]		= "Sequential";
-	m_pcProcessingMethodName[PROCESSING_THREADPOOL]		= "Thread Pool";
+	sprintf_s(cBuffer, 64, "Thread Pool (%i Threads)", m_iThreadCount);
+	m_pcProcessingMethodName[PROCESSING_THREADPOOL] = cBuffer;
 	m_pcProcessingMethodName[PROCESSING_OPENCL]			= "GPU [OpenCL]";
 	m_pcProcessingMethodName[PROCESSING_DISTRIBUTED]	= "Distributed";
 
@@ -261,14 +280,14 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	m_pNetwork = new CNetwork();
 	m_pNetwork->Initialise();
 	m_pNetwork->CreateServer();
-
+	
 	//Setup OpenCL
 	m_pCLKernel = new COpenCLContext();
 	m_pCLKernel->InitialiseOpenCL();
 
 	//Setup AI Hivemind
 	m_pHivemind = new CAIHiveMind();
-	m_pHivemind->Initialise(m_pCLKernel);
+	m_pHivemind->Initialise(m_pCLKernel, m_pSetupData->iAStarSearchDepth);
 	m_pHivemind->CreateNavigationGrid(_pDevice, m_pEntityManager, &m_pShaderCollection[SHADER_POINTSPRITE], 20.0f, 40, 40);
 	m_pEntityManager->SetLevelInformation(m_pHivemind, m_pLightManager);
 
@@ -337,12 +356,11 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 
 	m_fGrassScale = 20.0f;
 	m_pGrass = new CGrass();
-	m_pGrass->Initialise(_pDevice, m_pCLKernel, m_pResourceManager, 100, m_fGrassScale, D3DXVECTOR2(10.0f, 10.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f), m_iThreadCount);
+	m_pGrass->Initialise(_pDevice, m_pCLKernel, m_pResourceManager, m_pSetupData->iGrassDimensions, m_fGrassScale, D3DXVECTOR2(10.0f, 10.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f), m_iThreadCount);
 	m_pGrass->SetObjectShader(&m_pShaderCollection[SHADER_GRASS]);
 	m_pGrass->SetDiffuseMap(m_pResourceManager->GetTexture(std::string("grassblades")));
 	m_pGrass->SetRadius(FLT_MAX);
 	m_pEntityManager->AddEntity(m_pGrass, SCENE_GRASS);
-	m_eGrassState = GRASS_OFF;
 	m_pGrassJobs = new TGrassThread[m_iThreadCount];
 	for (int iJob = 0; iJob < m_iThreadCount; ++iJob)
 	{
@@ -350,7 +368,7 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	}
 
 	//Load Default level data
-	LoadLevel(_pDevice, "Data/Levels/level1.xml");
+	LoadLevel(_pDevice, m_pSetupData->pcDefaultLevel);
 
 	m_pCursor = new CPrefab();
 	m_pCursor->Initialise(_pDevice, 1.0f);
@@ -375,12 +393,18 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	
 	//Create performance graph
 	m_pGraph = new CPerformanceGraph();
-	m_pGraph->Initialise(_pDevice, D3DXVECTOR3(WINDOW_WIDTH * 0.01f, WINDOW_HEIGHT * 0.2f, 0.0f), D3DXVECTOR3(WINDOW_WIDTH * 0.3f, WINDOW_HEIGHT * 0.2f, 1.0f), 100);
+	m_pGraph->Initialise(_pDevice, D3DXVECTOR3(WINDOW_WIDTH * 0.01f, WINDOW_HEIGHT * 0.21f, 0.0f), D3DXVECTOR3(WINDOW_WIDTH * 0.3f, WINDOW_HEIGHT * 0.2f, 1.0f), 50);
 	m_pGraph->SetGraphRange(0.0f, 0.0000000001f);
 	m_pGraph->SetObjectShader(&m_pShaderCollection[SHADER_POINTSPRITE]);
 	m_pGraph->SetDiffuseMap(m_pResourceManager->GetTexture(std::string("menu_button")));
-	m_pGraph->LogPerformance("performancelog.txt", "==== Performance over 10 frames ====\n\n");
+	if (m_pSetupData->bDoLog)
+	{
+		m_pGraph->LogPerformance(m_pSetupData->pcLogFilename, m_pSetupData->pcLogDescription, m_pSetupData->iLogFrameDuration);
+	}
 	m_pEntityManager->AddEntity(m_pGraph, SCENE_UI);
+
+	//Set initial graph delay
+	m_iGraphDelay = m_pSetupData->iLogFrameSkip;
 
 	//Create a selection cursor to indicate the selected model
 	m_pSelectionCursor = new CModel();
@@ -391,6 +415,7 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	m_pSelectionCursor->SetObjectShader(&m_pShaderCollection[SHADER_MRT]);
 	m_pSelectionCursor->SetDiffuseMap(m_pResourceManager->GetTexture(std::string("selectionbox")));
 	m_pSelectionCursor->ToggleBillboarded(false);
+	m_pSelectionCursor->SetDoDraw(false);
 	m_pEntityManager->AddEntity(m_pSelectionCursor, SCENE_PERMANENTSCENE);
 
 	_pDevContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -481,11 +506,11 @@ CLevel::Process(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDeviceContext, CC
 		m_pGrass->SendCollisionData(&m_vecGrassEntities);
 		for (int iSection = 0; iSection < m_iThreadCount; ++iSection)
 		{
-			if (m_eProcessingMethod == PROCESSING_SEQUENTIAL)
+			if (m_eGrassProcessingMethod == PROCESSING_SEQUENTIAL)
 			{
 				m_pGrass->ProcessGrassSection(iSection, _fDeltaTime);
 			}
-			else if (m_eProcessingMethod == PROCESSING_THREADPOOL)
+			else if (m_eGrassProcessingMethod == PROCESSING_THREADPOOL)
 			{
 				m_pGrassJobs[iSection].fDeltaTime = _fDeltaTime;
 				m_pThreadPool->AddJobToPool(&GrassProcessingThread, &m_pGrassJobs[iSection]);
@@ -502,17 +527,17 @@ CLevel::Process(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDeviceContext, CC
 									m_vecGrassEntities,
 									_fDeltaTime);
 
-		m_pFont[FONT_DEBUG].Write(std::string("Grass State: On With Collisions (Press G to toggle)"), 2);
+		m_pFont[FONT_DEBUG].Write(std::string("Grass State: On With Collisions (Press G to toggle)"), 3);
 	}
 	else
 	{
 		if (m_eGrassState == GRASS_DRAWONLY)
 		{
-			m_pFont[FONT_DEBUG].Write(std::string("Grass State: Draw Only (Press G to toggle)"), 2);
+			m_pFont[FONT_DEBUG].Write(std::string("Grass State: Draw Only (Press G to toggle)"), 3);
 		}
 		else
 		{
-			m_pFont[FONT_DEBUG].Write(std::string("Grass State: Off (Press G to toggle)"), 2);
+			m_pFont[FONT_DEBUG].Write(std::string("Grass State: Off (Press G to toggle)"), 3);
 		}
 	}
 	//Process audio
@@ -523,8 +548,10 @@ CLevel::Process(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDeviceContext, CC
 	char cBuffer[64];
 	sprintf_s(cBuffer, 64, "FPS: %i", _pClock->GetFPS());
 	m_pFont[FONT_DEBUG].Write(std::string(cBuffer), 0);
-	sprintf_s(cBuffer, 64, "Processing Method: %s", m_pcProcessingMethodName[m_eProcessingMethod].c_str());
+	sprintf_s(cBuffer, 64, "Grass Processing Method: %s", m_pcProcessingMethodName[m_eGrassProcessingMethod].c_str());
 	m_pFont[FONT_DEBUG].Write(std::string(cBuffer), 1);
+	sprintf_s(cBuffer, 64, "AI Processing Method: %s", m_pcProcessingMethodName[m_eAIProcessingMethod].c_str());
+	m_pFont[FONT_DEBUG].Write(std::string(cBuffer), 2);
 
 	if (m_pEditor->IsActive())
 	{
@@ -537,10 +564,10 @@ CLevel::Process(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDeviceContext, CC
 	}
 	_pClock->EndTimer();
 	//Send data to performance graph
-	m_fGraphDelay -= 1.0f;// _fDeltaTime;
-	if (m_fGraphDelay < 0.0f)
+	--m_iGraphDelay;// _fDeltaTime;
+	if (m_iGraphDelay < 0)
 	{
-		m_fGraphDelay = 10.0f;
+		m_iGraphDelay = 10;
 		float fGraphMeasurement = _pClock->GetTimeElapsed();//_pClock->GetFPS();//  sinf(m_fGameTimeElapsed * 2.0f);
 		m_pGraph->SetGraphRange(fGraphMeasurement, fGraphMeasurement);
 		m_pGraph->AddNode(_pDevice, fGraphMeasurement);
@@ -550,16 +577,6 @@ CLevel::Process(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDeviceContext, CC
 		m_pFont[FONT_PERFORMANCE].Write(std::string(cBuffer), 1);
 		sprintf_s(cBuffer, 64, "Min:     %f", m_pGraph->GetMin());
 		m_pFont[FONT_PERFORMANCE].Write(std::string(cBuffer), 2);
-	}
-
-	//Wait for thread pool
-	if (m_eProcessingMethod == PROCESSING_THREADPOOL)
-	{
-	//	m_pThreadPool->JoinWithMainThread();
-	}
-	else if (m_eProcessingMethod == PROCESSING_OPENCL)
-	{
-	//	m_pCLKernel->WaitForFinish();
 	}
 }
 /**
@@ -574,128 +591,141 @@ CLevel::Process(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDeviceContext, CC
 bool
 CLevel::ProcessInput(ID3D11Device* _pDevice, float _fDeltaTime)
 {
-	//Toggle processing method
-	if (m_pInput->b1.bPressed)
+	//Disable input while logging to file
+	if (m_bInputIsEnabled)
 	{
-		ChangeProcessingMethod(PROCESSING_SEQUENTIAL);
-	}
-	if (m_pInput->b2.bPressed)
-	{
-		ChangeProcessingMethod(PROCESSING_THREADPOOL);
-	}
-	if (m_pInput->b3.bPressed)
-	{
-		ChangeProcessingMethod(PROCESSING_OPENCL);
-	}
-	if (m_pInput->b4.bPressed)
-	{
-		ChangeProcessingMethod(PROCESSING_DISTRIBUTED);
-	}
-	if (m_pInput->bG.bPressed && m_pInput->bG.bPreviousState == false)
-	{
-		if (m_eGrassState == GRASS_OFF)
+		//Toggle Grass processing method
+		if (m_pInput->b1.bPressed)
 		{
-			m_eGrassState = GRASS_DRAWONLY;
+			ChangeGrassProcessingMethod(PROCESSING_SEQUENTIAL);
 		}
-		else if (m_eGrassState == GRASS_DRAWONLY)
+		if (m_pInput->b2.bPressed)
 		{
-			m_eGrassState = GRASS_DRAWWITHCOLLISIONS;
+			ChangeGrassProcessingMethod(PROCESSING_THREADPOOL);
 		}
-		else
+		if (m_pInput->b3.bPressed)
 		{
-			m_eGrassState = GRASS_OFF;
+			ChangeGrassProcessingMethod(PROCESSING_OPENCL);
 		}
-	}
-	//Toggle level editor
-	if (m_pInput->bTilde.bPressed && m_pInput->bTilde.bPreviousState == false)
-	{
-		m_pEditor->ToggleEditor(!m_pEditor->IsActive());
-	}
-	bool bMouseOverEditor = m_pEditor->ProcessInput(_pDevice, m_pInput, _fDeltaTime);
-	//Check if new objects are being created
-	if (m_pEditor->GetEditorState() == EDITOR_SELECTED)
-	{
-		//Get name of new prefab
-		m_sSelectedPrefab = m_pEditor->GetSelectedPrefab();
-		m_bCreateObject = true;
-
-		//Change the cursor model
-		m_pCursor->SetModel(m_pResourceManager->GetModel(m_sSelectedPrefab));
-		m_pCursor->SetDiffuseMap(m_pResourceManager->GetTexture(m_sSelectedPrefab));
-	}
-	//Create new objects
-	if (m_bCreateObject && bMouseOverEditor == false)
-	{
-		//Instantiate a new entity
-		if (m_pInput->bLeftMouseClick.bPressed && m_pInput->bLeftMouseClick.bPreviousState == false)
+		//Toggle AI processing method
+		if (m_pInput->b4.bPressed)
 		{
-			m_pLevelEntities.push_back(m_pEntityManager->InstantiatePrefab(	_pDevice,
-																			m_pRootNode,
-																			m_sSelectedPrefab,
-																			&m_pShaderCollection[SHADER_MRT],
-																			m_vecGrassEntities,
-																			SCENE_3DSCENE,
-																			m_pCursor->GetPosition(),
-																			D3DXVECTOR3(1.0f, 1.0f, 1.0f),
-																			D3DXVECTOR3(0.0f, static_cast<float>(rand() % 360), 0.0f),
-																			D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f)));
+			ChangeAIProcessingMethod(PROCESSING_SEQUENTIAL);
 		}
-		//Cancel entity creation
-		if (m_pInput->bRightMouseClick.bPressed && m_pInput->bRightMouseClick.bPreviousState == false)
+		if (m_pInput->b5.bPressed)
 		{
-			m_bCreateObject = false;
-			//Set model back to cursor model
-			m_pCursor->SetModel(m_pResourceManager->GetModel(std::string("cursor")));
-			m_pCursor->SetDiffuseMap(m_pResourceManager->GetTexture(std::string("cursor")));
+			ChangeAIProcessingMethod(PROCESSING_THREADPOOL);
 		}
-	}
-	else
-	{
-		//Check if the cursor has collided with any objects
-		if (m_pInput->bLeftMouseClick.bPressed && m_pInput->bLeftMouseClick.bPreviousState == false)
+		if (m_pInput->b6.bPressed)
 		{
-			for (unsigned int iObject = 0; iObject < m_pLevelEntities.size(); ++iObject)
+			ChangeAIProcessingMethod(PROCESSING_OPENCL);
+		}
+		if (m_pInput->bG.bPressed && m_pInput->bG.bPreviousState == false)
+		{
+			if (m_eGrassState == GRASS_OFF)
 			{
-				if (m_pCursor->HasCollided(m_pLevelEntities[iObject]))
-				{
-					m_pSelectionCursor->SetDoDraw(true);
-					m_bHasSelectedObject = true;
-					m_pSelectedObject = m_pLevelEntities[iObject];
-					break;
-				}
+				m_eGrassState = GRASS_DRAWONLY;
+			}
+			else if (m_eGrassState == GRASS_DRAWONLY)
+			{
+				m_eGrassState = GRASS_DRAWWITHCOLLISIONS;
+			}
+			else
+			{
+				m_eGrassState = GRASS_OFF;
 			}
 		}
-		//Cancel entity selection
-		if (m_pInput->bRightMouseClick.bPressed && m_pInput->bRightMouseClick.bPreviousState == false)
+		//Toggle level editor
+		if (m_pInput->bTilde.bPressed && m_pInput->bTilde.bPreviousState == false)
 		{
-			m_pSelectionCursor->SetDoDraw(false);
-			m_bHasSelectedObject = false;
-			m_pSelectedObject = 0;
+			m_pEditor->ToggleEditor(!m_pEditor->IsActive());
 		}
-	}
-
-	//Process Camera Input
-	m_pCamera->ProcessInput(m_pInput, D3DXVECTOR2(1.0f, 0.0f), !bMouseOverEditor, _fDeltaTime);
-	//Cast ray from camera to ground plane
-	m_pInput->m_tMouseRay = m_pCamera->GetMouseRay(m_pInput->vecMouse);
-	float fIntersectionPoint = PlaneToLine(D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 1.0f, 0.0f), m_pInput->m_tMouseRay);
-	if (fIntersectionPoint > 0.0f)
-	{
-		m_pCursor->SetPosition(m_pInput->m_tMouseRay.vecPosition + (m_pInput->m_tMouseRay.vecDirection * fIntersectionPoint));
-		float fCameraRotation = (static_cast<float>(D3DX_PI)* 0.9f) + atan2f(m_pCamera->GetLook().x, m_pCamera->GetLook().z);
-		m_pCursor->SetRotation(D3DXVECTOR3(0.0f, fCameraRotation, 0.0f));
-	}
-	
-	//Toggle rendering mode
-	if (m_pInput->bToggleRender.bPressed && m_pInput->bToggleRender.bPreviousState == false)
-	{
-		if (m_eRenderState == RENDERSTATE_EDITOR)
+		bool bMouseOverEditor = m_pEditor->ProcessInput(_pDevice, m_pInput, _fDeltaTime);
+		//Check if new objects are being created
+		if (m_pEditor->GetEditorState() == EDITOR_SELECTED)
 		{
-			m_eRenderState = RENDERSTATE_DEBUG;
+			//Get name of new prefab
+			m_sSelectedPrefab = m_pEditor->GetSelectedPrefab();
+			m_bCreateObject = true;
+
+			//Change the cursor model
+			m_pCursor->SetModel(m_pResourceManager->GetModel(m_sSelectedPrefab));
+			m_pCursor->SetDiffuseMap(m_pResourceManager->GetTexture(m_sSelectedPrefab));
+		}
+		//Create new objects
+		if (m_bCreateObject && bMouseOverEditor == false)
+		{
+			//Instantiate a new entity
+			if (m_pInput->bLeftMouseClick.bPressed && m_pInput->bLeftMouseClick.bPreviousState == false)
+			{
+				m_pLevelEntities.push_back(m_pEntityManager->InstantiatePrefab(_pDevice,
+					m_pRootNode,
+					m_sSelectedPrefab,
+					&m_pShaderCollection[SHADER_MRT],
+					m_vecGrassEntities,
+					SCENE_3DSCENE,
+					m_pCursor->GetPosition(),
+					D3DXVECTOR3(1.0f, 1.0f, 1.0f),
+					D3DXVECTOR3(0.0f, static_cast<float>(rand() % 360), 0.0f),
+					D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f)));
+			}
+			//Cancel entity creation
+			if (m_pInput->bRightMouseClick.bPressed && m_pInput->bRightMouseClick.bPreviousState == false)
+			{
+				m_bCreateObject = false;
+				//Set model back to cursor model
+				m_pCursor->SetModel(m_pResourceManager->GetModel(std::string("cursor")));
+				m_pCursor->SetDiffuseMap(m_pResourceManager->GetTexture(std::string("cursor")));
+			}
 		}
 		else
 		{
-			m_eRenderState = RENDERSTATE_EDITOR;
+			//Check if the cursor has collided with any objects
+			if (m_pInput->bLeftMouseClick.bPressed && m_pInput->bLeftMouseClick.bPreviousState == false)
+			{
+				for (unsigned int iObject = 0; iObject < m_pLevelEntities.size(); ++iObject)
+				{
+					if (m_pCursor->HasCollided(m_pLevelEntities[iObject]))
+					{
+						m_pSelectionCursor->SetDoDraw(true);
+						m_bHasSelectedObject = true;
+						m_pSelectedObject = m_pLevelEntities[iObject];
+						break;
+					}
+				}
+			}
+			//Cancel entity selection
+			if (m_pInput->bRightMouseClick.bPressed && m_pInput->bRightMouseClick.bPreviousState == false)
+			{
+				m_pSelectionCursor->SetDoDraw(false);
+				m_bHasSelectedObject = false;
+				m_pSelectedObject = 0;
+			}
+		}
+
+		//Process Camera Input
+		m_pCamera->ProcessInput(m_pInput, D3DXVECTOR2(1.0f, 0.0f), !bMouseOverEditor, _fDeltaTime);
+		//Cast ray from camera to ground plane
+		m_pInput->m_tMouseRay = m_pCamera->GetMouseRay(m_pInput->vecMouse);
+		float fIntersectionPoint = PlaneToLine(D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 1.0f, 0.0f), m_pInput->m_tMouseRay);
+		if (fIntersectionPoint > 0.0f)
+		{
+			m_pCursor->SetPosition(m_pInput->m_tMouseRay.vecPosition + (m_pInput->m_tMouseRay.vecDirection * fIntersectionPoint));
+			float fCameraRotation = (static_cast<float>(D3DX_PI)* 0.9f) + atan2f(m_pCamera->GetLook().x, m_pCamera->GetLook().z);
+			m_pCursor->SetRotation(D3DXVECTOR3(0.0f, fCameraRotation, 0.0f));
+		}
+
+		//Toggle rendering mode
+		if (m_pInput->bToggleRender.bPressed && m_pInput->bToggleRender.bPreviousState == false)
+		{
+			if (m_eRenderState == RENDERSTATE_EDITOR)
+			{
+				m_eRenderState = RENDERSTATE_DEBUG;
+			}
+			else
+			{
+				m_eRenderState = RENDERSTATE_EDITOR;
+			}
 		}
 	}
 
@@ -890,56 +920,56 @@ CLevel::LoadShaderData(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 {
 	m_pShaderCollection = new CShader[SHADER_MAX];
 	m_pShaderCollection[SHADER_POINTSPRITE].Initialise(_pDevice);
-	m_pShaderCollection[SHADER_POINTSPRITE].CompileVertexShader(_pDevice, L"Shaders/pointsprite_vs.hlsl", "PointVS");
-	m_pShaderCollection[SHADER_POINTSPRITE].CompileGeometryShader(_pDevice, L"Shaders/pointsprite_gs.hlsl", "PointGS");
-	m_pShaderCollection[SHADER_POINTSPRITE].CompilePixelShader(_pDevice, L"Shaders/pointsprite_ps.hlsl", "PointPS");
+	m_pShaderCollection[SHADER_POINTSPRITE].CompileVertexShader(_pDevice, L"Assets/Shaders/pointsprite_vs.hlsl", "PointVS");
+	m_pShaderCollection[SHADER_POINTSPRITE].CompileGeometryShader(_pDevice, L"Assets/Shaders/pointsprite_gs.hlsl", "PointGS");
+	m_pShaderCollection[SHADER_POINTSPRITE].CompilePixelShader(_pDevice, L"Assets/Shaders/pointsprite_ps.hlsl", "PointPS");
 
 	m_pShaderCollection[SHADER_LINERENDERER].Initialise(_pDevice);
-	m_pShaderCollection[SHADER_LINERENDERER].CompileVertexShader(_pDevice, L"Shaders/linerenderer_vs.hlsl", "LineVS");
-	m_pShaderCollection[SHADER_LINERENDERER].CompileGeometryShader(_pDevice, L"Shaders/linerenderer_gs.hlsl", "LineGS");
-	m_pShaderCollection[SHADER_LINERENDERER].CompilePixelShader(_pDevice, L"Shaders/linerenderer_ps.hlsl", "LinePS");
+	m_pShaderCollection[SHADER_LINERENDERER].CompileVertexShader(_pDevice, L"Assets/Shaders/linerenderer_vs.hlsl", "LineVS");
+	m_pShaderCollection[SHADER_LINERENDERER].CompileGeometryShader(_pDevice, L"Assets/Shaders/linerenderer_gs.hlsl", "LineGS");
+	m_pShaderCollection[SHADER_LINERENDERER].CompilePixelShader(_pDevice, L"Assets/Shaders/linerenderer_ps.hlsl", "LinePS");
 
 	m_pShaderCollection[SHADER_OBJECT].Initialise(_pDevice);
-	m_pShaderCollection[SHADER_OBJECT].CompileVertexShader(_pDevice, L"Shaders/objectshader_vs.hlsl", "ObjectVS");
-	m_pShaderCollection[SHADER_OBJECT].CompilePixelShader(_pDevice, L"Shaders/objectshader_ps.hlsl", "ObjectPS");
+	m_pShaderCollection[SHADER_OBJECT].CompileVertexShader(_pDevice, L"Assets/Shaders/objectshader_vs.hlsl", "ObjectVS");
+	m_pShaderCollection[SHADER_OBJECT].CompilePixelShader(_pDevice, L"Assets/Shaders/objectshader_ps.hlsl", "ObjectPS");
 
 	m_pShaderCollection[SHADER_UNLITOBJECT].Initialise(_pDevice);
-	m_pShaderCollection[SHADER_UNLITOBJECT].CompileVertexShader(_pDevice, L"Shaders/objectshader_vs.hlsl", "ObjectVS");
-	m_pShaderCollection[SHADER_UNLITOBJECT].CompilePixelShader(_pDevice, L"Shaders/objectshader_ps.hlsl", "UnlitObjectPS");
+	m_pShaderCollection[SHADER_UNLITOBJECT].CompileVertexShader(_pDevice, L"Assets/Shaders/objectshader_vs.hlsl", "ObjectVS");
+	m_pShaderCollection[SHADER_UNLITOBJECT].CompilePixelShader(_pDevice, L"Assets/Shaders/objectshader_ps.hlsl", "UnlitObjectPS");
 
 	m_pShaderCollection[SHADER_ANIMOBJECT].Initialise(_pDevice);
-	m_pShaderCollection[SHADER_ANIMOBJECT].CompileVertexShader(_pDevice, L"Shaders/animatedobject_vs.hlsl", "AnimVS");
-	m_pShaderCollection[SHADER_ANIMOBJECT].CompilePixelShader(_pDevice, L"Shaders/objectshader_ps.hlsl", "ObjectPS");
+	m_pShaderCollection[SHADER_ANIMOBJECT].CompileVertexShader(_pDevice, L"Assets/Shaders/animatedobject_vs.hlsl", "AnimVS");
+	m_pShaderCollection[SHADER_ANIMOBJECT].CompilePixelShader(_pDevice, L"Assets/Shaders/objectshader_ps.hlsl", "ObjectPS");
 
 	m_pShaderCollection[SHADER_MRT].Initialise(_pDevice);
-	m_pShaderCollection[SHADER_MRT].CompileVertexShader(_pDevice, L"Shaders/objectshader_vs.hlsl", "ObjectVS");
-	m_pShaderCollection[SHADER_MRT].CompilePixelShader(_pDevice, L"Shaders/mrtshader_ps.hlsl", "MRTPS");
+	m_pShaderCollection[SHADER_MRT].CompileVertexShader(_pDevice, L"Assets/Shaders/objectshader_vs.hlsl", "ObjectVS");
+	m_pShaderCollection[SHADER_MRT].CompilePixelShader(_pDevice, L"Assets/Shaders/mrtshader_ps.hlsl", "MRTPS");
 
 	m_pShaderCollection[SHADER_GRASS].Initialise(_pDevice);
-	m_pShaderCollection[SHADER_GRASS].CompileVertexShader(_pDevice, L"Shaders/grassshader_vs.hlsl", "GrassVS");
-	m_pShaderCollection[SHADER_GRASS].CompileGeometryShader(_pDevice, L"Shaders/grassshader_gs.hlsl", "GrassGS");
-	m_pShaderCollection[SHADER_GRASS].CompilePixelShader(_pDevice, L"Shaders/grassshader_ps.hlsl", "GrassMRTPS");
+	m_pShaderCollection[SHADER_GRASS].CompileVertexShader(_pDevice, L"Assets/Shaders/grassshader_vs.hlsl", "GrassVS");
+	m_pShaderCollection[SHADER_GRASS].CompileGeometryShader(_pDevice, L"Assets/Shaders/grassshader_gs.hlsl", "GrassGS");
+	m_pShaderCollection[SHADER_GRASS].CompilePixelShader(_pDevice, L"Assets/Shaders/grassshader_ps.hlsl", "GrassMRTPS");
 
 	m_pShaderCollection[SHADER_DEFERRED].Initialise(_pDevice);
-	m_pShaderCollection[SHADER_DEFERRED].CompileVertexShader(_pDevice, L"Shaders/objectshader_vs.hlsl", "ObjectVS");
-	m_pShaderCollection[SHADER_DEFERRED].CompilePixelShader(_pDevice, L"Shaders/deferred_ps.hlsl", "DeferredPS");
+	m_pShaderCollection[SHADER_DEFERRED].CompileVertexShader(_pDevice, L"Assets/Shaders/objectshader_vs.hlsl", "ObjectVS");
+	m_pShaderCollection[SHADER_DEFERRED].CompilePixelShader(_pDevice, L"Assets/Shaders/deferred_ps.hlsl", "DeferredPS");
 
 	m_pShaderCollection[SHADER_FINALOUTPUT].Initialise(_pDevice);
-	m_pShaderCollection[SHADER_FINALOUTPUT].CompileVertexShader(_pDevice, L"Shaders/objectshader_vs.hlsl", "ObjectVS");
-	m_pShaderCollection[SHADER_FINALOUTPUT].CompilePixelShader(_pDevice, L"Shaders/postprocessing.hlsl", "FinalColourPS");
+	m_pShaderCollection[SHADER_FINALOUTPUT].CompileVertexShader(_pDevice, L"Assets/Shaders/objectshader_vs.hlsl", "ObjectVS");
+	m_pShaderCollection[SHADER_FINALOUTPUT].CompilePixelShader(_pDevice, L"Assets/Shaders/postprocessing.hlsl", "FinalColourPS");
 
 	m_pShaderCollection[SHADERPOST_PIXELATE].Initialise(_pDevice);
-	m_pShaderCollection[SHADERPOST_PIXELATE].CompileVertexShader(_pDevice, L"Shaders/objectshader_vs.hlsl", "ObjectVS");
-	m_pShaderCollection[SHADERPOST_PIXELATE].CompilePixelShader(_pDevice, L"Shaders/postprocessing.hlsl", "PixelatePS");
+	m_pShaderCollection[SHADERPOST_PIXELATE].CompileVertexShader(_pDevice, L"Assets/Shaders/objectshader_vs.hlsl", "ObjectVS");
+	m_pShaderCollection[SHADERPOST_PIXELATE].CompilePixelShader(_pDevice, L"Assets/Shaders/postprocessing.hlsl", "PixelatePS");
 
 	m_pShaderCollection[SHADERPOST_RADIALBLUR].Initialise(_pDevice);
-	m_pShaderCollection[SHADERPOST_RADIALBLUR].CompileVertexShader(_pDevice, L"Shaders/objectshader_vs.hlsl", "ObjectVS");
-	m_pShaderCollection[SHADERPOST_RADIALBLUR].CompilePixelShader(_pDevice, L"Shaders/postprocessing.hlsl", "RadialBlurPS");
+	m_pShaderCollection[SHADERPOST_RADIALBLUR].CompileVertexShader(_pDevice, L"Assets/Shaders/objectshader_vs.hlsl", "ObjectVS");
+	m_pShaderCollection[SHADERPOST_RADIALBLUR].CompilePixelShader(_pDevice, L"Assets/Shaders/postprocessing.hlsl", "RadialBlurPS");
 
 	m_pShaderCollection[SHADER_FONT].Initialise(_pDevice);
-	m_pShaderCollection[SHADER_FONT].CompileVertexShader(_pDevice, L"Shaders/fontshader_vs.hlsl", "FontVS");
-	m_pShaderCollection[SHADER_FONT].CompileGeometryShader(_pDevice, L"Shaders/fontshader_gs.hlsl", "FontGS");
-	m_pShaderCollection[SHADER_FONT].CompilePixelShader(_pDevice, L"Shaders/fontshader_ps.hlsl", "FontPS");
+	m_pShaderCollection[SHADER_FONT].CompileVertexShader(_pDevice, L"Assets/Shaders/fontshader_vs.hlsl", "FontVS");
+	m_pShaderCollection[SHADER_FONT].CompileGeometryShader(_pDevice, L"Assets/Shaders/fontshader_gs.hlsl", "FontGS");
+	m_pShaderCollection[SHADER_FONT].CompilePixelShader(_pDevice, L"Assets/Shaders/fontshader_ps.hlsl", "FontPS");
 }
 /**
 *
@@ -1209,6 +1239,32 @@ CLevel::LoadLevel(ID3D11Device* _pDevice, char* _pcLevelFilename)
 		//Create Object will recursively loop through all children of this object and create those too
 		CPrefab* pNewPrefab = CreateObject(_pDevice, pCurrentChild, m_pRootNode);
 	}
+
+	//Spawn initial testing AI
+	if (m_pSetupData->bDoLog)
+	{
+		int iNumDefaultAI = m_pSetupData->iAICount;
+		float fAIPercentage = 1.0f / static_cast<float>(iNumDefaultAI);
+		float fSpawnRadius = 5.0f;
+		for (int iAI = 0; iAI < iNumDefaultAI; ++iAI)
+		{
+			D3DXVECTOR3 vecPosition = D3DXVECTOR3(sinf(fAIPercentage * iAI * static_cast<float>(D3DX_PI)* 2.0f) * fSpawnRadius, 0.0f, cosf(fAIPercentage * iAI * static_cast<float>(D3DX_PI)* 2.0f) * fSpawnRadius);
+			CPrefab* pNewPrefab = m_pEntityManager->InstantiatePrefab(	_pDevice,
+																		m_pRootNode,
+																		std::string("chicken"),
+																		&m_pShaderCollection[SHADER_MRT],
+																		m_vecGrassEntities,
+																		SCENE_3DSCENE,
+																		vecPosition,
+																		D3DXVECTOR3(1.0f, 1.0f, 1.0f),
+																		D3DXVECTOR3(0.0f, 0.0f, 0.0f),
+																		D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
+
+			//Add new object to the level
+			m_pLevelEntities.push_back(pNewPrefab);
+			m_pEntityManager->AddEntity(pNewPrefab, SCENE_3DSCENE);
+		}
+	}
 }
 /**
 *
@@ -1318,7 +1374,7 @@ CLevel::AddChildToXMLNode(rapidxml::xml_document<>* _pDocument, rapidxml::xml_no
 }
 /**
 *
-* CLevel class Swaps between different processing methods
+* CLevel class Swaps between different processing methods for the grass
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -1326,8 +1382,22 @@ CLevel::AddChildToXMLNode(rapidxml::xml_document<>* _pDocument, rapidxml::xml_no
 *
 */
 void
-CLevel::ChangeProcessingMethod(EProcessingMethod _eProcessingMethod)
+CLevel::ChangeGrassProcessingMethod(EProcessingMethod _eProcessingMethod)
 {
-	m_eProcessingMethod = _eProcessingMethod;
+	m_eGrassProcessingMethod = _eProcessingMethod;
+}
+/**
+*
+* CLevel class Swaps between different processing methods for the AI
+* (Task ID: n/a)
+*
+* @author Christopher Howlett
+* @param _eProcessingMethod Processing method selected
+*
+*/
+void
+CLevel::ChangeAIProcessingMethod(EProcessingMethod _eProcessingMethod)
+{
+	m_eAIProcessingMethod = _eProcessingMethod;
 	m_pHivemind->ChangeProcessingMethod(_eProcessingMethod);
 }

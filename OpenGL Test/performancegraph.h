@@ -26,7 +26,7 @@ public:
 	virtual ~CPerformanceGraph();
 
 	virtual bool Initialise(ID3D11Device* _pDevice, D3DXVECTOR3& _rPosition, D3DXVECTOR3& _rScale, int _iNumNodes);
-	void LogPerformance(char* _pcLogFilename, char* _pcLogDescription);
+	void LogPerformance(char* _pcLogFilename, char* _pcLogDescription, int _iLogAfterFrames);
 	void OutputLog();
 
 	void Draw(ID3D11DeviceContext* _pDevice);
@@ -54,6 +54,7 @@ protected:
 	char* m_pcLogFilename;
 	char* m_pcLogDescription;
 	bool m_bDoLogPerformance;
+	int m_iLogCount;
 };
 
 #endif //PERFORMANCEGRAPH_H__

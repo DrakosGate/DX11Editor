@@ -151,6 +151,14 @@ enum ERenderState
 	RENDERSTATE_DEBUG,
 	RENDERSTATE_MAX
 };
+enum EGrassState
+{
+	GRASS_INVALID = -1,
+	GRASS_OFF,
+	GRASS_DRAWONLY,
+	GRASS_DRAWWITHCOLLISIONS,
+	GRASS_MAX
+};
 enum EProcessingMethod
 {
 	PROCESSING_INVALID = -1,
@@ -161,6 +169,50 @@ enum EProcessingMethod
 	PROCESSING_MAX
 };
 //Data Structures
+struct TSetupStruct
+{
+	TSetupStruct()
+	{
+		iGrassDimensions = 100;
+		iLogFrameSkip = 0;
+		iLogFrameDuration = 0;
+		iAICount = 0;
+		iAStarSearchDepth = 1;
+		bDoLog = false;
+		bPlaySound = true;
+
+		eRenderState = RENDERSTATE_DEBUG;
+		eAIProcessing = PROCESSING_SEQUENTIAL;
+		eGrassProcessing = PROCESSING_SEQUENTIAL;
+		eGrassState = GRASS_OFF;
+
+		pcLogFilename = 0;
+		pcLogDescription = 0;
+		pcDefaultLevel = 0;
+	}
+	~TSetupStruct()
+	{
+		SAFEDELETEARRAY(pcLogDescription);
+		SAFEDELETEARRAY(pcLogFilename);
+		SAFEDELETEARRAY(pcDefaultLevel);
+	}
+	int iGrassDimensions;
+	int iLogFrameSkip;
+	int iLogFrameDuration;
+	int iAICount;
+	int iAStarSearchDepth;
+	bool bDoLog;
+	bool bPlaySound;
+
+	ERenderState eRenderState;
+	EProcessingMethod eAIProcessing;
+	EProcessingMethod eGrassProcessing;
+	EGrassState eGrassState;
+
+	char* pcLogFilename;
+	char* pcLogDescription;
+	char* pcDefaultLevel;
+};
 struct TButtonState
 {
 	void RecordPreviousState()
@@ -218,6 +270,8 @@ struct TInputStruct
 		b2.bPressed = false;
 		b3.bPressed = false;
 		b4.bPressed = false;
+		b5.bPressed = false;
+		b6.bPressed = false;
 		bReset.bPressed = false;
 		bShift.bPressed = false;
 		bTilde.bPressed = false;
@@ -244,6 +298,8 @@ struct TInputStruct
 		b2.RecordPreviousState();
 		b3.RecordPreviousState();
 		b4.RecordPreviousState();
+		b5.RecordPreviousState();
+		b6.RecordPreviousState();
 		bReset.RecordPreviousState();
 		bShift.RecordPreviousState();
 		bTilde.RecordPreviousState();
@@ -252,6 +308,7 @@ struct TInputStruct
 		vecPreviousMouse = vecMouse;
 		fMouseWheel = 0.0f;
 	}
+	//Keys
 	TButtonState bUp;
 	TButtonState bDown;
 	TButtonState bLeft;
@@ -262,15 +319,19 @@ struct TInputStruct
 	TButtonState bD;
 	TButtonState bG;
 	TButtonState bToggleRender;
+	TButtonState bReset;
+	TButtonState bShift;
+	TButtonState bTilde;
+	//Numbers
 	TButtonState b1;
 	TButtonState b2;
 	TButtonState b3;
 	TButtonState b4;
+	TButtonState b5;
+	TButtonState b6;
+	//Mouse
 	TButtonState bLeftMouseClick;
 	TButtonState bRightMouseClick;
-	TButtonState bReset;
-	TButtonState bShift;
-	TButtonState bTilde;
 	float fMouseWheel;
 	D3DXVECTOR2 vecMouse;
 	D3DXVECTOR2 vecPreviousMouse;

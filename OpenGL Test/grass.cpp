@@ -88,8 +88,8 @@ CGrass::Initialise(ID3D11Device* _pDevice, COpenCLContext* _pCLKernel, CResource
 	m_fGrassSpeed = 5.0f;
 	m_fGrassStiffness = 2.0f;
 	m_pGrassCLKernel = new CGrassCLKernel();
-	m_pGrassCLKernel->CreateBuffers(_pCLKernel, this);
-	_pCLKernel->LoadProgram(m_pGrassCLKernel->GetCLProgram(), m_pGrassCLKernel->GetCLKernel(), "OpenCLKernels/grass.cl", "ProcessGrass");
+	m_pGrassCLKernel->CreateBuffers(_pCLKernel, this, m_pCollisionObjects);
+	_pCLKernel->LoadProgram(m_pGrassCLKernel->GetCLProgram(), m_pGrassCLKernel->GetCLKernel(), "Assets/OpenCLKernels/grass.cl", "ProcessGrass");
 
 	return true;
 }
@@ -122,7 +122,7 @@ CGrass::ProcessGrassSection(int _iSection, float _fDeltaTime)
 				unsigned int iNumEntities = m_pCollisionObjects->size();
 				for (unsigned int iEntity = 0; iEntity < iNumEntities; ++iEntity)
 				{
-					fAvoidanceRange = ((*m_pCollisionObjects)[iEntity]->GetRadius() * (*m_pCollisionObjects)[iEntity]->GetRadius()) * 0.75f;
+					fAvoidanceRange = ((*m_pCollisionObjects)[iEntity]->GetRadius() * (*m_pCollisionObjects)[iEntity]->GetRadius()) * 2.5f;
 
 					vecToEntity = (*m_pCollisionObjects)[iEntity]->GetPosition() - m_pVertices[iCurrentVertex].pos;
 					float fDistanceToEntity = D3DXVec3LengthSq(&vecToEntity);

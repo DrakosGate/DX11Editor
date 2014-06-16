@@ -307,65 +307,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="..\Bin\Shaders\animatedobject_vs.hlsl">
-      <Filter>Resource Files\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="..\Bin\Shaders\deferred_ps.hlsl">
-      <Filter>Resource Files\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="..\Bin\Shaders\linerenderer_gs.hlsl">
-      <Filter>Resource Files\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="..\Bin\Shaders\linerenderer_ps.hlsl">
-      <Filter>Resource Files\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="..\Bin\Shaders\linerenderer_vs.hlsl">
-      <Filter>Resource Files\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="..\Bin\Shaders\mrtshader_ps.hlsl">
-      <Filter>Resource Files\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="..\Bin\Shaders\objectshader_ps.hlsl">
-      <Filter>Resource Files\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="..\Bin\Shaders\objectshader_vs.hlsl">
-      <Filter>Resource Files\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="..\Bin\Shaders\pointsprite_gs.hlsl">
-      <Filter>Resource Files\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="..\Bin\Shaders\pointsprite_ps.hlsl">
-      <Filter>Resource Files\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="..\Bin\Shaders\pointsprite_vs.hlsl">
-      <Filter>Resource Files\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="..\Bin\Shaders\postprocessing.hlsl">
-      <Filter>Resource Files\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="..\Bin\Shaders\shaderdefines.hlsl">
-      <Filter>Resource Files\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="..\Bin\Shaders\fontshader_gs.hlsl">
-      <Filter>Resource Files\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="..\Bin\Shaders\fontshader_ps.hlsl">
-      <Filter>Resource Files\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="..\Bin\Shaders\fontshader_vs.hlsl">
-      <Filter>Resource Files\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="..\Bin\Shaders\grassshader_gs.hlsl">
-      <Filter>Resource Files\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="..\Bin\Shaders\grassshader_ps.hlsl">
-      <Filter>Resource Files\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="..\Bin\Shaders\grassshader_vs.hlsl">
-      <Filter>Resource Files\Shaders</Filter>
-    </FxCompile>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="..\Bin\OpenCLKernels\test.cl">
       <Filter>Resource Files\OpenCL Kernels</Filter>
     </None>
@@ -375,5 +316,64 @@
     <None Include="..\Bin\OpenCLKernels\grass.cl">
       <Filter>Resource Files\OpenCL Kernels</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="..\Bin\Assets\Shaders\animatedobject_vs.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Bin\Assets\Shaders\deferred_ps.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Bin\Assets\Shaders\fontshader_gs.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Bin\Assets\Shaders\fontshader_ps.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Bin\Assets\Shaders\fontshader_vs.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Bin\Assets\Shaders\grassshader_gs.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Bin\Assets\Shaders\grassshader_ps.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Bin\Assets\Shaders\grassshader_vs.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Bin\Assets\Shaders\linerenderer_gs.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Bin\Assets\Shaders\linerenderer_ps.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Bin\Assets\Shaders\linerenderer_vs.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Bin\Assets\Shaders\mrtshader_ps.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Bin\Assets\Shaders\objectshader_ps.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Bin\Assets\Shaders\objectshader_vs.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Bin\Assets\Shaders\pointsprite_gs.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Bin\Assets\Shaders\pointsprite_ps.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Bin\Assets\Shaders\pointsprite_vs.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Bin\Assets\Shaders\postprocessing.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Bin\Assets\Shaders\shaderdefines.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

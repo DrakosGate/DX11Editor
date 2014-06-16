@@ -41,6 +41,7 @@ CAIHiveMind::CAIHiveMind()
 , m_pNavigationGrid(0)
 , m_pNavigationGridMesh(0)
 , m_iGridSize(0)
+, m_iAStarDepth(0)
 {
 
 }
@@ -100,17 +101,18 @@ CAIHiveMind::~CAIHiveMind()
 *
 */
 bool 
-CAIHiveMind::Initialise(COpenCLContext* _pCLKernel)
+CAIHiveMind::Initialise(COpenCLContext* _pCLKernel, int _iAStarDepth)
 {
 	bool bResult = false;
+	m_iAStarDepth = _iAStarDepth;
 
 	//Create AI descriptions
 	m_pAIDescriptions = new TAIDescription[AI_MAX];
 	m_pAIDescriptions[AI_HUMAN] = TAIDescription(1.5f, 2.0f);
-	m_pAIDescriptions[AI_CHICKEN] = TAIDescription(1.0f, 0.5f);
+	m_pAIDescriptions[AI_CHICKEN] = TAIDescription(1.0f, 10.5f);
 
 	m_pCLKernel = new CAICLKernel();
-	_pCLKernel->LoadProgram(m_pCLKernel->GetCLProgram(), m_pCLKernel->GetCLKernel(), "OpenCLKernels/ai.cl", "ProcessAI");
+	_pCLKernel->LoadProgram(m_pCLKernel->GetCLProgram(), m_pCLKernel->GetCLKernel(), "Assets/OpenCLKernels/ai.cl", "ProcessAI");
 	
 	return true;
 }
@@ -132,8 +134,8 @@ CAIHiveMind::Process(COpenCLContext* _pCLKernel, CThreadPool* _pThreadPool, floa
 		{
 			for (int iAI = 0; iAI < m_iNumAI; ++iAI)
 			{
-				m_pAI[iAI]->ProcessWaypointMovement(_fDeltaTime);
-				//m_pAI[iAI]->ProcessAStarMovement(10, _fDeltaTime);
+				//m_pAI[iAI]->ProcessWaypointMovement(_fDeltaTime);
+				m_pAI[iAI]->ProcessAStarMovement(10, _fDeltaTime);
 				ProcessIndividualAIController(iAI, _fDeltaTime);
 			}					 
 			break;
@@ -205,13 +207,13 @@ CAIHiveMind::ProcessIndividualAIController(int _iAIIndex, float _fDeltaTime)
 	//		vecAvoidance += (m_pAI[_iAIIndex]->GetEntity()->GetPosition() - m_pAI[iOther]->GetEntity()->GetPosition()) * 0.5f;
 	//	}
 	//}
-	//for (unsigned int iStatic = 0; iStatic < m_vecStaticObstacles.size(); ++iStatic)
-	//{
-	//	if (m_pAI[_iAIIndex]->GetEntity()->HasCollided(m_vecStaticObstacles[iStatic]))
-	//	{
-	//		vecAvoidance += (m_pAI[_iAIIndex]->GetEntity()->GetPosition() - m_vecStaticObstacles[iStatic]->GetPosition()) * 0.5f;
-	//	}
-	//}
+	for (unsigned int iStatic = 0; iStatic < m_vecStaticObstacles.size(); ++iStatic)
+	{
+		if (m_pAI[_iAIIndex]->GetEntity()->HasCollided(m_vecStaticObstacles[iStatic]))
+		{
+			vecAvoidance += (m_pAI[_iAIIndex]->GetEntity()->GetPosition() - m_vecStaticObstacles[iStatic]->GetPosition()) * 0.5f;
+		}
+	}
 	vecAvoidance.y = 0.0f;
 	m_pAI[_iAIIndex]->Process(_fDeltaTime, vecAvoidance);
 }
@@ -369,7 +371,7 @@ CAIHiveMind::GetNextWaypoint(D3DXVECTOR3& _rVecTarget, int& _iCurrentWaypoint)
 {
 	float fBestValue = FLT_MAX;
 	int iBestWaypoint = 0;
-	int iTreeSearchDepth = 10;
+	int iTreeSearchDepth = m_iAStarDepth;
 
 	float fInactivePenalty = 500000;
 	//Check UP
@@ -621,7 +623,7 @@ CAIHiveMind::RecalculateNavGrid(ID3D11Device* _pDevice)
 			{
 				D3DXVECTOR3 vecToObstacle = m_vecStaticObstacles[iObstalce]->GetPosition() - m_pNavigationGrid[iCurrentGrid].vecPosition;
 				vecToObstacle.y = 0.0f;
-				if (D3DXVec3LengthSq(&vecToObstacle) < m_vecStaticObstacles[iObstalce]->GetRadius() * 0.2f)
+				if (D3DXVec3LengthSq(&vecToObstacle) < m_vecStaticObstacles[iObstalce]->GetRadius() * 0.5f)
 				{
 					//Deactivate this grid element
 					m_pNavigationGrid[iCurrentGrid].bIsActive = false;

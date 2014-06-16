@@ -39,6 +39,7 @@ struct ID3D11DepthStencilView;
 struct ID3D11InputLayout;
 struct ID3D11BlendState;
 struct IDXGISwapChain;
+struct TSetupStruct;
 
 class CClock;
 class CLevel;
@@ -52,7 +53,7 @@ public:
 	CDirectXRenderer();
 	virtual ~CDirectXRenderer();
 
-	virtual bool Initialise(HWND _hWnd, int _iWindowWidth, int _iWindowHeight, TInputStruct* _pInput);
+	virtual bool Initialise(HWND _hWnd, TSetupStruct* _pSetupData, int _iWindowWidth, int _iWindowHeight, TInputStruct* _pInput);
 	virtual void SetupDirectX11(HWND _hWnd);
 	virtual void CleanUp();
 
@@ -77,6 +78,7 @@ private:
 	IDXGISwapChain* m_pSwapChain;
 	ID3D11RenderTargetView* m_pRenderTargetView;
 	float m_pClearColour[4];
+	TSetupStruct* m_pSetupData;
 
 	//Device Information
 	char m_videoCardDesc[128];

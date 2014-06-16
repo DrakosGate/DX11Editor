@@ -43,6 +43,7 @@ CPerformanceGraph::CPerformanceGraph()
 , m_iNumNodes(0)
 , m_pcLogFilename(0)
 , m_pcLogDescription(0)
+, m_iLogCount(0)
 , m_bDoLogPerformance(false)
 {
 
@@ -59,8 +60,6 @@ CPerformanceGraph::CPerformanceGraph()
 CPerformanceGraph::~CPerformanceGraph()
 {
 	SAFEDELETEARRAY(m_pNodeValues);
-
-	OutputLog();
 }
 /**
 *
@@ -93,11 +92,13 @@ CPerformanceGraph::Initialise(ID3D11Device* _pDevice, D3DXVECTOR3& _rPosition, D
 	return true;
 }
 void
-CPerformanceGraph::LogPerformance(char* _pcLogFilename, char* _pcLogDescription)
+CPerformanceGraph::LogPerformance(char* _pcLogFilename, char* _pcLogDescription, int _iLogAfterFrames)
 {
 	m_bDoLogPerformance = true;
 	m_pcLogFilename = _pcLogFilename;
 	m_pcLogDescription = _pcLogDescription;
+
+	m_iLogCount = _iLogAfterFrames;
 }
 void
 CPerformanceGraph::OutputLog()
@@ -213,6 +214,15 @@ CPerformanceGraph::AddNode(ID3D11Device* _pDevice, float _fValue)
 		m_pPointSpriteVertices[iVertex]->scale.y = m_pPointSpriteVertices[iVertex]->pos.y - (m_vecGraphPos.y - m_vecGraphScale.y);
 	}
 	RefreshBuffers(_pDevice);
+
+	//Check if program should log
+	--m_iLogCount;
+	if (m_iLogCount <= 0 && m_bDoLogPerformance)
+	{
+		OutputLog();
+		MessageBox(NULL, L"Performance Log Complete", L"Log Alert", MB_OK);
+		m_bDoLogPerformance = false;
+	}
 }
 float
 CPerformanceGraph::GetMin() const

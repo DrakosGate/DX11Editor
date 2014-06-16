@@ -12,11 +12,22 @@
 
 CAICLKernel::CAICLKernel()
 {
+	m_clInPos = 0;
+	m_clInDir = 0;
+	m_clInWaypoint = 0;
+	m_clAIData = 0;
+	m_clOutPos = 0;
+	m_clOutDir = 0;
 	m_pWorkGroup = new size_t[1];
 }
 CAICLKernel::~CAICLKernel()
 {
-	
+	clReleaseMemObject(m_clInPos);
+	clReleaseMemObject(m_clInDir);
+	clReleaseMemObject(m_clInWaypoint);
+	clReleaseMemObject(m_clAIData);
+	clReleaseMemObject(m_clOutPos);
+	clReleaseMemObject(m_clOutDir);
 }
 void
 CAICLKernel::SendDataToGPU(COpenCLContext* _pOpenCL, CAIHiveMind* _pHiveMind, float _fDeltaTime)

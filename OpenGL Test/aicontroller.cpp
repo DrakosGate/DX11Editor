@@ -77,6 +77,12 @@ CAIController::Initialise(CAIHiveMind* _pHivemind, CRenderEntity* _pEntity, floa
 	m_fRotationSpeed = _fRotationSpeed;
 
 	m_iCurrentWaypointIndex = rand() % _pHivemind->GetNavigationGridSize();
+	m_vecWaypoint = m_pHivemind->GetRandomWaypoint();
+	D3DXVECTOR3* pWaypoint = m_pHivemind->GetNextWaypoint(m_vecWaypoint, m_iCurrentWaypointIndex);
+	if (pWaypoint)
+	{
+		m_vecAStarActivePoint = *pWaypoint;
+	}
 
 	return true;
 }
@@ -120,7 +126,7 @@ CAIController::ProcessWaypointMovement(float _fDeltaTime)
 	{
 		D3DXVECTOR3 vecForward = m_pEntity->GetForward();
 		D3DXVECTOR3 vecCurrentPos = m_pEntity->GetPosition();
-		D3DXVECTOR3 vecToWaypoint = m_vecAStarActivePoint - vecCurrentPos;
+		D3DXVECTOR3 vecToWaypoint = m_vecWaypoint - vecCurrentPos;
 		vecToWaypoint.y = 0.0f;
 		vecForward += vecToWaypoint * m_fRotationSpeed * _fDeltaTime;
 		D3DXVec3Normalize(&vecForward, &vecForward);
@@ -173,19 +179,37 @@ CAIController::SetAStarTarget(D3DXVECTOR3& _rVecTarget)
 void 
 CAIController::CheckWaypointReached()
 {
+	//Check target waypoint
 	D3DXVECTOR3 vecCurrentPos = m_pEntity->GetPosition();
-	D3DXVECTOR3 vecToWaypoint = m_vecAStarActivePoint - vecCurrentPos;
+	D3DXVECTOR3 vecToWaypoint = m_vecWaypoint - vecCurrentPos;
 	vecToWaypoint.y = 0.0f;
 	float fDistanceToWaypoint = D3DXVec3LengthSq(&vecToWaypoint);
 	if (fDistanceToWaypoint < 0.5f)
 	{
 		m_fThoughtDelay = 0.0f;
-		m_vecAStarActivePoint = m_pHivemind->GetRandomWaypoint();
-		//D3DXVECTOR3* pWaypoint = m_pHivemind->GetNextWaypoint(m_vecWaypoint, m_iCurrentWaypointIndex);
-		//if (pWaypoint)
-		//{
-		//	m_vecAStarActivePoint = *pWaypoint;
-		//}
+		m_vecWaypoint = m_pHivemind->GetRandomWaypoint();
+		D3DXVECTOR3* pWaypoint = m_pHivemind->GetNextWaypoint(m_vecWaypoint, m_iCurrentWaypointIndex);
+		if (pWaypoint)
+		{
+			m_vecAStarActivePoint = *pWaypoint;
+		}
+	}
+	if (true)
+	{
+		//Also check current A* waypoint
+		vecCurrentPos = m_pEntity->GetPosition();
+		vecToWaypoint = m_vecAStarActivePoint - vecCurrentPos;
+		vecToWaypoint.y = 0.0f;
+		fDistanceToWaypoint = D3DXVec3LengthSq(&vecToWaypoint);
+		if (fDistanceToWaypoint < 0.5f)
+		{
+			m_fThoughtDelay = 0.0f;
+			D3DXVECTOR3* pWaypoint = m_pHivemind->GetNextWaypoint(m_vecWaypoint, m_iCurrentWaypointIndex);
+			if (pWaypoint)
+			{
+				m_vecAStarActivePoint = *pWaypoint;
+			}
+		}
 	}
 }
 /**

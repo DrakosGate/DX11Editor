@@ -57,53 +57,8 @@ COpenCLContext::LoadProgram(cl_program& _rProgram, cl_kernel& _rKernel, char* _p
 	_rKernel = clCreateKernel(_rProgram, _pcFunctionName, &iError);
 	printf("-\tCreating OpenCL Kernel %s: %s\n", _pcFunctionName, GetErrorString(iError));
 
-	CreateBuffers();
-
 	delete[] pCLSource;
 	pCLSource = 0;
-}
-void COpenCLContext::CreateBuffers()
-{
-	//cl_int iError = 0;
-	//m_clArrayA = clCreateBuffer(m_clContext, CL_MEM_READ_ONLY, sizeof(float)* m_iArraySize, NULL, &iError);
-	//printf("-\tA Buffer: %s\n", GetErrorString(iError));
-	//m_clArrayB = clCreateBuffer(m_clContext, CL_MEM_READ_ONLY, sizeof(float)* m_iArraySize, NULL, &iError);
-	//printf("-\tB Buffer: %s\n", GetErrorString(iError));
-	//m_clArrayOut = clCreateBuffer(m_clContext, CL_MEM_WRITE_ONLY, sizeof(float)* m_iArraySize, NULL, &iError);
-	//printf("-\tOut Buffer: %s\n", GetErrorString(iError));
-}
-void
-COpenCLContext::SendDataToGPU()
-{
-	//cl_int iError = 0;
-	//m_iArraySize = 20;
-	//float* pArrayA = new float[m_iArraySize];
-	//float* pArrayB = new float[m_iArraySize];
-	//for (int i = 0; i < m_iArraySize; ++i)
-	//{
-	//	pArrayA[i] = i * 1.0f;
-	//	pArrayB[i] = i * 2.0f;
-	//}
-	//
-	////Fill array B buffer
-	//clEnqueueWriteBuffer(m_clCommandQueue, m_clArrayA, CL_TRUE, 0, sizeof(float)* m_iArraySize, pArrayA, 0, NULL, &m_clEvent);
-	//clEnqueueWriteBuffer(m_clCommandQueue, m_clArrayB, CL_TRUE, 0, sizeof(float)* m_iArraySize, pArrayB, 0, NULL, &m_clEvent);
-	//clReleaseEvent(m_clEvent);
-	//
-	//iError = clSetKernelArg(m_clKernel, 0, sizeof(cl_mem), (void*)&m_clArrayA);
-	//printf("-\tA: %s\n", GetErrorString(iError));
-	//iError = clSetKernelArg(m_clKernel, 1, sizeof(cl_mem), (void*)&m_clArrayB);
-	//printf("-\tB: %s\n", GetErrorString(iError));
-	//iError = clSetKernelArg(m_clKernel, 2, sizeof(cl_mem), (void*)&m_clArrayOut);
-	//printf("-\tOut: %s\n", GetErrorString(iError));
-	////Wait for this to finish before continuing
-	//clFinish(m_clCommandQueue);
-	//
-	////Set work group size to the size of this calculation
-	//workGroupSize[0] = m_iArraySize;
-	//
-	//delete[] pArrayA;
-	//delete[] pArrayB;
 }
 void
 COpenCLContext::Run(cl_kernel& _rKernel)
@@ -131,21 +86,6 @@ COpenCLContext::Run(cl_kernel& _rKernel)
 	clReleaseEvent(m_clEvent);
 	WaitForFinish();
 	*/
-}
-void 
-COpenCLContext::RetrieveOpenCLResults()
-{
-	//Retrieve data from calculations
-	//float* pResult = new float[m_iArraySize];
-	//cl_int iError = clEnqueueReadBuffer(m_clCommandQueue, m_clArrayOut, CL_TRUE, 0, sizeof(float)* m_iArraySize, pResult, 0, NULL, &m_clEvent);
-	//printf("-\tReading from buffer: %s\n", GetErrorString(iError));
-	//clReleaseEvent(m_clEvent);
-	//printf("Result:\n");
-	//for (int i = 0; i < m_iArraySize; ++i)
-	//{
-	//	printf("%g\n", pResult[i]);
-	//}
-	//delete[] pResult;
 }
 void
 COpenCLContext::WaitForFinish()
