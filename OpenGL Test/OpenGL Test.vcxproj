@@ -94,12 +94,11 @@
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>opencl.lib;dxgi.lib;d3d11.lib;d3dx11.lib;d3dx10.lib;ws2_32.lib;assimp.lib;fmodexL_vc.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
-    <FxCompile>
-      <ShaderType>Effect</ShaderType>
-    </FxCompile>
+    <FxCompile />
     <FxCompile>
       <ShaderModel>5.0</ShaderModel>
       <ObjectFileOutput>$(OutDir)\Shaders\Output\%(Filename).cso</ObjectFileOutput>
+      <ShaderType>Effect</ShaderType>
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -190,7 +189,9 @@
     <None Include="..\Bin\OpenCLKernels\test.cl" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="..\Bin\Assets\Shaders\animatedobject_vs.hlsl" />
+    <FxCompile Include="..\Bin\Assets\Shaders\animatedobject_vs.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Effect</ShaderType>
+    </FxCompile>
     <FxCompile Include="..\Bin\Assets\Shaders\deferred_ps.hlsl" />
     <FxCompile Include="..\Bin\Assets\Shaders\fontshader_gs.hlsl" />
     <FxCompile Include="..\Bin\Assets\Shaders\fontshader_ps.hlsl" />

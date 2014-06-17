@@ -111,6 +111,7 @@ CAIHiveMind::Initialise(COpenCLContext* _pCLKernel, int _iAStarDepth)
 	m_pAIDescriptions[AI_HUMAN] = TAIDescription(1.5f, 2.0f);
 	m_pAIDescriptions[AI_CHICKEN] = TAIDescription(1.0f, 10.5f);
 
+	//KEY AREA: AI pathfinding OpenCL Kernel setup
 	m_pCLKernel = new CAICLKernel();
 	_pCLKernel->LoadProgram(m_pCLKernel->GetCLProgram(), m_pCLKernel->GetCLKernel(), "Assets/OpenCLKernels/ai.cl", "ProcessAI");
 	
@@ -429,6 +430,7 @@ CAIHiveMind::GetNextWaypoint(D3DXVECTOR3& _rVecTarget, int& _iCurrentWaypoint)
 float
 CAIHiveMind::GetAStarNodeValue(TGridNode* _pCurrentNode, TGridNode* _pPreviousNode, D3DXVECTOR3& _rVecTarget, int _iTreeDepth)
 {
+	//KEY AREA: Find A* values for a specific node
 	float fChildValue = 0.0f;
 	float fNodeValue = 0.0f;
 	if(_iTreeDepth >= 0)
@@ -621,13 +623,16 @@ CAIHiveMind::RecalculateNavGrid(ID3D11Device* _pDevice)
 			m_pNavigationGridMesh->GetPointSprite(iCurrentGrid)->colour = lineColour;
 			for (unsigned int iObstalce = 0; iObstalce < m_vecStaticObstacles.size(); ++iObstalce)
 			{
-				D3DXVECTOR3 vecToObstacle = m_vecStaticObstacles[iObstalce]->GetPosition() - m_pNavigationGrid[iCurrentGrid].vecPosition;
-				vecToObstacle.y = 0.0f;
-				if (D3DXVec3LengthSq(&vecToObstacle) < m_vecStaticObstacles[iObstalce]->GetRadius() * 0.5f)
+				if (m_vecStaticObstacles[iObstalce]->DoDraw())
 				{
-					//Deactivate this grid element
-					m_pNavigationGrid[iCurrentGrid].bIsActive = false;
-					m_pNavigationGridMesh->GetPointSprite(iCurrentGrid)->colour = deactiveColour;
+					D3DXVECTOR3 vecToObstacle = m_vecStaticObstacles[iObstalce]->GetPosition() - m_pNavigationGrid[iCurrentGrid].vecPosition;
+					vecToObstacle.y = 0.0f;
+					if (D3DXVec3LengthSq(&vecToObstacle) < m_vecStaticObstacles[iObstalce]->GetRadius() * m_vecStaticObstacles[iObstalce]->GetScale().x * 0.5f)
+					{
+						//Deactivate this grid element
+						m_pNavigationGrid[iCurrentGrid].bIsActive = false;
+						m_pNavigationGridMesh->GetPointSprite(iCurrentGrid)->colour = deactiveColour;
+					}
 				}
 			}
 			++iCurrentGrid;

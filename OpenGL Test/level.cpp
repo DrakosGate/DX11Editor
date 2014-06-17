@@ -281,21 +281,21 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	m_pNetwork->Initialise();
 	m_pNetwork->CreateServer();
 	
-	//Setup OpenCL
+	//KEY AREA: Setup OpenCL
 	m_pCLKernel = new COpenCLContext();
 	m_pCLKernel->InitialiseOpenCL();
+
+	//KEY AREA: Setup Thread Pool
+	m_pThreadPool = new CThreadPool();
+	m_iThreadCount = std::thread::hardware_concurrency();
+	//std::thread::hardware_concurrency() is the recommended thread usage for this system
+	m_pThreadPool->Initialise(m_iThreadCount);
 
 	//Setup AI Hivemind
 	m_pHivemind = new CAIHiveMind();
 	m_pHivemind->Initialise(m_pCLKernel, m_pSetupData->iAStarSearchDepth);
 	m_pHivemind->CreateNavigationGrid(_pDevice, m_pEntityManager, &m_pShaderCollection[SHADER_POINTSPRITE], 20.0f, 40, 40);
 	m_pEntityManager->SetLevelInformation(m_pHivemind, m_pLightManager);
-
-	//Create thread pool for parallel task management
-	m_pThreadPool = new CThreadPool();
-	m_iThreadCount = std::thread::hardware_concurrency();
-	//std::thread::hardware_concurrency() is the recommended thread usage for this system
-	m_pThreadPool->Initialise(m_iThreadCount);
 	
 	//Read level resources
 	m_pResourceManager = new CResourceManager();
@@ -313,26 +313,6 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 		m_pFont[iFont].SetDiffuseMap(m_pResourceManager->GetTexture(std::string("font_arial")));
 		m_pEntityManager->AddEntity(&m_pFont[iFont], SCENE_FONT);
 	}
-
-	int iCurrentPixel = 0;
-	int iTextureWidth = 256;
-	int iTextureHeight = 256;
-	std::string sTextureName = "terraingradient";
-	TUCHARColour* pTerrainTexture = new TUCHARColour[iTextureWidth * iTextureHeight];
-	for (int iHeight = 0; iHeight < iTextureHeight; ++iHeight)
-	{
-		for (int iWidth = 0; iWidth < iTextureWidth; ++iWidth)
-		{
-			float fRandom = (rand() % 25500) * 0.01f;
-			pTerrainTexture[iCurrentPixel].r = static_cast<unsigned char>(fRandom);
-			pTerrainTexture[iCurrentPixel].g = static_cast<unsigned char>(fRandom);
-			pTerrainTexture[iCurrentPixel].b = static_cast<unsigned char>(fRandom);
-			pTerrainTexture[iCurrentPixel].a = 255;
-			++iCurrentPixel;
-		}
-	}
-	//m_pResourceManager->CreateTextureFromData(_pDevice, reinterpret_cast<unsigned char*>(pTerrainTexture), sTextureName, iTextureWidth, iTextureHeight);
-	delete[] pTerrainTexture;
 
 	m_pRenderTarget = new CModel();
 	m_pRenderTarget->Initialise();
@@ -354,6 +334,7 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	m_pTerrain->SetEntityType(std::string("terrain"));
 	m_pRootNode = m_pTerrain->CreateNode(NULL);
 
+	//Create grass object
 	m_fGrassScale = 20.0f;
 	m_pGrass = new CGrass();
 	m_pGrass->Initialise(_pDevice, m_pCLKernel, m_pResourceManager, m_pSetupData->iGrassDimensions, m_fGrassScale, D3DXVECTOR2(10.0f, 10.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f), m_iThreadCount);
@@ -383,7 +364,7 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	m_pCursor->GetNode()->vecLights.push_back(m_pLightManager->AddPoint(D3DXVECTOR3(0.0f, 0.4f, 0.0f), D3DXCOLOR(0.3f, 0.3f, 0.8f, 1.0f), D3DXVECTOR3(0.05f, 0.2f, 4.0f), 100.0f));
 	m_pEntityManager->AddEntity(m_pCursor, SCENE_PERMANENTSCENE);
 
-	//Create the level editor interface
+	//KEY AREA: Create the level editor interface
 	m_pEditor = new CEditorInterface();
 	m_pEditor->Initialise(_hWindow, this);
 	m_pEditor->LoadFromXML(_pDevice, m_pResourceManager, "Data/EditorLayout.xml");
@@ -391,9 +372,12 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	m_pEditor->SetDiffuseMap(m_pResourceManager->GetTexture(std::string("menu_button")));
 	m_pEntityManager->AddEntity(m_pEditor, SCENE_UI);
 	
-	//Create performance graph
+	//KEY AREA: Create performance graph
 	m_pGraph = new CPerformanceGraph();
-	m_pGraph->Initialise(_pDevice, D3DXVECTOR3(WINDOW_WIDTH * 0.01f, WINDOW_HEIGHT * 0.21f, 0.0f), D3DXVECTOR3(WINDOW_WIDTH * 0.3f, WINDOW_HEIGHT * 0.2f, 1.0f), 50);
+	m_pGraph->Initialise(	_pDevice, 
+							D3DXVECTOR3(WINDOW_WIDTH * 0.01f, WINDOW_HEIGHT * 0.21f, 0.0f), 
+							D3DXVECTOR3(WINDOW_WIDTH * 0.3f, WINDOW_HEIGHT * 0.2f, 1.0f), 
+							100); //Number of measurements on graph
 	m_pGraph->SetGraphRange(0.0f, 0.0000000001f);
 	m_pGraph->SetObjectShader(&m_pShaderCollection[SHADER_POINTSPRITE]);
 	m_pGraph->SetDiffuseMap(m_pResourceManager->GetTexture(std::string("menu_button")));
@@ -450,36 +434,6 @@ CLevel::Process(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDeviceContext, CC
 	{
 	//	m_pHivemind->GetAI(0)->SetAStarTarget(m_pCursor->GetPosition());
 		m_pHivemind->Process(m_pCLKernel, m_pThreadPool, _fDeltaTime);
-	}
-	//Process entity selection
-	if (m_bHasSelectedObject)
-	{
-		if (m_pInput->bLeftMouseClick.bPressed)
-		{
-			if (m_pInput->bShift.bPressed)
-			{
-				D3DXVECTOR3 vecToCursor = m_pCursor->GetPosition() - m_pSelectedObject->GetPosition();
-				vecToCursor.y = 0.0f;
-				D3DXVec3Normalize(&vecToCursor, &vecToCursor);
-				m_pSelectedObject->SetForward(vecToCursor);
-			}
-			else
-			{
-				//Check if cursor is within drag range
-				D3DXVECTOR3 vecToObject = m_pSelectedObject->GetPosition() - m_pCursor->GetPosition();
-				vecToObject.y = 0.0f;
-				if (D3DXVec3LengthSq(&vecToObject) < m_pSelectedObject->GetRadius() * m_pSelectedObject->GetRadius())
-				{
-					//Drag object
-					D3DXVECTOR3 vecCursor = m_pCursor->GetPosition();
-					vecCursor.y = m_pSelectedObject->GetPosition().y;
-					m_pSelectedObject->SetPosition(vecCursor);
-				}
-			}
-		}
-		m_pSelectionCursor->SetPosition(m_pSelectedObject->GetPosition() - D3DXVECTOR3(0.0f, m_pSelectedObject->GetPosition().y - 0.1f, 0.0f));
-		m_pSelectionCursor->SetScale(D3DXVECTOR3(m_pSelectedObject->GetScale().x, m_pSelectedObject->GetScale().z, 1.0f));
-		m_pHivemind->RecalculateNavGrid(_pDevice);
 	}
 	
 	//m_pResourceManager->GetAnimatedModel("chicken")->Process(_fDeltaTime);
@@ -553,24 +507,29 @@ CLevel::Process(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDeviceContext, CC
 	sprintf_s(cBuffer, 64, "AI Processing Method: %s", m_pcProcessingMethodName[m_eAIProcessingMethod].c_str());
 	m_pFont[FONT_DEBUG].Write(std::string(cBuffer), 2);
 
+	//KEY AREA: Print Scene hierarchy to screen
 	if (m_pEditor->IsActive())
 	{
 		int iCurrentTextIndex = 0;
 		for (unsigned int iChild = 0; iChild < m_pRootNode->vecChildren.size(); ++iChild)
 		{
-			AddTextToSceneGraph(m_pRootNode->vecChildren[iChild], iCurrentTextIndex, 0);
-			++iCurrentTextIndex;
+			if (m_pRootNode->vecChildren[iChild]->pEntity->DoDraw())
+			{
+				AddTextToSceneGraph(m_pRootNode->vecChildren[iChild], iCurrentTextIndex, 0);
+				++iCurrentTextIndex;
+			}
 		}
 	}
 	_pClock->EndTimer();
-	//Send data to performance graph
-	--m_iGraphDelay;// _fDeltaTime;
+	//KEY AREA: Send data to performance graph
+	--m_iGraphDelay;
 	if (m_iGraphDelay < 0)
 	{
 		m_iGraphDelay = 10;
-		float fGraphMeasurement = _pClock->GetTimeElapsed();//_pClock->GetFPS();//  sinf(m_fGameTimeElapsed * 2.0f);
+		float fGraphMeasurement = _pClock->GetTimeElapsed();
 		m_pGraph->SetGraphRange(fGraphMeasurement, fGraphMeasurement);
 		m_pGraph->AddNode(_pDevice, fGraphMeasurement);
+		//Print performance information to screen using fonts
 		sprintf_s(cBuffer, 64, "Max:     %f", m_pGraph->GetMax());
 		m_pFont[FONT_PERFORMANCE].Write(std::string(cBuffer), 0);
 		sprintf_s(cBuffer, 64, "Current: %f", fGraphMeasurement);
@@ -727,9 +686,80 @@ CLevel::ProcessInput(ID3D11Device* _pDevice, float _fDeltaTime)
 				m_eRenderState = RENDERSTATE_EDITOR;
 			}
 		}
+
+		//KEY AREA: Process entity selection - Translate, scale, rotate and delete selected objects
+		ProcessEntitySelection(_pDevice, _fDeltaTime);
 	}
 
 	return true;
+}
+/*
+*
+* CLevel class Draw
+* (Task ID: n/a)
+*
+* @author Christopher Howlett
+*
+*/
+void
+CLevel::ProcessEntitySelection(ID3D11Device* _pDevice, float _fDeltaTime)
+{
+	if (m_bHasSelectedObject)
+	{
+		if (m_pInput->bLeftMouseClick.bPressed)
+		{
+			bool bCanMoveObject = true;
+			if (m_pInput->bShift.bPressed)
+			{
+				D3DXVECTOR3 vecToCursor = m_pCursor->GetPosition() - m_pSelectedObject->GetPosition();
+				vecToCursor.y = 0.0f;
+				D3DXVec3Normalize(&vecToCursor, &vecToCursor);
+				m_pSelectedObject->SetForward(vecToCursor);
+				bCanMoveObject = false;
+			}
+			if (m_pInput->bCtrl.bPressed)
+			{
+				//First time pressing control
+				float fDistanceFromStart = D3DXVec3LengthSq(&(m_pCursor->GetPosition() - m_pSelectedObject->GetPosition()));
+				if (m_pInput->bCtrl.bPreviousState == false)
+				{
+					m_fSelectedObjectScale = m_pSelectedObject->GetScale().x;
+					m_fSelectedMouseDistance = fDistanceFromStart;
+				}
+				float fSelectionScale = m_fSelectedObjectScale * (fDistanceFromStart - m_fSelectedMouseDistance);
+				m_pSelectedObject->SetScale(D3DXVECTOR3(fSelectionScale, fSelectionScale, fSelectionScale));
+				bCanMoveObject = false;
+			}
+			if (bCanMoveObject)
+			{
+				//Check if cursor is within drag range
+				D3DXVECTOR3 vecToObject = m_pSelectedObject->GetPosition() - m_pCursor->GetPosition();
+				vecToObject.y = 0.0f;
+				if (D3DXVec3LengthSq(&vecToObject) < m_pSelectedObject->GetRadius() * m_pSelectedObject->GetRadius())
+				{
+					//Drag object
+					D3DXVECTOR3 vecCursor = m_pCursor->GetPosition();
+					vecCursor.y = m_pSelectedObject->GetPosition().y;
+					m_pSelectedObject->SetPosition(vecCursor);
+				}
+			}
+		}
+		//Check if user wants to delete this object
+		if (m_pInput->bDelete.bPressed && m_pInput->bDelete.bPreviousState == false)
+		{
+			m_pSelectedObject->SetDoDraw(false);
+			m_pSelectedObject = 0;
+			m_bHasSelectedObject = false;
+			m_pSelectionCursor->SetDoDraw(false);
+		}
+		//Otherwise update cursor position and navigation mesh
+		else
+		{
+			m_pSelectionCursor->SetPosition(m_pSelectedObject->GetPosition() - D3DXVECTOR3(0.0f, m_pSelectedObject->GetPosition().y - 0.1f, 0.0f));
+			m_pSelectionCursor->SetScale(D3DXVECTOR3(m_pSelectedObject->GetScale().x, m_pSelectedObject->GetScale().z, 1.0f));
+		}
+		m_pHivemind->RecalculateNavGrid(_pDevice);
+	}
 }
 /*
 *
@@ -862,7 +892,7 @@ void CLevel::DrawScene(ID3D11DeviceContext* _pDevice, CShader* _pSceneShader, CC
 */
 void
 CLevel::AddTextToSceneGraph(TEntityNode* _pEntityNode, int& _iTextOffset, int _iTabCount)
-{
+{	
 	std::string sText = "";
 	for (int iSpaceCount = 0; iSpaceCount < _iTabCount; ++iSpaceCount)
 	{
@@ -1232,6 +1262,20 @@ CLevel::LoadLevel(ID3D11Device* _pDevice, char* _pcLevelFilename)
 	xmlDoc.parse<0>(xmlFile.data());
 	rapidxml::xml_node<>* pRoot = xmlDoc.first_node();
 
+	//Read camera position
+	rapidxml::xml_node<>* pCameraNode = pRoot->first_node("camera");
+	if (pCameraNode)
+	{
+		D3DXVECTOR3 cameraPos(	ReadFromString<float>(pCameraNode->first_node("position")->first_attribute("x")->value()),
+								ReadFromString<float>(pCameraNode->first_node("position")->first_attribute("y")->value()),
+								ReadFromString<float>(pCameraNode->first_node("position")->first_attribute("z")->value()));
+		D3DXVECTOR3 cameraLook(	ReadFromString<float>(pCameraNode->first_node("direction")->first_attribute("x")->value()),
+								ReadFromString<float>(pCameraNode->first_node("direction")->first_attribute("y")->value()),
+								ReadFromString<float>(pCameraNode->first_node("direction")->first_attribute("z")->value()));
+		m_pCamera->SetPosition(cameraPos);
+		m_pCamera->SetLook(cameraLook);
+	}
+
 	//Loop through models
 	printf("\n  == LOADING LEVEL FROM FILE: %s ==\n", _pcLevelFilename);
 	for (rapidxml::xml_node<>* pCurrentChild = pRoot->first_node("child"); pCurrentChild; pCurrentChild = pCurrentChild->next_sibling())
@@ -1288,6 +1332,28 @@ CLevel::SaveLevel(ID3D11Device* _pDevice, char* _pcLevelFilename)
 	//Create root node
 	rapidxml::xml_node<>* pRoot = xmlDoc.allocate_node(rapidxml::node_element, "level");
 	xmlDoc.append_node(pRoot);
+	//Create camera node
+	rapidxml::xml_node<>* pCameraNode = xmlDoc.allocate_node(rapidxml::node_element, "camera");
+	//Camera position
+	char cBuffer[64];
+	rapidxml::xml_node<>* pPosition = xmlDoc.allocate_node(rapidxml::node_element, "position");
+	sprintf_s(cBuffer, 32, "%.2f", m_pCamera->GetPosition().x);
+	pPosition->append_attribute(xmlDoc.allocate_attribute("x", xmlDoc.allocate_string(cBuffer)));
+	sprintf_s(cBuffer, 32, "%.2f", m_pCamera->GetPosition().y); // Lower the model by half its scale
+	pPosition->append_attribute(xmlDoc.allocate_attribute("y", xmlDoc.allocate_string(cBuffer)));
+	sprintf_s(cBuffer, 32, "%.2f", m_pCamera->GetPosition().z);
+	pPosition->append_attribute(xmlDoc.allocate_attribute("z", xmlDoc.allocate_string(cBuffer)));
+	//Camera direction
+	rapidxml::xml_node<>* pDirection = xmlDoc.allocate_node(rapidxml::node_element, "direction");
+	sprintf_s(cBuffer, 32, "%.2f", m_pCamera->GetLook().x);
+	pDirection->append_attribute(xmlDoc.allocate_attribute("x", xmlDoc.allocate_string(cBuffer)));
+	sprintf_s(cBuffer, 32, "%.2f", m_pCamera->GetLook().y); // Lower the model by half its scale
+	pDirection->append_attribute(xmlDoc.allocate_attribute("y", xmlDoc.allocate_string(cBuffer)));
+	sprintf_s(cBuffer, 32, "%.2f", m_pCamera->GetLook().z);
+	pDirection->append_attribute(xmlDoc.allocate_attribute("z", xmlDoc.allocate_string(cBuffer)));
+	pCameraNode->append_node(pPosition);
+	pCameraNode->append_node(pDirection);
+	pRoot->append_node(pCameraNode);
 
 	//Loop through all entities attached to the root node
 	for (unsigned int iChild = 0; iChild < m_pRootNode->vecChildren.size(); ++iChild)
@@ -1319,58 +1385,61 @@ CLevel::AddChildToXMLNode(rapidxml::xml_document<>* _pDocument, rapidxml::xml_no
 {
 	char cBuffer[32];
 	CRenderEntity* pCurrentEntity = _pChildNode->pEntity;
-	rapidxml::xml_node<>* pChild = _pDocument->allocate_node(rapidxml::node_element, "child");
-	//Object type
-	pChild->append_node(_pDocument->allocate_node(rapidxml::node_element, "type", _pChildNode->pEntity->GetEntityType().c_str()));
-	//Object position
-	rapidxml::xml_node<>* pPosition = _pDocument->allocate_node(rapidxml::node_element, "position");
-	sprintf_s(cBuffer, 32, "%.2f", pCurrentEntity->GetPosition().x);
-	pPosition->append_attribute(_pDocument->allocate_attribute("x", _pDocument->allocate_string(cBuffer)));
-	sprintf_s(cBuffer, 32, "%.2f", pCurrentEntity->GetPosition().y); // Lower the model by half its scale
-	pPosition->append_attribute(_pDocument->allocate_attribute("y", _pDocument->allocate_string(cBuffer)));
-	sprintf_s(cBuffer, 32, "%.2f", pCurrentEntity->GetPosition().z);
-	pPosition->append_attribute(_pDocument->allocate_attribute("z", _pDocument->allocate_string(cBuffer)));
-	pChild->append_node(pPosition);
-	//Object scale
-	rapidxml::xml_node<>* pScale = _pDocument->allocate_node(rapidxml::node_element, "scale");
-	sprintf_s(cBuffer, 32, "%.2f", pCurrentEntity->GetLocalScale().x);
-	pScale->append_attribute(_pDocument->allocate_attribute("x", _pDocument->allocate_string(cBuffer)));
-	sprintf_s(cBuffer, 32, "%.2f", pCurrentEntity->GetLocalScale().y);
-	pScale->append_attribute(_pDocument->allocate_attribute("y", _pDocument->allocate_string(cBuffer)));
-	sprintf_s(cBuffer, 32, "%.2f", pCurrentEntity->GetLocalScale().z);
-	pScale->append_attribute(_pDocument->allocate_attribute("z", _pDocument->allocate_string(cBuffer)));
-	pChild->append_node(pScale);
-	//Object rotation
-	rapidxml::xml_node<>* pRotation = _pDocument->allocate_node(rapidxml::node_element, "rotation");
-	sprintf_s(cBuffer, 32, "%.2f", pCurrentEntity->GetRotation().x);
-	pRotation->append_attribute(_pDocument->allocate_attribute("x", _pDocument->allocate_string(cBuffer)));
-	sprintf_s(cBuffer, 32, "%.2f", pCurrentEntity->GetRotation().y);
-	pRotation->append_attribute(_pDocument->allocate_attribute("y", _pDocument->allocate_string(cBuffer)));
-	sprintf_s(cBuffer, 32, "%.2f", pCurrentEntity->GetRotation().z);
-	pRotation->append_attribute(_pDocument->allocate_attribute("z", _pDocument->allocate_string(cBuffer)));
-	pChild->append_node(pRotation);
-	//Object colour
-	rapidxml::xml_node<>* pColour = _pDocument->allocate_node(rapidxml::node_element, "colour");
-	pColour->append_attribute(_pDocument->allocate_attribute("r", _pDocument->allocate_string("1.0f")));
-	pColour->append_attribute(_pDocument->allocate_attribute("g", _pDocument->allocate_string("1.0f")));
-	pColour->append_attribute(_pDocument->allocate_attribute("b", _pDocument->allocate_string("1.0f")));
-	pColour->append_attribute(_pDocument->allocate_attribute("a", _pDocument->allocate_string("1.0f")));
-	pChild->append_node(pColour);
-
-	//Do the same for all children of this class
-	for (unsigned int iChild = 0; iChild < _pChildNode->vecChildren.size(); ++iChild)
+	if (pCurrentEntity->DoDraw())
 	{
-		AddChildToXMLNode(_pDocument, pChild, _pChildNode->vecChildren[iChild]);
-	}
-	//Add lights attached to this object to file
-	for (unsigned int iLight = 0; iLight < _pChildNode->vecLights.size(); ++iLight)
-	{
-		rapidxml::xml_node<>* pLight = _pDocument->allocate_node(rapidxml::node_element, "light");
-		pLight->append_node(_pDocument->allocate_node(rapidxml::node_element, "type", "point"));
-		pChild->append_node(pLight);
-	}
+		rapidxml::xml_node<>* pChild = _pDocument->allocate_node(rapidxml::node_element, "child");
+		//Object type
+		pChild->append_node(_pDocument->allocate_node(rapidxml::node_element, "type", _pChildNode->pEntity->GetEntityType().c_str()));
+		//Object position
+		rapidxml::xml_node<>* pPosition = _pDocument->allocate_node(rapidxml::node_element, "position");
+		sprintf_s(cBuffer, 32, "%.2f", pCurrentEntity->GetPosition().x);
+		pPosition->append_attribute(_pDocument->allocate_attribute("x", _pDocument->allocate_string(cBuffer)));
+		sprintf_s(cBuffer, 32, "%.2f", pCurrentEntity->GetPosition().y); // Lower the model by half its scale
+		pPosition->append_attribute(_pDocument->allocate_attribute("y", _pDocument->allocate_string(cBuffer)));
+		sprintf_s(cBuffer, 32, "%.2f", pCurrentEntity->GetPosition().z);
+		pPosition->append_attribute(_pDocument->allocate_attribute("z", _pDocument->allocate_string(cBuffer)));
+		pChild->append_node(pPosition);
+		//Object scale
+		rapidxml::xml_node<>* pScale = _pDocument->allocate_node(rapidxml::node_element, "scale");
+		sprintf_s(cBuffer, 32, "%.2f", pCurrentEntity->GetScale().x / m_pEntityManager->GetPrefabOptions(pCurrentEntity->GetEntityType())->vecScale.x);
+		pScale->append_attribute(_pDocument->allocate_attribute("x", _pDocument->allocate_string(cBuffer)));
+		sprintf_s(cBuffer, 32, "%.2f", pCurrentEntity->GetScale().y / m_pEntityManager->GetPrefabOptions(pCurrentEntity->GetEntityType())->vecScale.y);
+		pScale->append_attribute(_pDocument->allocate_attribute("y", _pDocument->allocate_string(cBuffer)));
+		sprintf_s(cBuffer, 32, "%.2f", pCurrentEntity->GetScale().z / m_pEntityManager->GetPrefabOptions(pCurrentEntity->GetEntityType())->vecScale.z);
+		pScale->append_attribute(_pDocument->allocate_attribute("z", _pDocument->allocate_string(cBuffer)));
+		pChild->append_node(pScale);
+		//Object rotation
+		rapidxml::xml_node<>* pRotation = _pDocument->allocate_node(rapidxml::node_element, "rotation");
+		sprintf_s(cBuffer, 32, "%.2f", pCurrentEntity->GetRotation().x);
+		pRotation->append_attribute(_pDocument->allocate_attribute("x", _pDocument->allocate_string(cBuffer)));
+		sprintf_s(cBuffer, 32, "%.2f", pCurrentEntity->GetRotation().y);
+		pRotation->append_attribute(_pDocument->allocate_attribute("y", _pDocument->allocate_string(cBuffer)));
+		sprintf_s(cBuffer, 32, "%.2f", pCurrentEntity->GetRotation().z);
+		pRotation->append_attribute(_pDocument->allocate_attribute("z", _pDocument->allocate_string(cBuffer)));
+		pChild->append_node(pRotation);
+		//Object colour
+		rapidxml::xml_node<>* pColour = _pDocument->allocate_node(rapidxml::node_element, "colour");
+		pColour->append_attribute(_pDocument->allocate_attribute("r", _pDocument->allocate_string("1.0f")));
+		pColour->append_attribute(_pDocument->allocate_attribute("g", _pDocument->allocate_string("1.0f")));
+		pColour->append_attribute(_pDocument->allocate_attribute("b", _pDocument->allocate_string("1.0f")));
+		pColour->append_attribute(_pDocument->allocate_attribute("a", _pDocument->allocate_string("1.0f")));
+		pChild->append_node(pColour);
 
-	_pParentNode->append_node(pChild);
+		//Do the same for all children of this class
+		for (unsigned int iChild = 0; iChild < _pChildNode->vecChildren.size(); ++iChild)
+		{
+			AddChildToXMLNode(_pDocument, pChild, _pChildNode->vecChildren[iChild]);
+		}
+		//Add lights attached to this object to file
+		for (unsigned int iLight = 0; iLight < _pChildNode->vecLights.size(); ++iLight)
+		{
+			rapidxml::xml_node<>* pLight = _pDocument->allocate_node(rapidxml::node_element, "light");
+			pLight->append_node(_pDocument->allocate_node(rapidxml::node_element, "type", "point"));
+			pChild->append_node(pLight);
+		}
+
+		_pParentNode->append_node(pChild);
+	}
 }
 /**
 *

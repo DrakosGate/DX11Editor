@@ -119,8 +119,8 @@ void
 CCamera::Process(float _fDeltaTime)
 {
 	m_vecPosition += m_vecVelocity * _fDeltaTime;
-	m_vecVelocity *= 1.0f - (5.0f *  _fDeltaTime);
-	m_vecLook += m_vecTargetLook * m_fRotationSpeed * _fDeltaTime;
+	m_vecVelocity -= m_vecVelocity * 5.0f * _fDeltaTime;
+	m_vecLook += m_vecTargetLook * 10.0f * m_fRotationSpeed * _fDeltaTime;
 	m_vecRotationSpeed = (m_vecTargetLook - m_vecLook);
 	if(m_vecPosition.y < 0.1f)
 	{
@@ -169,7 +169,7 @@ CCamera::ProcessInput(TInputStruct* _pKeys, D3DXVECTOR2& _vecMouseDirection, boo
 		{
 			m_vecCameraRotationOrigin = _pKeys->vecMouse;
 		}
-		D3DXVECTOR2 vecSensitivity = D3DXVECTOR2(0.1f, 0.1f);
+		D3DXVECTOR2 vecSensitivity = D3DXVECTOR2(0.01f, 0.01f);
 		D3DXVECTOR2 vecMouseOffset = _pKeys->vecMouse - m_vecCameraRotationOrigin;
 		m_vecTargetLook += m_vecRight * (-vecMouseOffset.x * vecSensitivity.x) * _fDT;
 		m_vecTargetLook += m_vecUp * (vecMouseOffset.y * vecSensitivity.y) * _fDT;
@@ -271,7 +271,7 @@ CCamera::CreateProjectionMatrix(float _fAspect)
 {
 	if(m_bUsesPerspective)
 	{
-		D3DXMatrixPerspectiveFovLH(&m_matProj, 0.25f * PI, _fAspect, 0.1f, 100.0f);
+		D3DXMatrixPerspectiveFovLH(&m_matProj, 0.3f * PI, _fAspect, 0.1f, 100.0f);
 	}
 	else
 	{
@@ -391,9 +391,9 @@ CCamera::IsInFrustum(D3DXVECTOR3 &_vec3Position, float _fRadius)
 {
 	bool bResult = true;
 
-	for(int i = 0; i < 6; i++)
+	for (int iPlane = 0; iPlane < 6; iPlane++)
     {
-		if(D3DXPlaneDotCoord(&m_pViewFrustum[i], &_vec3Position) + _fRadius < 0)
+		if (D3DXPlaneDotCoord(&m_pViewFrustum[iPlane], &_vec3Position) + _fRadius < 0)
         {
             // Outside the frustum, reject it!
 			bResult = false; 	

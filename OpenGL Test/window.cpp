@@ -407,98 +407,108 @@ CWindow::msgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		case VK_UP:
 		{
 			m_tInput.bUp.bPressed = true;
-		}
 			break;
+		}
 		case VK_DOWN:
 		{
 			m_tInput.bDown.bPressed = true;
-		}
 			break;
+		}
 		case VK_LEFT:
 		{
 			m_tInput.bLeft.bPressed = true;
-		}
 			break;
+		}
 		case VK_RIGHT:
 		{
 			m_tInput.bRight.bPressed = true;
-		}
 			break;
+		}
 		case 'W':
 		{
 			m_tInput.bW.bPressed = true;
-		}
 			break;
+		}
 		case 'A':
 		{
 			m_tInput.bA.bPressed = true;
-		}
 			break;
+		}
 		case 'S':
 		{
 			m_tInput.bS.bPressed = true;
-		}
 			break;
+		}
 		case 'D':
 		{
 			m_tInput.bD.bPressed = true;
-		}
 			break;
+		}
 		case 'G':
 		{
 			m_tInput.bG.bPressed = true;
-		}
 			break;
+		}
 		case 'R':
 		{
 			m_tInput.bToggleRender.bPressed = true;
-		}
 			break;
+		}
 		case '1':
 		{
 			m_tInput.b1.bPressed = true;
-		}
 			break;
+		}
 		case '2':
 		{
 			m_tInput.b2.bPressed = true;
-		}
 			break;
+		}
 		case '3':
 		{
 			m_tInput.b3.bPressed = true;
-		}
 			break;
+		}
 		case '4':
 		{
 			m_tInput.b4.bPressed = true;
-		}
 			break;
+		}
 		case '5':
 		{
 			m_tInput.b5.bPressed = true;
-		}
 			break;
+		}
 		case '6':
 		{
 			m_tInput.b6.bPressed = true;
-		}
 			break;
+		}
 		case 'T':
 		{
 			m_tInput.bReset.bPressed = true;
-		}
 			break;
+		}
 		case VK_SHIFT:
 		{
 			m_tInput.bShift.bPressed = true;
-		}
 			break;
+		}
+		case VK_CONTROL:
+		{
+			m_tInput.bCtrl.bPressed = true;
+			break;
+		}
 		case VK_OEM_3:	//TILDE
 		{
 			m_tInput.bTilde.bPressed = true;
-		}
 			break;
+		}
+		case VK_DELETE:	
+		{
+			m_tInput.bDelete.bPressed = true;
+			break;
+		}
 		default:
 			break;
 		}
@@ -511,38 +521,38 @@ CWindow::msgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		case VK_UP:
 		{
 			m_tInput.bUp.bPressed = false;
-		}
 			break;
+		}
 		case VK_DOWN:
 		{
 			m_tInput.bDown.bPressed = false;
-		}
 			break;
+		}
 		case VK_LEFT:
 		{
 			m_tInput.bLeft.bPressed = false;
-		}
 			break;
+		}
 		case VK_RIGHT:
 		{
 			m_tInput.bRight.bPressed = false;
-		}
 			break;
+		}
 		case 'W':
 		{
 			m_tInput.bW.bPressed = false;
-		}
 			break;
+		}
 		case 'A':
 		{
 			m_tInput.bA.bPressed = false;
-		}
 			break;
+		}
 		case 'S':
 		{
 			m_tInput.bS.bPressed = false;
-		}
 			break;
+		}
 		case 'D':
 		{
 			m_tInput.bD.bPressed = false;
@@ -551,8 +561,8 @@ CWindow::msgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		case 'G':
 		{
 			m_tInput.bG.bPressed = false;
-		}
 			break;
+		}
 		case 'R':
 		{
 			m_tInput.bToggleRender.bPressed = false;
@@ -581,13 +591,13 @@ CWindow::msgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		case '5':
 		{
 			m_tInput.b5.bPressed = false;
-		}
 			break;
+		}
 		case '6':
 		{
 			m_tInput.b6.bPressed = false;
-		}
 			break;
+		}
 		case 'T':
 		{
 			m_tInput.bReset.bPressed = false;
@@ -598,9 +608,19 @@ CWindow::msgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			m_tInput.bShift.bPressed = false;
 			break;
 		}
+		case VK_CONTROL:
+		{
+			m_tInput.bCtrl.bPressed = false;
+			break;
+		}
 		case VK_OEM_3:	//TILDE
 		{
 			m_tInput.bTilde.bPressed = false;
+			break;
+		}
+		case VK_DELETE:
+		{
+			m_tInput.bDelete.bPressed = false;
 			break;
 		}
 		default:

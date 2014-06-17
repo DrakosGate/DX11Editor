@@ -44,6 +44,7 @@ public:
 protected:
 	std::vector<CRenderEntity*>* m_pCollisionObjects;
 	CGrassCLKernel* m_pGrassCLKernel;
+	D3DXVECTOR3* m_pGrassVelocities;
 
 	float m_fGrassSpeed;
 	float m_fGrassStiffness;

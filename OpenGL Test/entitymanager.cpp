@@ -183,7 +183,7 @@ CEntityManager::Draw(ID3D11DeviceContext* _pDevice, CCamera* _pCurrentCamera, EG
 		else
 		{
 			//Check frustum culling of camera
-			if(_pCurrentCamera->IsInFrustum(pCurrentEntity->GetPosition(), pCurrentEntity->GetRadius()))
+			if (_pCurrentCamera->IsInFrustum(pCurrentEntity->GetPosition(), pCurrentEntity->GetRadius() * pCurrentEntity->GetScale().x))
 			{
 				if(pCurrentEntity->IsBillboarded())
 				{
@@ -234,7 +234,7 @@ CEntityManager::DrawTransparentEntities(ID3D11DeviceContext* _pDevice, CCamera* 
 		{
 			pCurrentEntity = m_pTransparentEntities[_eScene][iEntity];
 			//Check frustum culling of camera
-			if(_pCurrentCamera->IsInFrustum(pCurrentEntity->GetPosition(), pCurrentEntity->GetRadius()))
+			if(_pCurrentCamera->IsInFrustum(pCurrentEntity->GetPosition(), pCurrentEntity->GetRadius() * pCurrentEntity->GetScale().x))
 			{
 				if(pCurrentEntity->IsBillboarded())
 				{

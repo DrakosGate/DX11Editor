@@ -328,9 +328,10 @@ CEditorInterface::LoadLevel(ID3D11Device* _pDevice)
 		pShellItem->GetDisplayName(SIGDN_FILESYSPATH, &pName);
 
 		int iStrLength = lstrlenW(pName);
+		size_t iReturnSize = 0;
 		char* pcName = new char[iStrLength + 1];
 		const wchar_t* pwName = pName;
-		wcsrtombs(pcName, &pwName, iStrLength, std::mbstate_t());
+		wcsrtombs_s(&iReturnSize, pcName, sizeof(char) * (iStrLength + 1), &pwName, iStrLength, std::mbstate_t());
 		pcName[iStrLength] = '\0';
 		MessageBox(NULL, pName, L"File Chosen:", MB_OK);
 		m_pCurrentLevel->LoadLevel(_pDevice, pcName);
@@ -374,9 +375,10 @@ CEditorInterface::SaveLevel(ID3D11Device* _pDevice)
 		pShellItem->GetDisplayName(SIGDN_FILESYSPATH, &pName);
 
 		int iStrLength = lstrlenW(pName);
+		size_t iReturnSize = 0;
 		char* pcName = new char[iStrLength + 1];
 		const wchar_t* pwName = pName;
-		wcsrtombs(pcName, &pwName, iStrLength, std::mbstate_t());
+		wcsrtombs_s(&iReturnSize, pcName, sizeof(char) * (iStrLength + 1), &pwName, iStrLength, std::mbstate_t());
 		pcName[iStrLength] = '\0';
 		MessageBox(NULL, pName, L"File Chosen:", MB_OK);
 		m_pCurrentLevel->SaveLevel(_pDevice, pcName);

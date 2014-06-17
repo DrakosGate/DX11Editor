@@ -23,10 +23,8 @@ struct TRay;
 class CModel;
 
 //Program definitions
-#define WINDOW_WIDTH 800
-#define WINDOW_HEIGHT 600
-//#define WINDOW_WIDTH 1680
-//#define WINDOW_HEIGHT 1050
+#define WINDOW_WIDTH 1280
+#define WINDOW_HEIGHT 720
 #define MAX_LIGHTS 50
 #define SERVER_PORT 56000
 
@@ -274,7 +272,9 @@ struct TInputStruct
 		b6.bPressed = false;
 		bReset.bPressed = false;
 		bShift.bPressed = false;
+		bCtrl.bPressed = false;
 		bTilde.bPressed = false;
+		bDelete.bPressed = false;
 		bLeftMouseClick.bPressed = false;
 		bRightMouseClick.bPressed = false;
 		vecMouse *= 0.0f;
@@ -302,7 +302,9 @@ struct TInputStruct
 		b6.RecordPreviousState();
 		bReset.RecordPreviousState();
 		bShift.RecordPreviousState();
+		bCtrl.RecordPreviousState();
 		bTilde.RecordPreviousState();
+		bDelete.RecordPreviousState();
 		bLeftMouseClick.RecordPreviousState();
 		bRightMouseClick.RecordPreviousState();
 		vecPreviousMouse = vecMouse;
@@ -321,7 +323,9 @@ struct TInputStruct
 	TButtonState bToggleRender;
 	TButtonState bReset;
 	TButtonState bShift;
+	TButtonState bCtrl;
 	TButtonState bTilde;
+	TButtonState bDelete;
 	//Numbers
 	TButtonState b1;
 	TButtonState b2;

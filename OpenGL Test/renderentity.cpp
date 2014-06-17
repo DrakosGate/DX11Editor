@@ -751,7 +751,7 @@ CRenderEntity::GetBoundingBox()
 float
 CRenderEntity::GetRadius() const
 {
-	return m_fRadius * 0.5f;
+	return m_fRadius;
 }
 /**
 *
