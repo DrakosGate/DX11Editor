@@ -367,7 +367,7 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	//KEY AREA: Create the level editor interface
 	m_pEditor = new CEditorInterface();
 	m_pEditor->Initialise(_hWindow, this);
-	m_pEditor->LoadFromXML(_pDevice, m_pResourceManager, "Data/EditorLayout.xml");
+	m_pEditor->LoadFromXML(_pDevice, m_pResourceManager, m_pEntityManager, "Data/EditorLayout.xml");
 	m_pEditor->SetObjectShader(&m_pShaderCollection[SHADER_POINTSPRITE]);
 	m_pEditor->SetDiffuseMap(m_pResourceManager->GetTexture(std::string("menu_button")));
 	m_pEntityManager->AddEntity(m_pEditor, SCENE_UI);
@@ -454,7 +454,8 @@ CLevel::Process(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDeviceContext, CC
 	{
 		m_pEntityManager->Process(_fDeltaTime, SCENE_GRASS);
 		float fGrassOffset = m_fGrassScale * 0.5f;
-		D3DXVECTOR3 vecGrassPosition = D3DXVECTOR3(0.0f, 0.0f, 0.0f);// m_pCamera->GetPosition() + (m_pCamera->GetLook() * fGrassOffset);
+		D3DXVECTOR3 vecGrassPosition = m_pCamera->GetPosition() + (m_pCamera->GetLook() * fGrassOffset);
+		//D3DXVECTOR3 vecGrassPosition = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 		vecGrassPosition.y = 0.0f;
 		//Calculate grass offsets
 		m_pGrass->SendCollisionData(&m_vecGrassEntities);
@@ -708,6 +709,7 @@ CLevel::ProcessEntitySelection(ID3D11Device* _pDevice, float _fDeltaTime)
 	{
 		if (m_pInput->bLeftMouseClick.bPressed)
 		{
+			//ROTATE OBJECT
 			bool bCanMoveObject = true;
 			if (m_pInput->bShift.bPressed)
 			{
@@ -717,6 +719,7 @@ CLevel::ProcessEntitySelection(ID3D11Device* _pDevice, float _fDeltaTime)
 				m_pSelectedObject->SetForward(vecToCursor);
 				bCanMoveObject = false;
 			}
+			//SCALE OBJECT
 			if (m_pInput->bCtrl.bPressed)
 			{
 				//First time pressing control
@@ -727,9 +730,14 @@ CLevel::ProcessEntitySelection(ID3D11Device* _pDevice, float _fDeltaTime)
 					m_fSelectedMouseDistance = fDistanceFromStart;
 				}
 				float fSelectionScale = m_fSelectedObjectScale * (fDistanceFromStart - m_fSelectedMouseDistance);
+				if (fSelectionScale < 0.05f)
+				{
+					fSelectionScale = 0.05f;
+				}
 				m_pSelectedObject->SetScale(D3DXVECTOR3(fSelectionScale, fSelectionScale, fSelectionScale));
 				bCanMoveObject = false;
 			}
+			//TRANSLATE OBJECT
 			if (bCanMoveObject)
 			{
 				//Check if cursor is within drag range

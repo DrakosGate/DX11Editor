@@ -387,6 +387,7 @@ CEntityManager::AddPrefab(TPrefabOptions* _pPrefab)
 *
 * @author Christopher Howlett
 * @param _pcPrefabName Name of prefab to return
+* @return Returns the prefab description
 *
 */
 TPrefabOptions*
@@ -394,6 +395,35 @@ CEntityManager::GetPrefabOptions(std::string& _pcPrefabName)
 {
 	int iPrefabIndex = m_mapPrefabIndex[_pcPrefabName];
 	return m_vecPrefabTypes[iPrefabIndex];
+}
+/**
+*
+* CEntityManager class Returns the prefab options
+* (Task ID: n/a)
+*
+* @author Christopher Howlett
+* @param _iPrefabIndex Index of prefab to return
+* @return Returns the prefab description
+*
+*/
+TPrefabOptions*
+CEntityManager::GetPrefabOptions(int _iPrefabIndex)
+{
+	return m_vecPrefabTypes[_iPrefabIndex];
+}
+/**
+*
+* CEntityManager class Returns the prefab options
+* (Task ID: n/a)
+*
+* @author Christopher Howlett
+* @return Returns the number of prefabs defined
+*
+*/
+int
+CEntityManager::GetPrefabCount() const
+{
+	return m_vecPrefabTypes.size();
 }
 /**
 *

@@ -51,6 +51,7 @@ public:
 	CAnimatedModel* GetAnimatedModel(std::string& _pcAnimatedModelName) const;
 	ID3D11ShaderResourceView* GetTexture(std::string& _pcTextureName) const;
 	int GetTextureID(std::string& _pcTextureName) const;
+	int GetTextureID(ID3D11ShaderResourceView* _pTexture) const;
 	
 	virtual void SendTextureDataToShader(ID3D11DeviceContext* _pDevContext);
 

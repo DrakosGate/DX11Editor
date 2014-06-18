@@ -39,41 +39,11 @@
 		<scale x="0.35" y="0.5"></scale>
 		<canmove>true</canmove>
 		
-		<button id="Create">
-			<options>human</options>
-			<maintexture>human</maintexture>
+		<button id="NewPrefab">
+			<options>new</options>
+			<maintexture>menu_newprefab</maintexture>
 			<bgtexture>menu_button</bgtexture>
-			<scale x="0.1" y="0.1"></scale>
-		</button>
-		<button id="Create">
-			<options>tree</options>
-			<maintexture>tree</maintexture>
-			<bgtexture>menu_button</bgtexture>
-			<scale x="0.1" y="0.1"></scale>
-		</button>
-		<button id="Create">
-			<options>cursor</options>
-			<maintexture>cursor</maintexture>
-			<bgtexture>menu_button</bgtexture>
-			<scale x="0.1" y="0.1"></scale>
-		</button>
-		<button id="Create">
-			<options>chicken</options>
-			<maintexture>chicken</maintexture>
-			<bgtexture>menu_button</bgtexture>
-			<scale x="0.1" y="0.1"></scale>
-		</button>
-		<button id="Create">
-			<options>lamppost</options>
-			<maintexture>lamppost</maintexture>
-			<bgtexture>menu_button</bgtexture>
-			<scale x="0.1" y="0.1"></scale>
-		</button>
-		<button id="Create">
-			<options>lantern</options>
-			<maintexture>lantern</maintexture>
-			<bgtexture>menu_button</bgtexture>
-			<scale x="0.1" y="0.1"></scale>
+			<scale x="0.15" y="0.15"></scale>
 		</button>
 		<button id="Close">
 			<maintexture>menu_close</maintexture>

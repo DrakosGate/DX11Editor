@@ -23,8 +23,10 @@ struct TRay;
 class CModel;
 
 //Program definitions
-#define WINDOW_WIDTH 1280
-#define WINDOW_HEIGHT 720
+#define WINDOW_WIDTH 800
+#define WINDOW_HEIGHT 600
+//#define WINDOW_WIDTH 1280
+//#define WINDOW_HEIGHT 720
 #define MAX_LIGHTS 50
 #define SERVER_PORT 56000
 

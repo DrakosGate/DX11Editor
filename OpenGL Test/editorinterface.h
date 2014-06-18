@@ -104,6 +104,7 @@ class CShader;
 class CEntityManager;
 class CResourceManager;
 class CEditorInterface;
+class CEntityManager;
 class CDialogEvent;
 
 class CEditorInterface : public CPointSprite
@@ -129,7 +130,8 @@ public:
 	virtual bool HasCollided(D3DXVECTOR2& _rPoint, TButton* _pButton);
 	virtual void ProcessButtonPressed(ID3D11Device* _pDevice, TWindow* _pWindow, TButton* _pButton);
 	
-	virtual void LoadFromXML(ID3D11Device* _pDevice, CResourceManager* _pResourceManager, char* _pcXMLFilename);
+	virtual void LoadFromXML(ID3D11Device* _pDevice, CResourceManager* _pResourceManager, CEntityManager* _pEntityManager, char* _pcXMLFilename);
+	virtual void AddPrefabCreationButtons(CEntityManager* _pEntityManager, CResourceManager* _pResourceManager, TWindow* _pWindow, TButton* _pNewPrefabButton);
 	virtual TPointSpriteVertex* CreatePointSprite(ID3D11Device* _pDevice, D3DXVECTOR3& _rPosition, D3DXVECTOR2& _rScale, D3DXCOLOR& _rColour, float _fRotation, int _iTextureID);
 
 private:

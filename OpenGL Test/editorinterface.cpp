@@ -137,7 +137,8 @@ CEditorInterface::ProcessInput(ID3D11Device* _pDevice, TInputStruct* _pKeys, flo
 	m_eEditorState = EDITOR_IDLE;
 
 	float fColourChangeSpeed = 5.0f;
-	
+
+	//Check for input received through button presses or window interaction
 	m_bHasChanged = false;
 	bool bIsOverButton = false;
 	bool bWindowHasCollided = false;
@@ -465,6 +466,10 @@ CEditorInterface::ProcessButtonPressed(ID3D11Device* _pDevice, TWindow* _pWindow
 	{
 		SaveLevel(_pDevice);
 	}
+	else if (strcmp(_pButton->sName.c_str(), "NewPrefab") == 0)
+	{
+		//Create a new prefab
+	}
 }
 /**
 *
@@ -475,7 +480,7 @@ CEditorInterface::ProcessButtonPressed(ID3D11Device* _pDevice, TWindow* _pWindow
 *
 */
 void 
-CEditorInterface::LoadFromXML(ID3D11Device* _pDevice, CResourceManager* _pResourceManager, char* _pcXMLFilename)
+CEditorInterface::LoadFromXML(ID3D11Device* _pDevice, CResourceManager* _pResourceManager, CEntityManager* _pEntityManager, char* _pcXMLFilename)
 {
 	int iMaxMessageSize = 128;
 	char* pcBuffer = new char[iMaxMessageSize];
@@ -494,7 +499,7 @@ CEditorInterface::LoadFromXML(ID3D11Device* _pDevice, CResourceManager* _pResour
 
 	D3DXCOLOR initialColour(0.0f, 0.0f, 0.0f, 0.0f);
 
-	//Loop through models
+	//Loop through windows in the XML file
 	for (rapidxml::xml_node<>* pCurrentWindow = pWindows; pCurrentWindow; pCurrentWindow = pCurrentWindow->next_sibling())
 	{
 		D3DXVECTOR2 vecWindowSize(static_cast<float>(WINDOW_WIDTH), static_cast<float>(WINDOW_HEIGHT));
@@ -556,6 +561,12 @@ CEditorInterface::LoadFromXML(ID3D11Device* _pDevice, CResourceManager* _pResour
 			}
 			pNewButton->colour = initialColour;
 			pNewWindow->vecButtons.push_back(pNewButton);
+
+			//Check if this is the "New Prefab" button
+			if (strcmp(pNewButton->sName.c_str(), "NewPrefab") == 0)
+			{
+				AddPrefabCreationButtons(_pEntityManager, _pResourceManager, pNewWindow, pNewButton);
+			}
 		}
 		m_vecWindows.push_back(pNewWindow);
 	}
@@ -573,6 +584,45 @@ CEditorInterface::LoadFromXML(ID3D11Device* _pDevice, CResourceManager* _pResour
 
 	delete[] pcBuffer;
 	pcBuffer = 0;
+}
+/**
+*
+* CEditorInterface class Adds Prefab Creation Buttons to the current window
+* (Task ID: n/a)
+*
+* @author Christopher Howlett
+*
+*/
+void
+CEditorInterface::AddPrefabCreationButtons(CEntityManager* _pEntityManager, CResourceManager* _pResourceManager, TWindow* _pWindow, TButton* _pNewPrefabButton)
+{
+	int iNumPrefabs = _pEntityManager->GetPrefabCount();
+	TPrefabOptions* pCurrentPrefab = 0;
+	int iButtonHeight = 0;
+	int iButtonWidth = 0;
+	int iMaxWidthCount = 5;
+	float fButtonGap = 1.1f;
+
+	for (int iPrefab = 0; iPrefab < iNumPrefabs; ++iPrefab)
+	{
+		++iButtonWidth;
+		if (iButtonWidth >= iMaxWidthCount)
+		{
+			iButtonWidth = 0;
+			++iButtonHeight;
+		}
+		pCurrentPrefab = _pEntityManager->GetPrefabOptions(iPrefab);
+
+		TButton* pNewPrefab = new TButton();
+		*pNewPrefab = *_pNewPrefabButton;
+
+		pNewPrefab->vecPosition += D3DXVECTOR3(_pNewPrefabButton->vecScale.x * fButtonGap * iButtonWidth, _pNewPrefabButton->vecScale.y * fButtonGap * -iButtonHeight, 0.0f);
+		pNewPrefab->sName = "Create";
+		pNewPrefab->sOptions = pCurrentPrefab->pcPrefabName;
+		pNewPrefab->iForegroundTexture = _pResourceManager->GetTextureID(pCurrentPrefab->pTexture);
+		//pNewPrefab->iForegroundTexture = pCurrentPrefab->
+		_pWindow->vecButtons.push_back(pNewPrefab);
+	}
 }
 /**
 *

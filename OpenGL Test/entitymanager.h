@@ -61,6 +61,9 @@ public:
 	void AddEntity(CRenderEntity* _pNewEntity, EGameScene _eScene);
 	void AddPrefab(TPrefabOptions* _pPrefab);
 	TPrefabOptions* GetPrefabOptions(std::string& _pcPrefabName);
+	TPrefabOptions* GetPrefabOptions(int _iPrefabIndex);
+	int GetPrefabCount() const;
+
 	CPrefab* InstantiatePrefab(	ID3D11Device* _pDevice, 
 								TEntityNode* _pParentNode, 
 								std::string& _pcPrefabName, 

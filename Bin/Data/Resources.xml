@@ -80,6 +80,9 @@
 		<texture id="menu_prefab">
 			<filename>Menu/openPrefabMenu.png</filename>
 		</texture>	
+		<texture id="menu_newprefab">
+			<filename>Menu/newprefab.png</filename>
+		</texture>	
 		<texture id="menu_scenegraph">
 			<filename>Menu/openSceneGraph.png</filename>
 		</texture>	

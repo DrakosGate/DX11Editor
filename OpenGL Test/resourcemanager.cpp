@@ -378,6 +378,35 @@ CResourceManager::GetTextureID(std::string& _pcTextureName) const
 	}
 	return (iTextureID);
 }
+/**
+*
+* CResourceManager class GetTextureID
+* (Task ID: n/a)
+*
+* @author Christopher Howlett
+* @param _pTexture Pointer to the texture
+* @return Returns Index of the texture specified
+*
+*/
+int
+CResourceManager::GetTextureID(ID3D11ShaderResourceView* _pTexture) const
+{
+	//Loop through texture vector and return texture matching this name
+	int iTextureID = -1;
+	for (unsigned int iTexture = 0; iTexture < m_TexturePool.size(); ++iTexture)
+	{
+		if (m_TexturePool[iTexture]->pTexture == _pTexture)
+		{
+			iTextureID = iTexture;
+			break;
+		}
+	}
+	if (iTextureID == -1)
+	{
+		Error(L"Could not find texture in pool!!");
+	}
+	return (iTextureID);
+}
 void
 CResourceManager::SendTextureDataToShader(ID3D11DeviceContext* _pDevContext)
 {
