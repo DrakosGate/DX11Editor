@@ -25,6 +25,7 @@ protected:
 	cl_program m_clProgram;
 
 	size_t* m_pWorkGroup;
+	size_t* m_pGlobalGroup;
 	int m_iArraySize;
 };
 

@@ -4,8 +4,8 @@ __kernel void ProcessGrass(	__global float4* _pGrassPositions,
 
 							__global float4* _pOutDirections)
 {
-	unsigned int iIndex = get_local_size(0) * get_group_id(0) + get_local_id(0);
-	unsigned int iObstacle = 0;
+	unsigned int iIndex = get_global_id(0);
+	unsigned int iObstacle = get_global_id(1);
 	_pOutDirections[iIndex] = _pGrassDirections[iIndex];
 
 	float fDeltaTime = _pGrassPositions[0].w;
@@ -24,7 +24,4 @@ __kernel void ProcessGrass(	__global float4* _pGrassPositions,
 	
 	_pOutDirections[iIndex].w = 0.0f;
 	_pOutDirections[iIndex] = normalize(_pOutDirections[iIndex]);
-	_pOutDirections[iIndex].x = get_local_id(0);
-	_pOutDirections[iIndex].y = get_local_id(1);
-	_pOutDirections[iIndex].z = get_local_id(2);
 }

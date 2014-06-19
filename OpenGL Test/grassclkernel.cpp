@@ -94,7 +94,7 @@ CGrassCLKernel::SendDataToGPU(COpenCLContext* _pOpenCL, CGrass* _pGrass, std::ve
 	//m_pWorkGroup[0] = _pGrass->GetDimensionSize();
 	//m_pWorkGroup[1] = _pGrass->GetDimensionSize();
 	m_pWorkGroup[1] = m_iNumObstacles;
-	_pOpenCL->SetCLWorkGroupSize(m_pWorkGroup, 2);
+	_pOpenCL->SetCLWorkGroupSize(m_pWorkGroup, 0, 2);
 	SAFEDELETEARRAY(m_pObjectData);
 }
 void

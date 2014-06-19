@@ -184,11 +184,6 @@
     <ClCompile Include="window.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\Bin\OpenCLKernels\ai.cl" />
-    <None Include="..\Bin\OpenCLKernels\grass.cl" />
-    <None Include="..\Bin\OpenCLKernels\test.cl" />
-  </ItemGroup>
-  <ItemGroup>
     <FxCompile Include="..\Bin\Assets\Shaders\animatedobject_vs.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Effect</ShaderType>
     </FxCompile>
@@ -210,6 +205,11 @@
     <FxCompile Include="..\Bin\Assets\Shaders\pointsprite_vs.hlsl" />
     <FxCompile Include="..\Bin\Assets\Shaders\postprocessing.hlsl" />
     <FxCompile Include="..\Bin\Assets\Shaders\shaderdefines.hlsl" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Bin\Assets\OpenCLKernels\ai.cl" />
+    <None Include="..\Bin\Assets\OpenCLKernels\grass.cl" />
+    <None Include="..\Bin\Assets\OpenCLKernels\test.cl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

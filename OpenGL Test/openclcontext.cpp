@@ -67,7 +67,6 @@ COpenCLContext::Run(cl_kernel& _rKernel)
 	cl_int iError = 0;
 	iError = clEnqueueNDRangeKernel(m_clCommandQueue, _rKernel, m_iNumDimensions, NULL, m_pWorkGroupSize, NULL, 0, NULL, &m_clEvent);
 
-	
 	clReleaseEvent(m_clEvent);
 	//WaitForFinish();
 	/*
@@ -109,14 +108,10 @@ COpenCLContext::GetCLEvent()
 	return m_clEvent;
 }
 void
-COpenCLContext::SetCLWorkGroupSize(size_t* _pWorkGroupSize, int _iNumDimensions)
+COpenCLContext::SetCLWorkGroupSize(size_t* _pWorkGroupSize, size_t* _pGlobalWorkSize, int _iNumDimensions)
 {
-	m_iGlodalWorkSize[0] = 1;
-	for (int iGroup = 0; iGroup < _iNumDimensions; ++iGroup)
-	{
-		m_iGlodalWorkSize[0] *= _pWorkGroupSize[iGroup];
-	}
 	m_pWorkGroupSize = _pWorkGroupSize;
+	m_pGlodalWorkSize = _pGlobalWorkSize;
 	m_iNumDimensions = _iNumDimensions;
 }
 void 

@@ -65,7 +65,7 @@ CAICLKernel::SendDataToGPU(COpenCLContext* _pOpenCL, CAIHiveMind* _pHiveMind, fl
 	iError = clSetKernelArg(m_clKernel, 5, sizeof(cl_mem), (void*)&m_clOutDir);
 
 	m_pWorkGroup[0] = m_iArraySize;
-	_pOpenCL->SetCLWorkGroupSize(m_pWorkGroup, 1);
+	_pOpenCL->SetCLWorkGroupSize(m_pWorkGroup, 0, 1);
 
 	delete[] pPositions;
 	delete[] pDirections;

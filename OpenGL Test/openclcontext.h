@@ -23,7 +23,7 @@ public:
 	cl_command_queue& GetCLCommandQueue();
 	cl_event& GetCLEvent();
 
-	void SetCLWorkGroupSize(size_t* _pWorkGroupSize, int _iNumDimensions);
+	void SetCLWorkGroupSize(size_t* _pWorkGroupSize, size_t* _pGlobalWorkSize, int _iNumDimensions);
 
 protected:
 	void BuildExecutable(cl_program& _rProgram);
@@ -43,7 +43,7 @@ protected:
 	cl_event m_clEvent;
 
 	size_t* m_pWorkGroupSize;
-	size_t m_iGlodalWorkSize[1];
+	size_t* m_pGlodalWorkSize;
 	int m_iNumDimensions;
 
 	unsigned int m_iDeviceUsed;
