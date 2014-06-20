@@ -11,9 +11,9 @@
 #define __RESOURCE_MANAGER_H__
 
 // Library Includes
-#include <D3DX10.h>
 #include <vector>
 #include <map>
+#include <rapidxml_utils.hpp>
 
 // Local Includes
 #include "defines.h"
@@ -42,8 +42,8 @@ public:
 	CResourceManager();
 	virtual ~CResourceManager();
 
-	virtual void Initialise(ID3D11Device* _pDevice, char* _pcResourceFilename);
-	void LoadPrefabTypes(ID3D11Device* _pDevice, CEntityManager* _pEntityManager, char* _pcResourceFilename);
+	virtual void Initialise(ID3D11Device* _pDevice, CEntityManager* _pEntityManager, char* _pcResourceFilename);
+	void LoadPrefabTypes(ID3D11Device* _pDevice, CEntityManager* _pEntityManager, rapidxml::xml_node<>* _pPrefabNode);
 
 	ID3D11ShaderResourceView* CreateTextureFromData(ID3D11Device* _pDevice, unsigned char* _pcData, std::string& _sTextureString, int _iWidth, int _iHeight);
 

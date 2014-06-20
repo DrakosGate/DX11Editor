@@ -14,7 +14,6 @@
 
 // Library Includes
 #include <D3DX11.h>
-#include <rapidxml_utils.hpp>
 #include <iostream>
 
 // Local Includes
@@ -84,7 +83,7 @@ CResourceManager::~CResourceManager()
 *
 */
 void 
-CResourceManager::Initialise(ID3D11Device* _pDevice, char* _pcResourceFilename)
+CResourceManager::Initialise(ID3D11Device* _pDevice, CEntityManager* _pEntityManager, char* _pcResourceFilename)
 {
 	int iMaxMessageSize = 128;
 	printf("==== Loading Resources from %s ====\n", _pcResourceFilename);
@@ -92,10 +91,13 @@ CResourceManager::Initialise(ID3D11Device* _pDevice, char* _pcResourceFilename)
 	//Open file containing resource information
 	rapidxml::file<> xmlFile(_pcResourceFilename);
 	rapidxml::xml_document<> xmlDoc;
-
+	
 	//Parse file string
 	xmlDoc.parse<0>(xmlFile.data());
-	rapidxml::xml_node<>* pRoot = xmlDoc.first_node();
+	
+	rapidxml::xml_node<>* pRoot = xmlDoc.first_node("resources");
+	rapidxml::xml_node<>* pPrefabNode = xmlDoc.first_node("prefabs");
+
 	//Find root nodes
 	rapidxml::xml_node<>* pModels		= pRoot->first_node("models");
 	rapidxml::xml_node<>* pAnimations	= pRoot->first_node("animations");
@@ -156,26 +158,9 @@ CResourceManager::Initialise(ID3D11Device* _pDevice, char* _pcResourceFilename)
 		pNewPoolEntry->sName = sTextureName;
 		m_TexturePool.push_back(pNewPoolEntry);
 	}
-	
-	//Loop through animations
-	//printf("\n  == LOADING ANIMATED MODELS\n");
-	//sFilePrefix = pAnimations->first_node("fileprefix")->value();
-	//for(rapidxml::xml_node<>* pCurrentAnimation = pAnimations->first_node("model"); pCurrentAnimation; pCurrentAnimation = pCurrentAnimation->next_sibling())
-	//{
-	//	std::string sAnimationName = pCurrentAnimation->first_attribute("id")->value();
-	//	std::string sAnimationFilename = pCurrentAnimation->first_node()->value();
-	//	//Concatenate model prefix and model filename
-	//	sprintf_s(pcBuffer, iMaxMessageSize, "%s%s", sFilePrefix.c_str(), sAnimationFilename.c_str());
-	//
-	//	CAnimatedModel* pNewAnim = new CAnimatedModel();
-	//	pNewAnim->Initialise();
-	//	pNewAnim->LoadAIMesh(_pDevice, 1.0f, pcBuffer);
-	//
-	//	
-	//	//Add to model map 
-	//	printf("    = Texture successfully loaded from %s\n", pcBuffer);
-	//	m_mapAnimations[sAnimationName] = pNewAnim;
-	//}
+
+	//Load prefab types into entity manager from this file
+	LoadPrefabTypes(_pDevice, _pEntityManager, pPrefabNode);
 
 	//Clean up
 	delete[] pcBuffer;
@@ -191,22 +176,14 @@ CResourceManager::Initialise(ID3D11Device* _pDevice, char* _pcResourceFilename)
 *
 */
 void
-CResourceManager::LoadPrefabTypes(ID3D11Device* _pDevice, CEntityManager* _pEntityManager, char* _pcResourceFilename)
+CResourceManager::LoadPrefabTypes(ID3D11Device* _pDevice, CEntityManager* _pEntityManager, rapidxml::xml_node<>* _pPrefabNode)
 {
 	int iMaxMessageSize = 128;
-	printf("==== Loading Prefabs from %s ====\n", _pcResourceFilename);
+	printf("==== Loading Prefabs from file ====\n");
 
-	//Open file containing resource information
-	rapidxml::file<> xmlFile(_pcResourceFilename);
-	rapidxml::xml_document<> xmlDoc;
-
-	//Parse file string
-	xmlDoc.parse<0>(xmlFile.data());
-	rapidxml::xml_node<>* pRoot = xmlDoc.first_node();
-
-	//Loop through models
+	//Loop through prefabs
 	printf("\n  == LOADING PREFABS\n");
-	for (rapidxml::xml_node<>* pCurrentPrefab = pRoot->first_node("prefab"); pCurrentPrefab; pCurrentPrefab = pCurrentPrefab->next_sibling())
+	for (rapidxml::xml_node<>* pCurrentPrefab = _pPrefabNode->first_node("prefab"); pCurrentPrefab; pCurrentPrefab = pCurrentPrefab->next_sibling())
 	{
 		std::string sPrefabName = pCurrentPrefab->first_attribute("id")->value();
 		std::string sPrefabModel = pCurrentPrefab->first_node("model")->value();

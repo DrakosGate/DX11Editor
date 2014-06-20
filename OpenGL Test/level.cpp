@@ -207,12 +207,7 @@ CLevel::Initialise(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext, CD
 	LoadShaderData(_pDevice, _pDevContext);
 	BuildLevelVertexLayouts(_pDevice, _pDevContext);
 
-	//Create render targets and screen monitors
-	CreateRenderTargets(_pDevice);
-	
-	//Create renderable entities and add to entitymanager
-	CreateEntities(_pDevice, _pDevContext, _hWindow);
-
+	//Create Perspective camera
 	float fAspectRatio = static_cast<float>(m_iScreenWidth) / static_cast<float>(m_iScreenHeight);
 	m_pCamera = new CCamera();
 	m_pCamera->Initialise(20.0f, 0.2f, 10.0f, m_iScreenWidth, m_iScreenHeight, true);
@@ -226,12 +221,19 @@ CLevel::Initialise(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext, CD
 	m_pCamera->SetLook(vecCameraLook);
 	m_pCamera->CreateProjectionMatrix(fAspectRatio);
 
+	//Create Othographic camera
 	m_pOrthoCamera = new CCamera();
 	m_pOrthoCamera->Initialise(0.0f, 0.0f, 0.0f, static_cast<int>(m_iScreenWidth), static_cast<int>(m_iScreenHeight), false);
 	m_pOrthoCamera->SetPosition(D3DXVECTOR3(0.0f, 0.0f, -1000.0f));
 	D3DXVec3Normalize(&vecCameraLook, &(D3DXVECTOR3(0.0f, 0.0f, 0.0f) - m_pOrthoCamera->GetPosition()));
 	m_pOrthoCamera->SetLook(vecCameraLook);
 	m_pOrthoCamera->CreateProjectionMatrix(fAspectRatio);
+
+	//Create render targets and screen monitors
+	CreateRenderTargets(_pDevice);
+	
+	//Create renderable entities and add to entitymanager
+	CreateEntities(_pDevice, _pDevContext, _hWindow);
 
 	//m_pPlayer = new CPlayer();
 	//m_pPlayer->Initialise(m_pInput, m_pCamera, m_pCursor);
@@ -299,8 +301,7 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	
 	//Read level resources
 	m_pResourceManager = new CResourceManager();
-	m_pResourceManager->Initialise(_pDevice, "Data/Resources.xml");
-	m_pResourceManager->LoadPrefabTypes(_pDevice, m_pEntityManager, "Data/Prefabs.xml");
+	m_pResourceManager->Initialise(_pDevice, m_pEntityManager, "Data/Resources.xml");
 	
 	//Load font
 	m_pFont = new CFontRenderer[FONT_MAX];
@@ -459,20 +460,23 @@ CLevel::Process(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDeviceContext, CC
 		vecGrassPosition.y = 0.0f;
 		//Calculate grass offsets
 		m_pGrass->SendCollisionData(&m_vecGrassEntities);
-		for (int iSection = 0; iSection < m_iThreadCount; ++iSection)
+		if (m_vecGrassEntities.size() > 0)
 		{
-			if (m_eGrassProcessingMethod == PROCESSING_SEQUENTIAL)
+			for (int iSection = 0; iSection < m_iThreadCount; ++iSection)
 			{
-				m_pGrass->ProcessGrassSection(iSection, _fDeltaTime);
-			}
-			else if (m_eGrassProcessingMethod == PROCESSING_THREADPOOL)
-			{
-				m_pGrassJobs[iSection].fDeltaTime = _fDeltaTime;
-				m_pThreadPool->AddJobToPool(&GrassProcessingThread, &m_pGrassJobs[iSection]);
-			}
-			else
-			{
-				m_pGrass->ProcessOpenCL(m_pCLKernel, _fDeltaTime);
+				if (m_eGrassProcessingMethod == PROCESSING_SEQUENTIAL)
+				{
+					m_pGrass->ProcessGrassSection(iSection, _fDeltaTime);
+				}
+				else if (m_eGrassProcessingMethod == PROCESSING_THREADPOOL)
+				{
+					m_pGrassJobs[iSection].fDeltaTime = _fDeltaTime;
+					m_pThreadPool->AddJobToPool(&GrassProcessingThread, &m_pGrassJobs[iSection]);
+				}
+				else
+				{
+					m_pGrass->ProcessOpenCL(m_pCLKernel, _fDeltaTime);
+				}
 			}
 		}
 		//Recreate the grass vertex buffer with new vertex information
@@ -1260,8 +1264,8 @@ CLevel::LoadLevel(ID3D11Device* _pDevice, char* _pcLevelFilename)
 		m_pLevelEntities[iEntity] = 0;
 	}
 	m_pLevelEntities.clear();
-
-	m_pLightManager->AddPoint(D3DXVECTOR3(0.0f, 2.4f, 0.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f), D3DXVECTOR3(1.0f, 0.5f, 0.5f), 1.0f);
+	//Add default point light to the scene
+	m_pLightManager->AddPoint(D3DXVECTOR3(0.0f, 2.0f, 0.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f), D3DXVECTOR3(1.0f, 0.5f, 0.2f), 1.0f);
 	//Open file containing level information
 	rapidxml::file<> xmlFile(_pcLevelFilename);
 	rapidxml::xml_document<> xmlDoc;

@@ -6,12 +6,14 @@
 
 COpenCLKernel::COpenCLKernel()
 : m_pWorkGroup(0)
+, m_pGlobalGroup(0)
 {
 
 }
 COpenCLKernel::~COpenCLKernel()
 {
 	SAFEDELETEARRAY(m_pWorkGroup);
+	SAFEDELETEARRAY(m_pGlobalGroup);
 }
 cl_kernel&
 COpenCLKernel::GetCLKernel()

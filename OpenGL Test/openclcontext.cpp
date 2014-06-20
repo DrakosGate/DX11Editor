@@ -65,10 +65,18 @@ COpenCLContext::Run(cl_kernel& _rKernel)
 {
 	//Run Kernel
 	cl_int iError = 0;
-	iError = clEnqueueNDRangeKernel(m_clCommandQueue, _rKernel, m_iNumDimensions, NULL, m_pWorkGroupSize, NULL, 0, NULL, &m_clEvent);
+	iError = clEnqueueNDRangeKernel(m_clCommandQueue,	//Command Queue
+									_rKernel,			//Kernel
+									m_iNumDimensions,	//Number of work dimensions
+									NULL,				//Global work offset
+									m_pGlodalWorkSize,	//Global work size
+									m_pWorkGroupSize,	//Local work size
+									0,					//Number of events in wait list
+									NULL,				//Wait list
+									NULL);		//Event
 
-	clReleaseEvent(m_clEvent);
-	//WaitForFinish();
+
+	WaitForFinish();
 	/*
 	//Run Kernel
 	cl_int iError = 0;

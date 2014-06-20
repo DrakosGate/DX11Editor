@@ -18,6 +18,7 @@ CAICLKernel::CAICLKernel()
 	m_clAIData = 0;
 	m_clOutPos = 0;
 	m_clOutDir = 0;
+	m_pGlobalGroup = new size_t[1];
 	m_pWorkGroup = new size_t[1];
 }
 CAICLKernel::~CAICLKernel()
@@ -64,8 +65,9 @@ CAICLKernel::SendDataToGPU(COpenCLContext* _pOpenCL, CAIHiveMind* _pHiveMind, fl
 	iError = clSetKernelArg(m_clKernel, 4, sizeof(cl_mem), (void*)&m_clOutPos);
 	iError = clSetKernelArg(m_clKernel, 5, sizeof(cl_mem), (void*)&m_clOutDir);
 
-	m_pWorkGroup[0] = m_iArraySize;
-	_pOpenCL->SetCLWorkGroupSize(m_pWorkGroup, 0, 1);
+	m_pGlobalGroup[0] = m_iArraySize;
+	m_pWorkGroup[0] = 1;
+	_pOpenCL->SetCLWorkGroupSize(m_pWorkGroup, m_pGlobalGroup, 1);
 
 	delete[] pPositions;
 	delete[] pDirections;

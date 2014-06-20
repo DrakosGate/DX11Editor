@@ -17,7 +17,6 @@ CGrassCLKernel::CGrassCLKernel()
 }
 CGrassCLKernel::~CGrassCLKernel()
 {
-
 	SAFEDELETEARRAY(m_pPositions);
 	SAFEDELETEARRAY(m_pDirections);
 	SAFEDELETEARRAY(m_pObjectData);
@@ -43,6 +42,7 @@ CGrassCLKernel::CreateBuffers(COpenCLContext* _pOpenCL, CGrass* _pGrass, std::ve
 	m_clInDir = clCreateBuffer(_pOpenCL->GetCLContext(), CL_MEM_READ_ONLY, sizeof(D3DXVECTOR4)* m_iArraySize, NULL, &iError);
 
 	m_pWorkGroup = new size_t[3];
+	m_pGlobalGroup = new size_t[3];
 }
 void
 CGrassCLKernel::SendDataToGPU(COpenCLContext* _pOpenCL, CGrass* _pGrass, std::vector<CRenderEntity*>* _pCollisionObjects, float _fDeltaTime)
@@ -90,11 +90,13 @@ CGrassCLKernel::SendDataToGPU(COpenCLContext* _pOpenCL, CGrass* _pGrass, std::ve
 	iError = clSetKernelArg(m_clKernel, 2, sizeof(cl_mem), (void*)&m_clInObjects);
 	iError = clSetKernelArg(m_clKernel, 3, sizeof(cl_mem), (void*)&m_clOutDir);
 	
-	m_pWorkGroup[0] = m_iArraySize;
-	//m_pWorkGroup[0] = _pGrass->GetDimensionSize();
-	//m_pWorkGroup[1] = _pGrass->GetDimensionSize();
-	m_pWorkGroup[1] = m_iNumObstacles;
-	_pOpenCL->SetCLWorkGroupSize(m_pWorkGroup, 0, 2);
+	m_pGlobalGroup[0] = _pGrass->GetDimensionSize() * m_iNumObstacles;
+	m_pGlobalGroup[1] = _pGrass->GetDimensionSize();// m_iArraySize * m_iNumObstacles;
+
+	m_pWorkGroup[0] = _pGrass->GetDimensionSize();
+	m_pWorkGroup[1] = 1;
+
+	_pOpenCL->SetCLWorkGroupSize(m_pWorkGroup, m_pGlobalGroup, 2);
 	SAFEDELETEARRAY(m_pObjectData);
 }
 void
