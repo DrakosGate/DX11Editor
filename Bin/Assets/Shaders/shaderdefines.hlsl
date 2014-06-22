@@ -54,13 +54,14 @@ float4 CalculateGeneralLight(TLight _light, float3 _worldPos, float3 _direction,
 		float3 VertexToCamera = normalize(_cameraPos - _worldPos);
 			float3 LightReflection = normalize(reflect(_direction, Normal));
 			float fSpecularFactor = dot(VertexToCamera, LightReflection);
-		fSpecularFactor = pow(fSpecularFactor, 0.0f);//_light.spotPower);
+		fSpecularFactor = pow(fSpecularFactor, _light.spotPower);
 		if (fSpecularFactor > 0.0f)
 		{
-			SpecularColour = _light.diffuse * fSpecularFactor;
+			SpecularColour = _light.spec * fSpecularFactor;
 		}
 	}
-
+	float4 finalColour = DiffuseColour + SpecularColour;
+		finalColour.a = 1.0f;
 	return (DiffuseColour + SpecularColour);
 }
 float3 ParallelLight(TLightSurface v, TLight L, float3 eyePos)

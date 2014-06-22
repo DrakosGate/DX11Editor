@@ -107,6 +107,6 @@ CPointLight::SetAttenuation(D3DXVECTOR3& _rAttenuation)
 TLightInfo& 
 CPointLight::GetLightInfo()
 {
-	m_tLightInfo = TLightInfo(m_vecWorldPosition, D3DXVECTOR3(1.0f, 0.0f, 0.0f), D3DXCOLOR(0.0f, 0.0f, 0.0f, 0.0f), m_vecColour, m_vecColour, m_vecAttenuation, m_fSpecularPower, 10.0f, m_eLightType); 
+	m_tLightInfo = TLightInfo(m_vecWorldPosition, D3DXVECTOR3(1.0f, 0.0f, 0.0f), D3DXCOLOR(0.0f, 0.0f, 0.0f, 0.0f), m_vecColour, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f), m_vecAttenuation, m_fSpecularPower, 10.0f, m_eLightType); 
 	return m_tLightInfo;
 }

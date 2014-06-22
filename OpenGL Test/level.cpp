@@ -1221,7 +1221,7 @@ CLevel::CreateObject(ID3D11Device* _pDevice, rapidxml::xml_node<>* _pNode, TEnti
 	{
 		for (rapidxml::xml_node<>* pCurrentLight = _pNode->first_node("light"); pCurrentLight; pCurrentLight = pCurrentLight->next_sibling("light"))
 		{
-			pNewPrefab->GetNode()->vecLights.push_back( m_pLightManager->AddPoint(D3DXVECTOR3(0.0f, 0.4f, 0.0f), D3DXCOLOR(0.7f, 0.7f, 0.3f, 1.0f), D3DXVECTOR3(0.5f, 0.02f, 5.0f), 1.0f) );
+			pNewPrefab->GetNode()->vecLights.push_back( m_pLightManager->AddPoint(D3DXVECTOR3(0.0f, 0.1f, 0.0f), D3DXCOLOR(0.3f, 0.3f, 0.7f, 1.0f), D3DXVECTOR3(0.5f, 0.2f, 0.2f), 12.0f) );
 		}
 	}
 
@@ -1265,7 +1265,7 @@ CLevel::LoadLevel(ID3D11Device* _pDevice, char* _pcLevelFilename)
 	}
 	m_pLevelEntities.clear();
 	//Add default point light to the scene
-	m_pLightManager->AddPoint(D3DXVECTOR3(0.0f, 2.0f, 0.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f), D3DXVECTOR3(1.0f, 0.5f, 0.2f), 1.0f);
+	m_pLightManager->AddPoint(D3DXVECTOR3(0.0f, 2.0f, 0.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f), D3DXVECTOR3(1.0f, 0.5f, 0.2f), 10.0f);
 	//Open file containing level information
 	rapidxml::file<> xmlFile(_pcLevelFilename);
 	rapidxml::xml_document<> xmlDoc;

@@ -47,7 +47,7 @@ float4 DeferredPS(PS_IN _input) : SV_TARGET
 	float4 fLightColour = float4(0.0f, 0.0f, 0.0f, 0.0f);
 	for (int iLight = 0; iLight < gActiveLightCount; ++iLight)
 	{
-		fLightColour += CalculateLighting(position, normalize(normal), diffuse, float4(1.0f, 1.0f, 1.0f, 1.0f), iLight);
+		fLightColour += CalculateLighting(position, normalize(normal), diffuse, float4(1.0f, 0.0f, 0.0f, 1.0f), iLight);
 	}
 	diffuse *= fLightColour;
 	diffuse.a = 1.0f;//fAlpha;

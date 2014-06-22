@@ -3,20 +3,20 @@
 	<level>
 		<general>
 			<!-- default level to load -->
-			<defaultlevel>Data/Levels/emptylevel.xml</defaultlevel> 
+			<defaultlevel>Data/Levels/greattree.xml</defaultlevel> 
 			<renderstate>2</renderstate>	<!-- 0: Game  1: Editor  2: Debug Info -->
-			<playsound>true</playsound>	<!-- Whether or not to play and load sounds -->
+			<playsound>false</playsound>	<!-- Whether or not to play and load sounds -->
 		</general>
 		<processing>
-			<ai>1</ai>						<!-- 0: Sequential  1: Thread Pool  2: GPU with OpenCL  3: Distributed(not functional) -->
+			<ai>0</ai>						<!-- 0: Sequential  1: Thread Pool  2: GPU with OpenCL  3: Distributed(not functional) -->
 			<grass>1</grass>				<!-- 0: Sequential  1: Thread Pool  2: GPU with OpenCL  3: Distributed(not functional) -->
 		</processing>
 		<grass>
-			<dimensions>16</dimensions>	<!-- Dimensions of the grass plane -->
+			<dimensions>100</dimensions>	<!-- Dimensions of the grass plane -->
 			<state>2</STATE>				<!-- 0: OFF  1: Draw Only  2: Draw with Collisions -->
 		</grass>
 		<ai>
-			<number>0</number>				<!-- Number of AI to spawn at the start-->
+			<number>10</number>				<!-- Number of AI to spawn at the start-->
 			<astardepth>5</astardepth>		<!-- Depth of search down the A* tree -->
 		</ai>
 		<logging>
