@@ -210,6 +210,7 @@
     <None Include="..\Bin\Assets\OpenCLKernels\ai.cl" />
     <None Include="..\Bin\Assets\OpenCLKernels\grass.cl" />
     <None Include="..\Bin\Assets\OpenCLKernels\test.cl" />
+    <None Include="ClassDiagram1.cd" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

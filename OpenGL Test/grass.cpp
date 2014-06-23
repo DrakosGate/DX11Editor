@@ -191,29 +191,32 @@ void
 CGrass::RecreateGrassMesh(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDeviceContext, D3DXVECTOR3& _rCameraPos, std::vector<CRenderEntity*>& _pEntities, float _fDeltaTime)
 {
 	float fHalfScale = m_fModelScale * 0.5f;
+	float fGrassSpringiness = 1.5f;
+	m_fGrassStiffness = 0.5f;
+
 	//Delete and recreate vertex buffer data
 	m_pVertexBuffer->Release();
 	D3DXVECTOR3 vecNormalTarget;
-	D3DXVECTOR3 vecWind = D3DXVECTOR3(1.0f, 0.0f, 0.0f);
+	D3DXVECTOR3 vecWind = D3DXVECTOR3(1.0f, 0.0f, 0.5f);
 
 	for (int iVertex = 0; iVertex < m_iVertexCount; ++iVertex)
 	{
-		vecNormalTarget = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
+		vecNormalTarget = D3DXVECTOR3(0.0f, 1.0f, 0.0f) * m_fGrassStiffness;
 		if (iVertex > 0 && iVertex < m_iVertexCount - 1)
 		{
-			vecNormalTarget += (m_pVertices[iVertex - 1].normal - m_pVertices[iVertex].normal) + (m_pVertices[iVertex + 1].normal - m_pVertices[iVertex].normal);
+			vecNormalTarget += (m_pVertices[iVertex - 1].normal - m_pVertices[iVertex].normal) + (m_pVertices[iVertex + 1].normal - m_pVertices[iVertex].normal) * fGrassSpringiness;
 		}
 		if (iVertex > m_iGrassDimensions && iVertex < m_iVertexCount - m_iGrassDimensions - 1)
 		{
-			vecNormalTarget += (m_pVertices[iVertex - m_iGrassDimensions].normal - m_pVertices[iVertex].normal) + (m_pVertices[iVertex + m_iGrassDimensions].normal - m_pVertices[iVertex].normal);
+			vecNormalTarget += (m_pVertices[iVertex - m_iGrassDimensions].normal - m_pVertices[iVertex].normal) + (m_pVertices[iVertex + m_iGrassDimensions].normal - m_pVertices[iVertex].normal) * fGrassSpringiness;
 		}
 		D3DXVECTOR3 vecWindDir;
 		D3DXVec3Normalize(&vecWindDir, &vecWind);
 		float fWindPower = 1.0f - fabs(D3DXVec3Dot(&vecWindDir, &m_pVertices[iVertex].normal));
 		//Move to target location
-		m_pGrassVelocities[iVertex] += D3DXVECTOR3(vecNormalTarget - m_pVertices[iVertex].normal) * m_fGrassStiffness * _fDeltaTime;
+		m_pGrassVelocities[iVertex] += D3DXVECTOR3(vecNormalTarget - m_pVertices[iVertex].normal) * _fDeltaTime;
 		//Apply wind force
-		m_pGrassVelocities[iVertex] += vecWind * fWindPower * fWindPower * _fDeltaTime;
+		m_pGrassVelocities[iVertex] += vecWind * fWindPower * _fDeltaTime;
 
 		m_pVertices[iVertex].normal += m_pGrassVelocities[iVertex] * _fDeltaTime;
 		m_pGrassVelocities[iVertex] -= m_pGrassVelocities[iVertex] * 1.5f * _fDeltaTime;

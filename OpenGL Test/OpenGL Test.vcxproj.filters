@@ -375,5 +375,6 @@
     <None Include="..\Bin\Assets\OpenCLKernels\test.cl">
       <Filter>Resource Files\OpenCL Kernels</Filter>
     </None>
+    <None Include="ClassDiagram1.cd" />
   </ItemGroup>
 </Project>
