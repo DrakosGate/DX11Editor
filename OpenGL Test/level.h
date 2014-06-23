@@ -32,6 +32,7 @@ struct ID3D11RasterizerState;
 struct ID3D11SamplerState;
 struct TEntityNode;
 struct TGrassThread;
+struct TSceneNode;
 
 class CClock;
 class CModel;

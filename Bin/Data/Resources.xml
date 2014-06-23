@@ -9,6 +9,12 @@
 			<type>point</type>
 		</light>
 	</prefab>
+	<prefab id="hat">
+		<model>hat</model>
+		<texture>hat</texture>
+		<scale x="0.5" y="0.5" z="0.5"></scale>
+		<static>true</static>
+	</prefab>
 	<prefab id="tree">
 		<model>tree</model>
 		<texture>tree</texture>
@@ -70,6 +76,9 @@
 		<model id="lamppost">
 			<filename>lamppost.obj</filename>
 		</model>
+		<model id="hat">
+			<filename>hat.obj</filename>
+		</model>
 	</models>
 	<animations>
 		<fileprefix>Assets/Animations/</fileprefix>
@@ -99,6 +108,9 @@
 		</texture>
 		<texture id="lamppost">
 			<filename>lamppost.png</filename>
+		</texture>
+		<texture id="hat">
+			<filename>hat.png</filename>
 		</texture>
 		<texture id="cursor">
 			<filename>arrow.png</filename>

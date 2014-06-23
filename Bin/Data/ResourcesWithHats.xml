@@ -1,0 +1,165 @@
+<?xml version="1.0"?>
+<prefabs>
+	<prefab id="human">
+		<model>human</model>
+		<texture>human</texture>
+		<scale x="1.0" y="1.0" z="1.0"></scale>
+		<aitype>human</aitype>
+		<child>
+			<type>hat</type>
+			<position x="0.00" y="0.95" z="0.00"/>
+			<scale x="0.5" y="0.5" z="0.5"/>
+			<rotation x="0.00" y="0.00" z="0.00"/>
+			<colour r="1.0f" g="1.0f" b="1.0f" a="1.0f"/>
+		</child>
+		<light>
+			<type>point</type>
+		</light>
+	</prefab>
+	<prefab id="hat">
+		<model>hat</model>
+		<texture>hat</texture>
+		<scale x="0.5" y="0.5" z="0.5"></scale>
+		<static>true</static>
+	</prefab>
+	<prefab id="tree">
+		<model>tree</model>
+		<texture>tree</texture>
+		<scale x="1.5" y="1.5" z="1.5"></scale>
+		<static>true</static>
+	</prefab>
+	<prefab id="cursor">
+		<model>cursor</model>
+		<texture>cursor</texture>
+		<scale x="0.5" y="0.5" z="0.5"></scale>
+	</prefab>
+	<prefab id="chicken">
+		<model>chicken</model>
+		<texture>chicken</texture>
+		<scale x="0.5" y="0.5" z="0.5"></scale>
+		<animated>true</animated>
+		<aitype>chicken</aitype>
+	</prefab>
+	<prefab id="lantern">
+		<model>lantern</model>
+		<texture>lantern</texture>
+		<scale x="0.2" y="0.2" z="0.2"></scale>
+	</prefab>
+	<prefab id="lamppost">
+		<model>lamppost</model>
+		<texture>lamppost</texture>
+		<scale x="1.5" y="1.5" z="1.5"></scale>
+		<static>true</static>
+		<child>
+			<type>lantern</type>
+			<position x="0.0" y="0.69" z="0.13"/>
+			<scale x="0.8" y="0.8" z="0.8"/>
+			<rotation x="0.00" y="0.00" z="0.00"/>
+			<colour r="1.0f" g="1.0f" b="1.0f" a="1.0f"/>
+		</child>
+		<light>
+			<type>point</type>
+		</light>
+	</prefab>
+</prefabs>
+<resources>
+	<models>
+		<fileprefix>Assets/Models/</fileprefix>
+		<model id="human">
+			<filename>human.obj</filename>
+		</model>
+		<model id="tree">
+			<filename>tree.obj</filename>
+		</model>
+		<model id="cursor">
+			<filename>arrow.obj</filename>
+		</model>
+		<model id="chicken">
+			<filename>chicken.obj</filename>
+		</model>
+		<model id="lantern">
+			<filename>lantern.obj</filename>
+		</model>
+		<model id="lamppost">
+			<filename>lamppost.obj</filename>
+		</model>
+		<model id="hat">
+			<filename>hat.obj</filename>
+		</model>
+	</models>
+	<animations>
+		<fileprefix>Assets/Animations/</fileprefix>
+		<model id="chicken">
+			<filename>chickenAnim.dae</filename>
+		</model>		
+	</animations>
+	<textures>
+		<fileprefix>Assets/Textures/</fileprefix>
+		<texture id="grass">
+			<filename>grass.png</filename>
+		</texture>
+		<texture id="grassblades">
+			<filename>grassBlades.png</filename>
+		</texture>
+		<texture id="human">
+			<filename>human.png</filename>
+		</texture>
+		<texture id="tree">
+			<filename>treeModel.png</filename>
+		</texture>
+		<texture id="chicken">
+			<filename>chickenModel.png</filename>
+		</texture>
+		<texture id="lantern">
+			<filename>lantern.png</filename>
+		</texture>
+		<texture id="lamppost">
+			<filename>lamppost.png</filename>
+		</texture>
+		<texture id="hat">
+			<filename>hat.png</filename>
+		</texture>
+		<texture id="cursor">
+			<filename>arrow.png</filename>
+		</texture>
+		<texture id="selectionbox">
+			<filename>selectionBox.png</filename>
+		</texture>
+		<texture id="menu_button">
+			<filename>Menu/EditorHUD_Button.png</filename>
+		</texture>
+		<texture id="menu_ribbon">
+			<filename>Menu/EditorHUD_Ribbon.png</filename>
+		</texture>
+		<texture id="menu_bar">
+			<filename>Menu/EditorHUD_Bar.png</filename>
+		</texture>
+		<texture id="menu_windowFG">
+			<filename>Menu/EditorHUD_WindowFG.png</filename>
+		</texture>
+		<texture id="menu_windowBG">
+			<filename>Menu/EditorHUD_WindowBG.png</filename>
+		</texture>	
+		<texture id="menu_save">
+			<filename>Menu/EditorHUD_Save.png</filename>
+		</texture>	
+		<texture id="menu_load">
+			<filename>Menu/EditorHUD_Load.png</filename>
+		</texture>	
+		<texture id="menu_prefab">
+			<filename>Menu/openPrefabMenu.png</filename>
+		</texture>	
+		<texture id="menu_newprefab">
+			<filename>Menu/newprefab.png</filename>
+		</texture>	
+		<texture id="menu_scenegraph">
+			<filename>Menu/openSceneGraph.png</filename>
+		</texture>	
+		<texture id="menu_close">
+			<filename>Menu/close.png</filename>
+		</texture>	
+		<texture id="font_arial">
+			<filename>Font/arial.png</filename>
+		</texture>
+	</textures>
+</resources>
