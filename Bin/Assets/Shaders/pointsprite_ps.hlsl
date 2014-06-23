@@ -1,7 +1,7 @@
 #include "shaderdefines.hlsl"
 
 //Textures
-Texture2D g_textureArray[20];
+Texture2D g_textureArray[30];
 SamplerState textureSampler;
 
 struct PS_IN
@@ -58,6 +58,26 @@ float4 SampleTextureArray(PS_IN _input)
 		case 18: diffuseColour = g_textureArray[18].Sample(textureSampler, _input.texC);
 			break;
 		case 19: diffuseColour = g_textureArray[19].Sample(textureSampler, _input.texC);
+			break;
+		case 20: diffuseColour = g_textureArray[20].Sample(textureSampler, _input.texC);
+			break;								
+		case 21: diffuseColour = g_textureArray[21].Sample(textureSampler, _input.texC);
+			break;								
+		case 22: diffuseColour = g_textureArray[22].Sample(textureSampler, _input.texC);
+			break;								
+		case 23: diffuseColour = g_textureArray[23].Sample(textureSampler, _input.texC);
+			break;								
+		case 24: diffuseColour = g_textureArray[24].Sample(textureSampler, _input.texC);
+			break;								
+		case 25: diffuseColour = g_textureArray[25].Sample(textureSampler, _input.texC);
+			break;								
+		case 26: diffuseColour = g_textureArray[26].Sample(textureSampler, _input.texC);
+			break;								
+		case 27: diffuseColour = g_textureArray[27].Sample(textureSampler, _input.texC);
+			break;								
+		case 28: diffuseColour = g_textureArray[28].Sample(textureSampler, _input.texC);
+			break;								
+		case 29: diffuseColour = g_textureArray[29].Sample(textureSampler, _input.texC);
 			break;
 		default: diffuseColour = float4(1, 0, 1, 1);
 			break;

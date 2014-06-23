@@ -30,10 +30,12 @@ struct TTexturePoolData
 
 // Prototypes
 struct ID3D11Device;
+struct TPrefabDefinition;
 
 class CModel;
 class CAnimatedModel;
 class CEntityManager;
+class CSceneHierarchy;
 
 class CResourceManager
 {
@@ -42,9 +44,8 @@ public:
 	CResourceManager();
 	virtual ~CResourceManager();
 
-	virtual void Initialise(ID3D11Device* _pDevice, CEntityManager* _pEntityManager, char* _pcResourceFilename);
-	void LoadPrefabTypes(ID3D11Device* _pDevice, CEntityManager* _pEntityManager, rapidxml::xml_node<>* _pPrefabNode);
-
+	virtual void Initialise(ID3D11Device* _pDevice, CEntityManager* _pEntityManager, CSceneHierarchy* _pHierarchy);
+	void AddPrefabToEntityManager(CEntityManager* _pEntityManager, TPrefabDefinition* _pPrefab);
 	ID3D11ShaderResourceView* CreateTextureFromData(ID3D11Device* _pDevice, unsigned char* _pcData, std::string& _sTextureString, int _iWidth, int _iHeight);
 
 	CModel*  GetModel(std::string& _pcModelName) const;

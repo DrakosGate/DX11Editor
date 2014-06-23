@@ -55,6 +55,7 @@ class COpenCLContext;
 class CFontRenderer;
 class CNetwork;
 class CPerformanceGraph;
+class CSceneHierarchy;
 
 class CLevel
 {
@@ -75,6 +76,7 @@ public:
 	
 	void OnResize(int _iWidth, int _iHeight);	
 	CPrefab* CreateObject(ID3D11Device* _pDevice, rapidxml::xml_node<>* _pNode, TEntityNode* _pParentNode);
+	CPrefab* CreateObject(ID3D11Device* _pDevice, TSceneNode* _pNode, TEntityNode* _pParentNode);
 	void LoadLevel(ID3D11Device* _pDevice, char* _pcLevelFilename);
 	void SaveLevel(ID3D11Device* _pDevice, char* _pcLevelFilename);
 	void AddChildToXMLNode(rapidxml::xml_document<>* _pDocument, rapidxml::xml_node<>* _pParentNode, TEntityNode* _pChildNode);
@@ -96,6 +98,7 @@ private:
 	
 	CDirectXRenderer* m_pRenderer;
 	CResourceManager* m_pResourceManager;
+	CSceneHierarchy* m_pSceneHierarchy;
 	COpenCLContext* m_pCLKernel;
 	CThreadPool* m_pThreadPool;
 	int m_iThreadCount;

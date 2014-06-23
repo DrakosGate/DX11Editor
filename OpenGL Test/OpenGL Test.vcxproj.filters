@@ -189,6 +189,9 @@
     <ClInclude Include="audioplayer.h">
       <Filter>Header Files\Audio</Filter>
     </ClInclude>
+    <ClInclude Include="scenehierarchy.h">
+      <Filter>Header Files\Editor</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -305,6 +308,9 @@
     <ClCompile Include="audioplayer.cpp">
       <Filter>Source Files\Audio</Filter>
     </ClCompile>
+    <ClCompile Include="scenehierarchy.cpp">
+      <Filter>Source Files\Editor</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\Bin\Assets\Shaders\animatedobject_vs.hlsl">
@@ -375,7 +381,5 @@
     <None Include="..\Bin\Assets\OpenCLKernels\test.cl">
       <Filter>Resource Files\OpenCL Kernels</Filter>
     </None>
-    <None Include="ClassDiagram1.cd" />
-    <None Include="ClassDiagram11.cd" />
   </ItemGroup>
 </Project>

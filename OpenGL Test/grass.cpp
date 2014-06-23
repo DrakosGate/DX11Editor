@@ -197,7 +197,7 @@ CGrass::RecreateGrassMesh(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDeviceC
 	//Delete and recreate vertex buffer data
 	m_pVertexBuffer->Release();
 	D3DXVECTOR3 vecNormalTarget;
-	D3DXVECTOR3 vecWind = D3DXVECTOR3(1.0f, 0.0f, 0.5f);
+	D3DXVECTOR3 vecWind = D3DXVECTOR3(0.1f, 0.0f, 0.0f);
 
 	for (int iVertex = 0; iVertex < m_iVertexCount; ++iVertex)
 	{
@@ -239,30 +239,8 @@ CGrass::RecreateGrassMesh(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDeviceC
 		{
 			m_pVertices[iVertex].pos.z += m_fModelScale;
 		}
-		//if (m_pVertices[iVertex].normal.y < 0.5f)
-		//{
-		//	m_pVertices[iVertex].normal.y = 0.5f;
-		//}
 		D3DXVec3Normalize(&m_pVertices[iVertex].normal, &m_pVertices[iVertex].normal);
 	}
-	
-	//Recreate texture based on new normal data
-	//ID3D11Resource* pNormalTexture = 0;
-	//D3D11_MAPPED_SUBRESOURCE* pTextureData = new D3D11_MAPPED_SUBRESOURCE;
-	//GetNormalMap()->GetResource(&pNormalTexture);
-	//_pDeviceContext->Map(pNormalTexture, 0, D3D11_MAP_WRITE_DISCARD, 0, pTextureData);
-	//TUCHARColour* pColourData = reinterpret_cast<TUCHARColour*>(pTextureData->pData);
-	//for (int iVertex = 0; iVertex < m_iVertexCount; ++iVertex)
-	//{
-	//	pColourData[iVertex].r = static_cast<unsigned char>(m_pVertices[iVertex].normal.x * 255.0f);
-	//	pColourData[iVertex].g = static_cast<unsigned char>(m_pVertices[iVertex].normal.z * 255.0f);
-	//	pColourData[iVertex].b = static_cast<unsigned char>(m_pVertices[iVertex].normal.y * 255.0f);
-	//	pColourData[iVertex].a = 255;
-	//}
-	//_pDeviceContext->Unmap(pNormalTexture, 0);
-	//
-	//pNormalTexture->Release();
-	//delete pTextureData;
 
 	CreateVertexBuffer(_pDevice);
 }

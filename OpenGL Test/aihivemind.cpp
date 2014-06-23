@@ -627,7 +627,7 @@ CAIHiveMind::RecalculateNavGrid(ID3D11Device* _pDevice)
 				{
 					D3DXVECTOR3 vecToObstacle = m_vecStaticObstacles[iObstalce]->GetPosition() - m_pNavigationGrid[iCurrentGrid].vecPosition;
 					vecToObstacle.y = 0.0f;
-					if (D3DXVec3LengthSq(&vecToObstacle) < m_vecStaticObstacles[iObstalce]->GetRadius() * m_vecStaticObstacles[iObstalce]->GetScale().x * 0.5f)
+					if (D3DXVec3LengthSq(&vecToObstacle) < m_vecStaticObstacles[iObstalce]->GetRadius() * m_vecStaticObstacles[iObstalce]->GetScale().x * 0.25f)
 					{
 						//Deactivate this grid element
 						m_pNavigationGrid[iCurrentGrid].bIsActive = false;

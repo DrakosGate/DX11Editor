@@ -137,6 +137,7 @@
     <ClInclude Include="renderentity.h" />
     <ClInclude Include="rendertotexture.h" />
     <ClInclude Include="resourcemanager.h" />
+    <ClInclude Include="scenehierarchy.h" />
     <ClInclude Include="shader.h" />
     <ClInclude Include="spotlight.h" />
     <ClInclude Include="threadpool.h" />
@@ -178,6 +179,7 @@
     <ClCompile Include="renderentity.cpp" />
     <ClCompile Include="rendertotexture.cpp" />
     <ClCompile Include="resourcemanager.cpp" />
+    <ClCompile Include="scenehierarchy.cpp" />
     <ClCompile Include="shader.cpp" />
     <ClCompile Include="spotlight.cpp" />
     <ClCompile Include="threadpool.cpp" />
@@ -210,8 +212,6 @@
     <None Include="..\Bin\Assets\OpenCLKernels\ai.cl" />
     <None Include="..\Bin\Assets\OpenCLKernels\grass.cl" />
     <None Include="..\Bin\Assets\OpenCLKernels\test.cl" />
-    <None Include="ClassDiagram1.cd" />
-    <None Include="ClassDiagram11.cd" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

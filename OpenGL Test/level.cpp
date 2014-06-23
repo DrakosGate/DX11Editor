@@ -38,6 +38,7 @@
 #include "network.h"
 #include "performancegraph.h"
 #include "aicontroller.h"
+#include "scenehierarchy.h"
 
 // This Include
 #include "level.h"
@@ -93,6 +94,7 @@ CLevel::CLevel()
 , m_pFont(0)
 , m_pGraph(0)
 , m_iGraphDelay(0)
+, m_pSceneHierarchy(0)
 , m_pcProcessingMethodName(0)
 , m_iThreadCount(0)
 , m_bCreateObject(false)
@@ -126,6 +128,7 @@ CLevel::~CLevel()
 	}
 	m_pLevelEntities.clear();
 	m_vecGrassEntities.clear();
+	SAFEDELETE(m_pSceneHierarchy);
 	SAFEDELETE(m_pGraph);
 	SAFEDELETE(m_pGrass);
 	SAFEDELETE(m_pNetwork);
@@ -274,6 +277,14 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	m_pEntityManager = new CEntityManager();
 	m_pEntityManager->Initialise(_pDevice);
 
+	//Read level resources
+	m_pSceneHierarchy = new CSceneHierarchy();
+	m_pSceneHierarchy->Initialise("Data/Resources.xml");
+
+	//Load scene resources
+	m_pResourceManager = new CResourceManager();
+	m_pResourceManager->Initialise(_pDevice, m_pEntityManager, m_pSceneHierarchy);
+
 	//Initialise lighting
 	m_pLightManager = new CLightManager();
 	m_pLightManager->Initialise();
@@ -298,10 +309,6 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	m_pHivemind->Initialise(m_pCLKernel, m_pSetupData->iAStarSearchDepth);
 	m_pHivemind->CreateNavigationGrid(_pDevice, m_pEntityManager, &m_pShaderCollection[SHADER_POINTSPRITE], 20.0f, 40, 40);
 	m_pEntityManager->SetLevelInformation(m_pHivemind, m_pLightManager);
-	
-	//Read level resources
-	m_pResourceManager = new CResourceManager();
-	m_pResourceManager->Initialise(_pDevice, m_pEntityManager, "Data/Resources.xml");
 	
 	//Load font
 	m_pFont = new CFontRenderer[FONT_MAX];
@@ -370,7 +377,6 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	m_pEditor->Initialise(_hWindow, this);
 	m_pEditor->LoadFromXML(_pDevice, m_pResourceManager, m_pEntityManager, "Data/EditorLayout.xml");
 	m_pEditor->SetObjectShader(&m_pShaderCollection[SHADER_POINTSPRITE]);
-	m_pEditor->SetDiffuseMap(m_pResourceManager->GetTexture(std::string("menu_button")));
 	m_pEntityManager->AddEntity(m_pEditor, SCENE_UI);
 	
 	//KEY AREA: Create performance graph
@@ -616,22 +622,22 @@ CLevel::ProcessInput(ID3D11Device* _pDevice, float _fDeltaTime)
 			m_pCursor->SetModel(m_pResourceManager->GetModel(m_sSelectedPrefab));
 			m_pCursor->SetDiffuseMap(m_pResourceManager->GetTexture(m_sSelectedPrefab));
 		}
-		//Create new objects
+		//KEY AREA: Create new objects from Editor
 		if (m_bCreateObject && bMouseOverEditor == false)
 		{
 			//Instantiate a new entity
 			if (m_pInput->bLeftMouseClick.bPressed && m_pInput->bLeftMouseClick.bPreviousState == false)
 			{
 				m_pLevelEntities.push_back(m_pEntityManager->InstantiatePrefab(_pDevice,
-					m_pRootNode,
-					m_sSelectedPrefab,
-					&m_pShaderCollection[SHADER_MRT],
-					m_vecGrassEntities,
-					SCENE_3DSCENE,
-					m_pCursor->GetPosition(),
-					D3DXVECTOR3(1.0f, 1.0f, 1.0f),
-					D3DXVECTOR3(0.0f, static_cast<float>(rand() % 360), 0.0f),
-					D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f)));
+											m_pRootNode,
+											m_sSelectedPrefab,
+											&m_pShaderCollection[SHADER_MRT],
+											m_vecGrassEntities,
+											SCENE_3DSCENE,
+											m_pCursor->GetPosition(),
+											D3DXVECTOR3(1.0f, 1.0f, 1.0f),
+											D3DXVECTOR3(0.0f, static_cast<float>(rand() % 360), 0.0f),
+											D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f)));
 			}
 			//Cancel entity creation
 			if (m_pInput->bRightMouseClick.bPressed && m_pInput->bRightMouseClick.bPreviousState == false)
@@ -1233,6 +1239,73 @@ CLevel::CreateObject(ID3D11Device* _pDevice, rapidxml::xml_node<>* _pNode, TEnti
 }
 /**
 *
+* CLevel class Creates an object from an XML node
+* (Task ID: n/a)
+*
+* @author Christopher Howlett
+* @param _pNode XML Node containing object information
+* @return Returns the new prefab object
+*
+*/
+CPrefab* 
+CLevel::CreateObject(ID3D11Device* _pDevice, TSceneNode* _pNode, TEntityNode* _pParentNode)
+{
+	//Get prefab type
+	std::string sType = _pNode->tEntity.sPrefabName;
+	
+	//Get Position Scale and Rotation data
+	D3DXVECTOR3 vecPosition(_pNode->tEntity.vecPosition[0],
+							_pNode->tEntity.vecPosition[1],
+							_pNode->tEntity.vecPosition[2]);
+	D3DXVECTOR3 vecScale(	_pNode->tEntity.vecScale[0],
+							_pNode->tEntity.vecScale[1],
+							_pNode->tEntity.vecScale[2]);
+	D3DXVECTOR3 vecRotation(_pNode->tEntity.vecRotation[0],
+							_pNode->tEntity.vecRotation[1],
+							_pNode->tEntity.vecRotation[2]);
+	//Get Prefab colour							  
+	D3DXCOLOR prefabColour(	_pNode->tEntity.colour[0],
+							_pNode->tEntity.colour[1],
+							_pNode->tEntity.colour[2],
+							_pNode->tEntity.colour[3]);
+
+	//Create an instance of this prefab
+	CPrefab* pNewPrefab = m_pEntityManager->InstantiatePrefab(	_pDevice,
+																_pParentNode,
+																sType,
+																&m_pShaderCollection[SHADER_MRT],
+																m_vecGrassEntities,
+																SCENE_3DSCENE,
+																vecPosition,
+																vecScale,
+																vecRotation,
+																prefabColour);
+
+	//Check if this object has children
+	if (_pNode->vecChildren.size() > 0)
+	{
+		for (unsigned int iChild = 0; iChild < _pNode->vecChildren.size(); ++iChild)
+		{
+			CPrefab* pNewChild = CreateObject(_pDevice, _pNode->vecChildren[iChild], pNewPrefab->GetNode());
+		}
+	}
+	//Check if this object has any lights attached
+	if (_pNode->vecLights.size() > 0)
+	{
+		for (unsigned int iLight = 0; iLight < _pNode->vecLights.size(); ++iLight)
+		{
+			//pNewPrefab->GetNode()->vecLights.push_back(m_pLightManager->AddPoint(D3DXVECTOR3(0.0f, 0.1f, 0.0f), D3DXCOLOR(0.3f, 0.3f, 0.7f, 1.0f), D3DXVECTOR3(10.5f, 0.5f, 0.2f), 1.0f));
+		}
+	}
+
+	//Add new object to the level
+	m_pLevelEntities.push_back(pNewPrefab);
+	m_pEntityManager->AddEntity(pNewPrefab, SCENE_3DSCENE);
+
+	return pNewPrefab;
+}
+/**
+*
 * CLevel class Loads level data from file
 * (Task ID: n/a)
 *
@@ -1260,40 +1333,18 @@ CLevel::LoadLevel(ID3D11Device* _pDevice, char* _pcLevelFilename)
 	//Delete all current entities in the scene
 	for (unsigned int iEntity = 0; iEntity < m_pLevelEntities.size(); ++iEntity)
 	{
-		delete m_pLevelEntities[iEntity];
-		m_pLevelEntities[iEntity] = 0;
+		SAFEDELETE(m_pLevelEntities[iEntity]);
 	}
 	m_pLevelEntities.clear();
 	//Add default point light to the scene
 	m_pLightManager->AddPoint(D3DXVECTOR3(0.0f, 2.0f, 0.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f), D3DXVECTOR3(1.0f, 0.5f, 0.2f), 10.0f);
-	//Open file containing level information
-	rapidxml::file<> xmlFile(_pcLevelFilename);
-	rapidxml::xml_document<> xmlDoc;
 
-	//Parse file string
-	xmlDoc.parse<0>(xmlFile.data());
-	rapidxml::xml_node<>* pRoot = xmlDoc.first_node();
-
-	//Read camera position
-	rapidxml::xml_node<>* pCameraNode = pRoot->first_node("camera");
-	if (pCameraNode)
+	m_pSceneHierarchy->LoadSceneFromXML(_pcLevelFilename);
+	//Read scene information from Scene Hierarchy
+	TSceneNode* pRoot = m_pSceneHierarchy->GetRootNode();
+	for (unsigned int iNode = 0; iNode < pRoot->vecChildren.size(); ++iNode)
 	{
-		D3DXVECTOR3 cameraPos(	ReadFromString<float>(pCameraNode->first_node("position")->first_attribute("x")->value()),
-								ReadFromString<float>(pCameraNode->first_node("position")->first_attribute("y")->value()),
-								ReadFromString<float>(pCameraNode->first_node("position")->first_attribute("z")->value()));
-		D3DXVECTOR3 cameraLook(	ReadFromString<float>(pCameraNode->first_node("direction")->first_attribute("x")->value()),
-								ReadFromString<float>(pCameraNode->first_node("direction")->first_attribute("y")->value()),
-								ReadFromString<float>(pCameraNode->first_node("direction")->first_attribute("z")->value()));
-		m_pCamera->SetPosition(cameraPos);
-		m_pCamera->SetLook(cameraLook);
-	}
-
-	//Loop through models
-	printf("\n  == LOADING LEVEL FROM FILE: %s ==\n", _pcLevelFilename);
-	for (rapidxml::xml_node<>* pCurrentChild = pRoot->first_node("child"); pCurrentChild; pCurrentChild = pCurrentChild->next_sibling())
-	{
-		//Create Object will recursively loop through all children of this object and create those too
-		CPrefab* pNewPrefab = CreateObject(_pDevice, pCurrentChild, m_pRootNode);
+		CPrefab* pNewPrefab = CreateObject(_pDevice, pRoot->vecChildren[iNode], m_pRootNode);
 	}
 
 	//Spawn initial testing AI

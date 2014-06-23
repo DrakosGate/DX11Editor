@@ -20,6 +20,7 @@
 #include "model.h"
 #include "animatedmodel.h"
 #include "entitymanager.h"
+#include "scenehierarchy.h"
 
 // This Include
 #include "resourcemanager.h"
@@ -39,6 +40,7 @@
 *
 */
 CResourceManager::CResourceManager()
+: m_pTextureArray(0)
 {
 	
 }
@@ -75,7 +77,7 @@ CResourceManager::~CResourceManager()
 }
 /**
 *
-* CResourceManager class Initialise
+* CResourceManager class Initialise Loads resources from Scene Hierarchy
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -83,41 +85,23 @@ CResourceManager::~CResourceManager()
 *
 */
 void 
-CResourceManager::Initialise(ID3D11Device* _pDevice, CEntityManager* _pEntityManager, char* _pcResourceFilename)
+CResourceManager::Initialise(ID3D11Device* _pDevice, CEntityManager* _pEntityManager, CSceneHierarchy* _pSceneHierarchy)
 {
 	int iMaxMessageSize = 128;
-	printf("==== Loading Resources from %s ====\n", _pcResourceFilename);
-
-	//Open file containing resource information
-	rapidxml::file<> xmlFile(_pcResourceFilename);
-	rapidxml::xml_document<> xmlDoc;
-	
-	//Parse file string
-	xmlDoc.parse<0>(xmlFile.data());
-	
-	rapidxml::xml_node<>* pRoot = xmlDoc.first_node("resources");
-	rapidxml::xml_node<>* pPrefabNode = xmlDoc.first_node("prefabs");
-
-	//Find root nodes
-	rapidxml::xml_node<>* pModels		= pRoot->first_node("models");
-	rapidxml::xml_node<>* pAnimations	= pRoot->first_node("animations");
-	rapidxml::xml_node<>* pTextures		= pRoot->first_node("textures");
-
-	char* pcBuffer = new char[iMaxMessageSize];
+	char pcBuffer[128];
 	//Loop through models
 	printf("\n  == LOADING MODELS\n");
-	std::string sFilePrefix = pModels->first_node("fileprefix")->value();
-	for(rapidxml::xml_node<>* pCurrentModel = pModels->first_node("model"); pCurrentModel; pCurrentModel = pCurrentModel->next_sibling())
+	for (unsigned int iModel = 0; iModel < _pSceneHierarchy->GetResourceCount(RESOURCE_MODEL); ++iModel)
 	{
-		std::string sModelName = pCurrentModel->first_attribute("id")->value();
-		std::string sModelFilename = pCurrentModel->first_node()->value();
-		//Concatenate model prefix and model filename
-		sprintf_s(pcBuffer, iMaxMessageSize, "%s%s", sFilePrefix.c_str(), sModelFilename.c_str());
-
+		std::string sModelName = _pSceneHierarchy->GetResourceName(RESOURCE_MODEL, iModel);
+		std::string sModelFilename = _pSceneHierarchy->GetResourceFilename(RESOURCE_MODEL, sModelName);
+		sprintf_s(pcBuffer, iMaxMessageSize, "%s", sModelFilename.c_str());
+	
+		//Load model from file
 		CModel* pNewModel = new CModel();
 		pNewModel->Initialise();
 		pNewModel->LoadFromOBJ(_pDevice, 1.0f, pcBuffer, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
-
+	
 		//Add to model map
 		printf("    = Model successfully loaded from %s\n", pcBuffer);
 		m_mapModels[sModelName] = pNewModel;
@@ -125,26 +109,20 @@ CResourceManager::Initialise(ID3D11Device* _pDevice, CEntityManager* _pEntityMan
 	
 	//Loop through textures
 	printf("\n  == LOADING TEXTURES\n");
-	sFilePrefix = pTextures->first_node("fileprefix")->value();
-	for(rapidxml::xml_node<>* pCurrentTexture = pTextures->first_node("texture"); pCurrentTexture; pCurrentTexture = pCurrentTexture->next_sibling())
+	for (unsigned int iTexture = 0; iTexture < _pSceneHierarchy->GetResourceCount(RESOURCE_TEXTURE); ++iTexture)
 	{
-		std::string sTextureName = pCurrentTexture->first_attribute("id")->value();
-		std::string sTextureFilename = pCurrentTexture->first_node()->value();
-		//Concatenate model prefix and model filename
-		std::string sFilename = sFilePrefix + sTextureFilename;
-		sprintf_s(pcBuffer, iMaxMessageSize, "%s ", sFilename.c_str());
+		std::string sTextureName = _pSceneHierarchy->GetResourceName(RESOURCE_TEXTURE, iTexture);
+		std::string sTextureFilename = _pSceneHierarchy->GetResourceFilename(RESOURCE_TEXTURE, sTextureName);
+		sprintf_s(pcBuffer, iMaxMessageSize, "%s", sTextureFilename.c_str());
 		
 		//Load new textures from file
 		ID3D11ShaderResourceView* pNewTexture;
-		HRESULT hTextureResult = D3DX11CreateShaderResourceViewFromFileA( _pDevice,
-																		sFilename.c_str(),
-																		NULL,
-																		NULL,
-																		&pNewTexture,
-																		NULL);
-		//_pDevice->CreateTexture2D()
-		
-		//Add to model map
+		HRESULT hTextureResult = D3DX11CreateShaderResourceViewFromFileA(	_pDevice,
+																			pcBuffer,
+																			NULL,
+																			NULL,
+																			&pNewTexture,
+																			NULL);
 		if(hTextureResult == S_OK)
 		{
 			printf("    = Texture successfully loaded from %s\n", pcBuffer);
@@ -159,65 +137,45 @@ CResourceManager::Initialise(ID3D11Device* _pDevice, CEntityManager* _pEntityMan
 		m_TexturePool.push_back(pNewPoolEntry);
 	}
 
-	//Load prefab types into entity manager from this file
-	LoadPrefabTypes(_pDevice, _pEntityManager, pPrefabNode);
-
-	//Clean up
-	delete[] pcBuffer;
-	pcBuffer = 0;
+	//Pass prefab types to entity manager
+	for (unsigned int iPrefab = 0; iPrefab < _pSceneHierarchy->GetPrefabCount(); ++iPrefab)
+	{
+		TPrefabDefinition* pPrefab = _pSceneHierarchy->GetPrefabDefinition(iPrefab);
+		if (pPrefab)
+		{
+			AddPrefabToEntityManager(_pEntityManager, pPrefab);
+		}
+	}
 }
 /**
 *
-* CResourceManager class Loads all of the prefab types from file
+* CResourceManager class Adds a prefab to the Entity managers prefabs
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
-* @param _pcResourceFilename Name of file containing prefab types
+* @return Returns the new texture
 *
 */
-void
-CResourceManager::LoadPrefabTypes(ID3D11Device* _pDevice, CEntityManager* _pEntityManager, rapidxml::xml_node<>* _pPrefabNode)
+void 
+CResourceManager::AddPrefabToEntityManager(CEntityManager* _pEntityManager, TPrefabDefinition* _pPrefab)
 {
-	int iMaxMessageSize = 128;
-	printf("==== Loading Prefabs from file ====\n");
-
-	//Loop through prefabs
-	printf("\n  == LOADING PREFABS\n");
-	for (rapidxml::xml_node<>* pCurrentPrefab = _pPrefabNode->first_node("prefab"); pCurrentPrefab; pCurrentPrefab = pCurrentPrefab->next_sibling())
+	EAIType eAIType = AI_INVALID;
+	if (_pPrefab->sAIType == "human")
 	{
-		std::string sPrefabName = pCurrentPrefab->first_attribute("id")->value();
-		std::string sPrefabModel = pCurrentPrefab->first_node("model")->value();
-		std::string sPrefabDiffuseTexture = pCurrentPrefab->first_node("texture")->value();
-
-		D3DXVECTOR3 vecScale(	ReadFromString<float>(pCurrentPrefab->first_node("scale")->first_attribute("x")->value()),
-								ReadFromString<float>(pCurrentPrefab->first_node("scale")->first_attribute("y")->value()),
-								ReadFromString<float>(pCurrentPrefab->first_node("scale")->first_attribute("z")->value()));
-		bool bIsAnimated = false;
-		bool bIsStatic = false;
-		if (pCurrentPrefab->first_node("animated"))
-		{
-			bIsAnimated = strcmp(pCurrentPrefab->first_node("animated")->value(), "true") == 0;
-		}
-		if (pCurrentPrefab->first_node("static"))
-		{
-			bIsStatic = strcmp(pCurrentPrefab->first_node("static")->value(), "true") == 0;
-		}
-		EAIType eAIType = AI_INVALID;
-		if (pCurrentPrefab->first_node("aitype"))
-		{
-			if (strcmp(pCurrentPrefab->first_node("aitype")->value(), "human") == 0)
-			{
-				eAIType = AI_HUMAN;
-			}
-			if (strcmp(pCurrentPrefab->first_node("aitype")->value(), "chicken") == 0)
-			{
-				eAIType = AI_CHICKEN;
-			}
-		}
-
-		_pEntityManager->AddPrefab(new TPrefabOptions(sPrefabName, GetModel(sPrefabModel), GetTexture(sPrefabDiffuseTexture), vecScale, eAIType, bIsAnimated, bIsStatic));
-		printf("    = Prefab %s successfully loaded\n", sPrefabName.c_str());
+		eAIType = AI_HUMAN;
 	}
+	else if (_pPrefab->sAIType == "chicken")
+	{
+		eAIType = AI_CHICKEN;
+	}
+	TPrefabOptions* pNewPrefabOptions = new TPrefabOptions(	_pPrefab->sName,
+															m_mapModels[_pPrefab->sName],
+															GetTexture(_pPrefab->sTexture),
+															D3DXVECTOR3(_pPrefab->vecScale[0], _pPrefab->vecScale[1], _pPrefab->vecScale[2]),
+															AI_CHICKEN,
+															_pPrefab->bIsAnimated,
+															_pPrefab->bIsStatic);
+	_pEntityManager->AddPrefab(pNewPrefabOptions);
 }
 /**
 *
@@ -384,6 +342,15 @@ CResourceManager::GetTextureID(ID3D11ShaderResourceView* _pTexture) const
 	}
 	return (iTextureID);
 }
+/**
+*
+* CResourceManager class Compacts texture data into buffer and sends the data to the shader
+* (Task ID: n/a)
+*
+* @author Christopher Howlett
+* @param _pDevContext Pointer to the device context
+*
+*/
 void
 CResourceManager::SendTextureDataToShader(ID3D11DeviceContext* _pDevContext)
 {
