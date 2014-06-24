@@ -1,36 +1,25 @@
 
 ======================================
 	  Christopher Howlett
-	Cloth Simulation README
+	Level Editor README
 ======================================
 
 =========      Controls      =========
-W A S D: 		Move camera
-Left Mouse Button: 	Cloth Interaction
-Right Mouse Button: 	Yaw Camera
-Left Mouse Button: 	Cloth Interaction
-CTRL & Space: 		Elevate Camera
-Shift: 			Boost camera speed
-Arrow Keys: 		Move Sphere
+ 			
+Tilde Key (~):     	Open and Close Editor Interface
+R:       		Hide editor interface and debug information
+Left Mouse Button:  	Interact with editor and objects
+Right Mouse Button:   	Deselect objects.
+			Deselect prefab selection.
 
-TILDE Key:	Draw Controls to screen
+SHIFT:    		Rotate selected object to cursor
+LEFT CONTROL:  		Scale selected object to cursor
+DELETE:    		Delete the selected object
+W, A, S, D:   		Move and strafe camera 
+Mouse:    		Rotate camera
+			Camera  can  also  be  moved  by  moving  the  cursor  to  
+			the  edges  of  the window.
+Mouse Wheel:   		Increase and decrease camera elevation.
 
-1: 		Drag Cloth
-2: 		Tear Cloth
-3: 		Force at mouse
-R: 		Reset Cloth to starting state
-E: 		Extend rods in mouse direction
-3: 		Force at mouse
-NUMPAD + - : 	Increase / Decrease Wind
-
-
-
-Notes_______________________________________
-
-Verlet integration and all collision detection is found in CWireCloth class
-Constraint solving is processed in CSpringLink class
-Gravity and Wind forces are defined in COpenGLRenderer class
-
-Running this software in Debug results in a significant framerate loss.
-
-I apologise for the really bright text colour, could not figure out how to change it and ran out of time.
+G:      		Toggle grass rendering method
+1 - 6:     		Toggle processing method
