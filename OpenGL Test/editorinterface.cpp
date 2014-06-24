@@ -298,13 +298,12 @@ CEditorInterface::IsActive() const
 }
 /**
 *
-* CEditorInterface class Opens the "Load level" dialog box and tells the Level class to load the selected level from file
+* KEY AREA: CEditorInterface class Opens the "Load level" dialog box and tells the Level class to load the selected level from file
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
 *
 */
-//http://weblogs.asp.net/kennykerr/archive/2006/11/10/Windows-Vista-for-Developers-_1320_-Part-6-_1320_-The-New-File-Dialogs.aspx
 void
 CEditorInterface::LoadLevel(ID3D11Device* _pDevice)
 {
@@ -343,7 +342,7 @@ CEditorInterface::LoadLevel(ID3D11Device* _pDevice)
 }
 /**
 *
-* CEditorInterface class Opens the "Save level" dialog box and tells the Level class to save the current level to file
+* KEY AREA: CEditorInterface class Opens the "Save level" dialog box and tells the Level class to save the current level to file
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -427,7 +426,7 @@ CEditorInterface::HasCollided(D3DXVECTOR2& _rPoint, TButton* _pButton)
 }
 /**
 *
-* CEditorInterface class Processes a button pressed according to the buttons name
+* KEY AREA: CEditorInterface class Processes a button pressed according to the buttons name
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -473,7 +472,7 @@ CEditorInterface::ProcessButtonPressed(ID3D11Device* _pDevice, TWindow* _pWindow
 }
 /**
 *
-* CEditorInterface class Loads editor data from an XML file
+* KEY AREA: CEditorInterface class Loads editor data from an XML file
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -587,7 +586,7 @@ CEditorInterface::LoadFromXML(ID3D11Device* _pDevice, CResourceManager* _pResour
 }
 /**
 *
-* CEditorInterface class Adds Prefab Creation Buttons to the current window
+* KEY AREA: CEditorInterface class Adds Prefab Creation Buttons to the current window
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -613,14 +612,16 @@ CEditorInterface::AddPrefabCreationButtons(CEntityManager* _pEntityManager, CRes
 		}
 		pCurrentPrefab = _pEntityManager->GetPrefabOptions(iPrefab);
 
+		//Create a new button for this prefab type
 		TButton* pNewPrefab = new TButton();
 		*pNewPrefab = *_pNewPrefabButton;
 
 		pNewPrefab->vecPosition += D3DXVECTOR3(_pNewPrefabButton->vecScale.x * fButtonGap * iButtonWidth, _pNewPrefabButton->vecScale.y * fButtonGap * -iButtonHeight, 0.0f);
+		//Set the button type to "Create"
 		pNewPrefab->sName = "Create";
+		//Set the button options to the name of the prefab
 		pNewPrefab->sOptions = pCurrentPrefab->pcPrefabName;
 		pNewPrefab->iForegroundTexture = _pResourceManager->GetTextureID(pCurrentPrefab->pTexture);
-		//pNewPrefab->iForegroundTexture = pCurrentPrefab->
 		_pWindow->vecButtons.push_back(pNewPrefab);
 	}
 }

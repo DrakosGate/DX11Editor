@@ -175,6 +175,11 @@ CResourceManager::AddPrefabToEntityManager(CEntityManager* _pEntityManager, TPre
 															AI_CHICKEN,
 															_pPrefab->bIsAnimated,
 															_pPrefab->bIsStatic);
+	//Add prefab children
+	for (unsigned int iChild = 0; iChild < _pPrefab->vecChildren.size(); ++iChild)
+	{
+		pNewPrefabOptions->vecChildren.push_back(_pPrefab->vecChildren[iChild]);
+	}
 	_pEntityManager->AddPrefab(pNewPrefabOptions);
 }
 /**

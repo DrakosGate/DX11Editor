@@ -481,6 +481,7 @@ CEntityManager::InstantiatePrefab(	ID3D11Device* _pDevice,
 		}
 	}
 	AddEntity(pNewEntity, _eScene);
+
 	return pNewEntity;
 }
 /**

@@ -12,6 +12,7 @@
 #include <Windows.h>
 #include <string>
 #include <sstream>
+#include <vector>
 
 #include <D3DX10math.h>
 #include "chrismaths.h"
@@ -19,6 +20,7 @@
 struct ID3D11ShaderResourceView;
 struct ID3D10Blob;
 struct TRay;
+struct TSceneNode;
 
 class CModel;
 
@@ -242,6 +244,10 @@ struct TPrefabOptions
 		bIsAnimated = _bIsAnimated;
 		bIsStatic = _bIsStatic;
 	}
+	~TPrefabOptions()
+	{
+		vecChildren.clear();
+	}
 	std::string pcPrefabName;
 	CModel* pModel;
 	ID3D11ShaderResourceView* pTexture;
@@ -249,6 +255,8 @@ struct TPrefabOptions
 	EAIType eAIType;
 	bool bIsAnimated;
 	bool bIsStatic;
+
+	std::vector<TSceneNode*> vecChildren;
 };
 struct TInputStruct
 {

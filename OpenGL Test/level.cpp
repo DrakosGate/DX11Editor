@@ -415,7 +415,7 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 }
 /**
 *
-* CLevel class Process
+* KEY AREA: CLevel class Process
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -628,16 +628,26 @@ CLevel::ProcessInput(ID3D11Device* _pDevice, float _fDeltaTime)
 			//Instantiate a new entity
 			if (m_pInput->bLeftMouseClick.bPressed && m_pInput->bLeftMouseClick.bPreviousState == false)
 			{
-				m_pLevelEntities.push_back(m_pEntityManager->InstantiatePrefab(_pDevice,
-											m_pRootNode,
-											m_sSelectedPrefab,
-											&m_pShaderCollection[SHADER_MRT],
-											m_vecGrassEntities,
-											SCENE_3DSCENE,
-											m_pCursor->GetPosition(),
-											D3DXVECTOR3(1.0f, 1.0f, 1.0f),
-											D3DXVECTOR3(0.0f, static_cast<float>(rand() % 360), 0.0f),
-											D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f)));
+				//Create scene node information for this object
+				TSceneNode* pNode = new TSceneNode();
+				pNode->tEntity.sPrefabName = m_sSelectedPrefab;
+
+				pNode->tEntity.vecPosition[0] = m_pCursor->GetPosition().x;
+				pNode->tEntity.vecPosition[1] = m_pCursor->GetPosition().y;
+				pNode->tEntity.vecPosition[2] = m_pCursor->GetPosition().z;
+				pNode->tEntity.vecScale[0] = 1.0f;
+				pNode->tEntity.vecScale[1] = 1.0f;
+				pNode->tEntity.vecScale[2] = 1.0f;
+				pNode->tEntity.vecRotation[0] = 0.0f;
+				pNode->tEntity.vecRotation[1] = static_cast<float>(rand() % 360);
+				pNode->tEntity.vecRotation[2] = 0.0f;
+				pNode->tEntity.colour[0] = 1.0f;
+				pNode->tEntity.colour[1] = 1.0f;
+				pNode->tEntity.colour[2] = 1.0f;
+				pNode->tEntity.colour[3] = 1.0f;
+
+				CreateObject(_pDevice, pNode, m_pRootNode);
+				SAFEDELETE(pNode);
 			}
 			//Cancel entity creation
 			if (m_pInput->bRightMouseClick.bPressed && m_pInput->bRightMouseClick.bPreviousState == false)
@@ -781,7 +791,7 @@ CLevel::ProcessEntitySelection(ID3D11Device* _pDevice, float _fDeltaTime)
 }
 /*
 *
-* CLevel class Draw
+* KEY AREA: CLevel class Draw
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -1172,7 +1182,7 @@ CLevel::OnResize(int _iWidth, int _iHeight)
 }
 /**
 *
-* CLevel class Creates an object from an XML node
+* KEY AREA: CLevel class Creates an object from an XML node
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -1239,7 +1249,7 @@ CLevel::CreateObject(ID3D11Device* _pDevice, rapidxml::xml_node<>* _pNode, TEnti
 }
 /**
 *
-* CLevel class Creates an object from an XML node
+* KEY AREA: CLevel class Creates an object from a Scene node structure
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -1281,22 +1291,23 @@ CLevel::CreateObject(ID3D11Device* _pDevice, TSceneNode* _pNode, TEntityNode* _p
 																vecRotation,
 																prefabColour);
 
+	TPrefabOptions* pPrefabOptions = m_pEntityManager->GetPrefabOptions(sType);
 	//Check if this object has children
-	if (_pNode->vecChildren.size() > 0)
+	if (pPrefabOptions->vecChildren.size() > 0)
 	{
-		for (unsigned int iChild = 0; iChild < _pNode->vecChildren.size(); ++iChild)
+		for (unsigned int iChild = 0; iChild < pPrefabOptions->vecChildren.size(); ++iChild)
 		{
-			CPrefab* pNewChild = CreateObject(_pDevice, _pNode->vecChildren[iChild], pNewPrefab->GetNode());
+			CPrefab* pNewChild = CreateObject(_pDevice, pPrefabOptions->vecChildren[iChild], pNewPrefab->GetNode());
 		}
 	}
 	//Check if this object has any lights attached
-	if (_pNode->vecLights.size() > 0)
-	{
-		for (unsigned int iLight = 0; iLight < _pNode->vecLights.size(); ++iLight)
-		{
-			//pNewPrefab->GetNode()->vecLights.push_back(m_pLightManager->AddPoint(D3DXVECTOR3(0.0f, 0.1f, 0.0f), D3DXCOLOR(0.3f, 0.3f, 0.7f, 1.0f), D3DXVECTOR3(10.5f, 0.5f, 0.2f), 1.0f));
-		}
-	}
+	//if (pPrefabOptions->vecLights.size() > 0)
+	//{
+	//	for (unsigned int iLight = 0; iLight < pPrefabOptions->vecLights.size(); ++iLight)
+	//	{
+	//		pNewPrefab->GetNode()->vecLights.push_back(m_pLightManager->AddPoint(D3DXVECTOR3(0.0f, 0.1f, 0.0f), D3DXCOLOR(0.3f, 0.3f, 0.7f, 1.0f), D3DXVECTOR3(10.5f, 0.5f, 0.2f), 1.0f));
+	//	}
+	//}
 
 	//Add new object to the level
 	m_pLevelEntities.push_back(pNewPrefab);

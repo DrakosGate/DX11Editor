@@ -77,7 +77,7 @@ CSceneHierarchy::~CSceneHierarchy()
 }
 /*
 *
-* CSceneHierarchy Initialise
+* KEY AREA: CSceneHierarchy Initialise reads in all resource information from file
 * @author Christopher Howlett
 *
 */
@@ -240,7 +240,7 @@ CSceneHierarchy::LoadPrefabDefinitions(rapidxml::xml_node<>* _pPrefabNode)
 }
 /*
 *
-* CSceneHierarchy Initialise
+* KEY AREA: CSceneHierarchy Reads in scene hierarchy information from level XML file
 * @author Christopher Howlett
 *
 */
@@ -267,7 +267,7 @@ CSceneHierarchy::LoadSceneFromXML(char* _pcXMLFilename)
 }
 /*
 *
-* CSceneHierarchy Adds an object to the node hierarchy
+* KEY AREA: CSceneHierarchy Adds an object to the node hierarchy
 * @author Christopher Howlett
 *
 * @param _pNode Current XML node to interpret
@@ -344,7 +344,7 @@ CSceneHierarchy::AddObject(rapidxml::xml_node<>* _pNode, TSceneNode* _pParentNod
 }
 /*
 *
-* CSceneHierarchy Returns the root node of the hierarchy
+* KEY AREA: CSceneHierarchy Returns the root node of the hierarchy
 * @author Christopher Howlett
 *
 * @return Returns root node of the hierarchy
