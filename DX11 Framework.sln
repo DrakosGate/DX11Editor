@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DX11 Editor", "DX11 Level Editor\DX11Editor.vcxproj", "{B7617E2B-F634-4E33-9890-2BCD52B9CBDF}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OpenGL Test", "DX11 Editor\OpenGL Test.vcxproj", "{B7617E2B-F634-4E33-9890-2BCD52B9CBDF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

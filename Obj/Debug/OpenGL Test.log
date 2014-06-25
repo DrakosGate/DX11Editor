@@ -1,0 +1,169 @@
+﻿Build started 25/06/2014 9:20:32 p.m..
+     1>Project "C:\Users\Christopher\Desktop\DX11Editor\DX11 Editor\OpenGL Test.vcxproj" on node 2 (Build target(s)).
+     1>FxCompile:
+         C:\Program Files (x86)\Windows Kits\8.1\bin\x86\fxc.exe /nologo /T fx_5_0 /Fo "..\Test\\Assets\Shaders\Output\animatedobject_vs.cso" /Od /Zi ..\Bin\Assets\Shaders\animatedobject_vs.hlsl 
+     1>FXC : warning X4717: Effects deprecated for D3DCompiler_47
+         
+         compilation object save succeeded; see C:\Users\Christopher\Desktop\DX11Editor\Test\Assets\Shaders\Output\animatedobject_vs.cso
+         C:\Program Files (x86)\Windows Kits\8.1\bin\x86\fxc.exe /nologo /T fx_5_0 /Fo "..\Test\\Assets\Shaders\Output\deferred_ps.cso" /Od /Zi ..\Bin\Assets\Shaders\deferred_ps.hlsl 
+     1>FXC : warning X4717: Effects deprecated for D3DCompiler_47
+         
+         compilation object save succeeded; see C:\Users\Christopher\Desktop\DX11Editor\Test\Assets\Shaders\Output\deferred_ps.cso
+         C:\Program Files (x86)\Windows Kits\8.1\bin\x86\fxc.exe /nologo /T fx_5_0 /Fo "..\Test\\Assets\Shaders\Output\fontshader_gs.cso" /Od /Zi ..\Bin\Assets\Shaders\fontshader_gs.hlsl 
+     1>FXC : warning X4717: Effects deprecated for D3DCompiler_47
+         
+         compilation object save succeeded; see C:\Users\Christopher\Desktop\DX11Editor\Test\Assets\Shaders\Output\fontshader_gs.cso
+         C:\Program Files (x86)\Windows Kits\8.1\bin\x86\fxc.exe /nologo /T fx_5_0 /Fo "..\Test\\Assets\Shaders\Output\fontshader_ps.cso" /Od /Zi ..\Bin\Assets\Shaders\fontshader_ps.hlsl 
+     1>FXC : warning X4717: Effects deprecated for D3DCompiler_47
+         
+         compilation object save succeeded; see C:\Users\Christopher\Desktop\DX11Editor\Test\Assets\Shaders\Output\fontshader_ps.cso
+         C:\Program Files (x86)\Windows Kits\8.1\bin\x86\fxc.exe /nologo /T fx_5_0 /Fo "..\Test\\Assets\Shaders\Output\fontshader_vs.cso" /Od /Zi ..\Bin\Assets\Shaders\fontshader_vs.hlsl 
+     1>FXC : warning X4717: Effects deprecated for D3DCompiler_47
+         
+         compilation object save succeeded; see C:\Users\Christopher\Desktop\DX11Editor\Test\Assets\Shaders\Output\fontshader_vs.cso
+         C:\Program Files (x86)\Windows Kits\8.1\bin\x86\fxc.exe /nologo /T fx_5_0 /Fo "..\Test\\Assets\Shaders\Output\grassshader_gs.cso" /Od /Zi ..\Bin\Assets\Shaders\grassshader_gs.hlsl 
+     1>FXC : warning X4717: Effects deprecated for D3DCompiler_47
+         
+         compilation object save succeeded; see C:\Users\Christopher\Desktop\DX11Editor\Test\Assets\Shaders\Output\grassshader_gs.cso
+         C:\Program Files (x86)\Windows Kits\8.1\bin\x86\fxc.exe /nologo /T fx_5_0 /Fo "..\Test\\Assets\Shaders\Output\grassshader_ps.cso" /Od /Zi ..\Bin\Assets\Shaders\grassshader_ps.hlsl 
+     1>FXC : warning X4717: Effects deprecated for D3DCompiler_47
+         
+         compilation object save succeeded; see C:\Users\Christopher\Desktop\DX11Editor\Test\Assets\Shaders\Output\grassshader_ps.cso
+         C:\Program Files (x86)\Windows Kits\8.1\bin\x86\fxc.exe /nologo /T fx_5_0 /Fo "..\Test\\Assets\Shaders\Output\grassshader_vs.cso" /Od /Zi ..\Bin\Assets\Shaders\grassshader_vs.hlsl 
+     1>FXC : warning X4717: Effects deprecated for D3DCompiler_47
+         
+         compilation object save succeeded; see C:\Users\Christopher\Desktop\DX11Editor\Test\Assets\Shaders\Output\grassshader_vs.cso
+         C:\Program Files (x86)\Windows Kits\8.1\bin\x86\fxc.exe /nologo /T fx_5_0 /Fo "..\Test\\Assets\Shaders\Output\linerenderer_gs.cso" /Od /Zi ..\Bin\Assets\Shaders\linerenderer_gs.hlsl 
+     1>FXC : warning X4717: Effects deprecated for D3DCompiler_47
+         
+         compilation object save succeeded; see C:\Users\Christopher\Desktop\DX11Editor\Test\Assets\Shaders\Output\linerenderer_gs.cso
+         C:\Program Files (x86)\Windows Kits\8.1\bin\x86\fxc.exe /nologo /T fx_5_0 /Fo "..\Test\\Assets\Shaders\Output\linerenderer_ps.cso" /Od /Zi ..\Bin\Assets\Shaders\linerenderer_ps.hlsl 
+     1>FXC : warning X4717: Effects deprecated for D3DCompiler_47
+         
+         compilation object save succeeded; see C:\Users\Christopher\Desktop\DX11Editor\Test\Assets\Shaders\Output\linerenderer_ps.cso
+         C:\Program Files (x86)\Windows Kits\8.1\bin\x86\fxc.exe /nologo /T fx_5_0 /Fo "..\Test\\Assets\Shaders\Output\linerenderer_vs.cso" /Od /Zi ..\Bin\Assets\Shaders\linerenderer_vs.hlsl 
+     1>FXC : warning X4717: Effects deprecated for D3DCompiler_47
+         
+         compilation object save succeeded; see C:\Users\Christopher\Desktop\DX11Editor\Test\Assets\Shaders\Output\linerenderer_vs.cso
+         C:\Program Files (x86)\Windows Kits\8.1\bin\x86\fxc.exe /nologo /T fx_5_0 /Fo "..\Test\\Assets\Shaders\Output\mrtshader_ps.cso" /Od /Zi ..\Bin\Assets\Shaders\mrtshader_ps.hlsl 
+     1>FXC : warning X4717: Effects deprecated for D3DCompiler_47
+         
+         compilation object save succeeded; see C:\Users\Christopher\Desktop\DX11Editor\Test\Assets\Shaders\Output\mrtshader_ps.cso
+         C:\Program Files (x86)\Windows Kits\8.1\bin\x86\fxc.exe /nologo /T fx_5_0 /Fo "..\Test\\Assets\Shaders\Output\objectshader_ps.cso" /Od /Zi ..\Bin\Assets\Shaders\objectshader_ps.hlsl 
+     1>FXC : warning X4717: Effects deprecated for D3DCompiler_47
+         
+         compilation object save succeeded; see C:\Users\Christopher\Desktop\DX11Editor\Test\Assets\Shaders\Output\objectshader_ps.cso
+         C:\Program Files (x86)\Windows Kits\8.1\bin\x86\fxc.exe /nologo /T fx_5_0 /Fo "..\Test\\Assets\Shaders\Output\objectshader_vs.cso" /Od /Zi ..\Bin\Assets\Shaders\objectshader_vs.hlsl 
+     1>FXC : warning X4717: Effects deprecated for D3DCompiler_47
+         
+         compilation object save succeeded; see C:\Users\Christopher\Desktop\DX11Editor\Test\Assets\Shaders\Output\objectshader_vs.cso
+         C:\Program Files (x86)\Windows Kits\8.1\bin\x86\fxc.exe /nologo /T fx_5_0 /Fo "..\Test\\Assets\Shaders\Output\pointsprite_gs.cso" /Od /Zi ..\Bin\Assets\Shaders\pointsprite_gs.hlsl 
+     1>FXC : warning X4717: Effects deprecated for D3DCompiler_47
+         
+         compilation object save succeeded; see C:\Users\Christopher\Desktop\DX11Editor\Test\Assets\Shaders\Output\pointsprite_gs.cso
+         C:\Program Files (x86)\Windows Kits\8.1\bin\x86\fxc.exe /nologo /T fx_5_0 /Fo "..\Test\\Assets\Shaders\Output\pointsprite_ps.cso" /Od /Zi ..\Bin\Assets\Shaders\pointsprite_ps.hlsl 
+     1>FXC : warning X4717: Effects deprecated for D3DCompiler_47
+         
+         compilation object save succeeded; see C:\Users\Christopher\Desktop\DX11Editor\Test\Assets\Shaders\Output\pointsprite_ps.cso
+         C:\Program Files (x86)\Windows Kits\8.1\bin\x86\fxc.exe /nologo /T fx_5_0 /Fo "..\Test\\Assets\Shaders\Output\pointsprite_vs.cso" /Od /Zi ..\Bin\Assets\Shaders\pointsprite_vs.hlsl 
+     1>FXC : warning X4717: Effects deprecated for D3DCompiler_47
+         
+         compilation object save succeeded; see C:\Users\Christopher\Desktop\DX11Editor\Test\Assets\Shaders\Output\pointsprite_vs.cso
+         C:\Program Files (x86)\Windows Kits\8.1\bin\x86\fxc.exe /nologo /T fx_5_0 /Fo "..\Test\\Assets\Shaders\Output\postprocessing.cso" /Od /Zi ..\Bin\Assets\Shaders\postprocessing.hlsl 
+     1>FXC : warning X4717: Effects deprecated for D3DCompiler_47
+         
+         compilation object save succeeded; see C:\Users\Christopher\Desktop\DX11Editor\Test\Assets\Shaders\Output\postprocessing.cso
+         C:\Program Files (x86)\Windows Kits\8.1\bin\x86\fxc.exe /nologo /T fx_5_0 /Fo "..\Test\\Assets\Shaders\Output\shaderdefines.cso" /Od /Zi ..\Bin\Assets\Shaders\shaderdefines.hlsl 
+     1>FXC : warning X4717: Effects deprecated for D3DCompiler_47
+         
+         compilation object save succeeded; see C:\Users\Christopher\Desktop\DX11Editor\Test\Assets\Shaders\Output\shaderdefines.cso
+       ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _WINDOWS /D _USING_V110_SDK71_ /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"..\Obj\Debug\\" /Fd"..\Obj\Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt aiclkernel.cpp aicontroller.cpp aihivemind.cpp animatedmodel.cpp audioplayer.cpp boundingbox.cpp camera.cpp chrismaths.cpp clock.cpp consolewindow.cpp defines.cpp directionallight.cpp directxrenderer.cpp editorinterface.cpp entitymanager.cpp fontrenderer.cpp grass.cpp grassclkernel.cpp level.cpp light.cpp lightmanager.cpp main.cpp network.cpp openclcontext.cpp openclkernel.cpp performancegraph.cpp pointsprite.cpp model.cpp openglrenderer.cpp pointlight.cpp prefab.cpp renderentity.cpp rendertotexture.cpp resourcemanager.cpp scenehierarchy.cpp shader.cpp spotlight.cpp threadpool.cpp window.cpp
+         window.cpp
+         threadpool.cpp
+         spotlight.cpp
+         shader.cpp
+         scenehierarchy.cpp
+         resourcemanager.cpp
+         rendertotexture.cpp
+         renderentity.cpp
+         prefab.cpp
+         pointlight.cpp
+         openglrenderer.cpp
+         model.cpp
+         pointsprite.cpp
+         performancegraph.cpp
+         openclkernel.cpp
+         openclcontext.cpp
+         network.cpp
+         main.cpp
+         lightmanager.cpp
+         light.cpp
+         Generating Code...
+         Compiling...
+         level.cpp
+         grassclkernel.cpp
+         grass.cpp
+         fontrenderer.cpp
+         entitymanager.cpp
+         editorinterface.cpp
+         directxrenderer.cpp
+         directionallight.cpp
+         defines.cpp
+         consolewindow.cpp
+         clock.cpp
+         chrismaths.cpp
+         camera.cpp
+         boundingbox.cpp
+         audioplayer.cpp
+         animatedmodel.cpp
+         aihivemind.cpp
+         aicontroller.cpp
+         aiclkernel.cpp
+         Generating Code...
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"..\Test\DX11 Editor.exe" /INCREMENTAL /NOLOGO /LIBPATH:"C:\Users\user\Desktop\OpenGL Framework\Bin\glew-1.10.0\lib\Release\Win32" opencl.lib dxgi.lib d3d11.lib d3dx11.lib d3dx10.lib ws2_32.lib assimp.lib fmodexL_vc.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"..\Test\DX11 Editor.pdb" /SUBSYSTEM:WINDOWS,"5.01" /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"..\Test\DX11 Editor.lib" /MACHINE:X86 ..\Obj\Debug\aiclkernel.obj
+         ..\Obj\Debug\aicontroller.obj
+         ..\Obj\Debug\aihivemind.obj
+         ..\Obj\Debug\animatedmodel.obj
+         ..\Obj\Debug\audioplayer.obj
+         ..\Obj\Debug\boundingbox.obj
+         ..\Obj\Debug\camera.obj
+         ..\Obj\Debug\chrismaths.obj
+         ..\Obj\Debug\clock.obj
+         ..\Obj\Debug\consolewindow.obj
+         ..\Obj\Debug\defines.obj
+         ..\Obj\Debug\directionallight.obj
+         ..\Obj\Debug\directxrenderer.obj
+         ..\Obj\Debug\editorinterface.obj
+         ..\Obj\Debug\entitymanager.obj
+         ..\Obj\Debug\fontrenderer.obj
+         ..\Obj\Debug\grass.obj
+         ..\Obj\Debug\grassclkernel.obj
+         ..\Obj\Debug\level.obj
+         ..\Obj\Debug\light.obj
+         ..\Obj\Debug\lightmanager.obj
+         ..\Obj\Debug\main.obj
+         ..\Obj\Debug\network.obj
+         ..\Obj\Debug\openclcontext.obj
+         ..\Obj\Debug\openclkernel.obj
+         ..\Obj\Debug\performancegraph.obj
+         ..\Obj\Debug\pointsprite.obj
+         ..\Obj\Debug\model.obj
+         ..\Obj\Debug\openglrenderer.obj
+         ..\Obj\Debug\pointlight.obj
+         ..\Obj\Debug\prefab.obj
+         ..\Obj\Debug\renderentity.obj
+         ..\Obj\Debug\rendertotexture.obj
+         ..\Obj\Debug\resourcemanager.obj
+         ..\Obj\Debug\scenehierarchy.obj
+         ..\Obj\Debug\shader.obj
+         ..\Obj\Debug\spotlight.obj
+         ..\Obj\Debug\threadpool.obj
+         ..\Obj\Debug\window.obj
+         OpenGL Test.vcxproj -> C:\Users\Christopher\Desktop\DX11Editor\DX11 Editor\..\Test\DX11 Editor.exe
+     1>Done Building Project "C:\Users\Christopher\Desktop\DX11Editor\DX11 Editor\OpenGL Test.vcxproj" (Build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:30.16
