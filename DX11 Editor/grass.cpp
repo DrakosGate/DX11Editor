@@ -12,6 +12,7 @@
 #include "grassclkernel.h"
 #include "resourcemanager.h"
 #include "openclcontext.h"
+#include "network.h"
 
 // This Include
 #include "grass.h"
@@ -33,6 +34,7 @@ CGrass::CGrass()
 : m_pCollisionObjects(0)
 , m_pGrassCLKernel(0)
 , m_pGrassVelocities(0)
+, m_pNetwork(0)
 {
 	m_fGrassSpeed = 1.0f;
 	m_fGrassStiffness = 1.0f;
@@ -98,7 +100,23 @@ CGrass::Initialise(ID3D11Device* _pDevice, COpenCLContext* _pCLKernel, CResource
 	m_pGrassCLKernel->CreateBuffers(_pCLKernel, this, m_pCollisionObjects);
 	_pCLKernel->LoadProgram(m_pGrassCLKernel->GetCLProgram(), m_pGrassCLKernel->GetCLKernel(), "Assets/OpenCLKernels/grass.cl", "ProcessGrass");
 
+	m_pNetwork = CNetwork::GetInstance();
+
 	return true;
+}
+/**
+*
+* CGrass class Process the Distributed pipeline for the grass
+* (Task ID: n/a)
+*
+* @author Christopher Howlett
+* @param _fDeltaTime Game time elapsed
+*
+*/
+void 
+CGrass::ProcessDistrubuted(float _fDeltaTime)
+{
+	m_pNetwork->ProcessGrass(_fDeltaTime);
 }
 /**
 *

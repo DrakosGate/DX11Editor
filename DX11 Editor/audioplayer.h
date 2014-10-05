@@ -30,7 +30,7 @@ enum E3DSoundType
 
 // Prototypes
 
-class CAudioPlayer
+class CAudioPlayer	//			SINGLETON
 {
 //Member functions
 public:

@@ -19,19 +19,19 @@
 // Static Function Prototypes
 
 // Implementation
-void PrintSomething(void* _pData, int _iThreadID)
+void PrintSomething(PARAMETER_TYPE _pData, int _iThreadID)
 {
 	TSetupJob* pJob = reinterpret_cast<TSetupJob*>(_pData);
 	printf("Thread %i: %i\n", _iThreadID, pJob->iData);
 }
-void GrassProcessingThread(void* _pData, int _iThreadID)
+void GrassProcessingThread(PARAMETER_TYPE _pData, int _iThreadID)
 {
 	TGrassThread* pJob = reinterpret_cast<TGrassThread*>(_pData);
 	//Process a section of grass
 	pJob->pGrass->ProcessGrassSection(	pJob->iGrassSection,
 										pJob->fDeltaTime);
 }
-void AIProcessingThread(void* _pData, int _iThreadID)
+void AIProcessingThread(PARAMETER_TYPE _pData, int _iThreadID)
 {
 	TAIThreadData* pParam = reinterpret_cast<TAIThreadData*>(_pData);
 	pParam->pThis->ProcessIndividualAIMovement(pParam->iAIIndex, pParam->fDeltaTime);

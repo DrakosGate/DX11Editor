@@ -278,6 +278,7 @@ struct TInputStruct
 		b4.bPressed = false;
 		b5.bPressed = false;
 		b6.bPressed = false;
+		b8.bPressed = false;
 		bReset.bPressed = false;
 		bShift.bPressed = false;
 		bCtrl.bPressed = false;
@@ -308,6 +309,7 @@ struct TInputStruct
 		b4.RecordPreviousState();
 		b5.RecordPreviousState();
 		b6.RecordPreviousState();
+		b7.RecordPreviousState();
 		bReset.RecordPreviousState();
 		bShift.RecordPreviousState();
 		bCtrl.RecordPreviousState();
@@ -341,6 +343,8 @@ struct TInputStruct
 	TButtonState b4;
 	TButtonState b5;
 	TButtonState b6;
+	TButtonState b7;
+	TButtonState b8;
 	//Mouse
 	TButtonState bLeftMouseClick;
 	TButtonState bRightMouseClick;

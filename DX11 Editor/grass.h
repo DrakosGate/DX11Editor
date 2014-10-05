@@ -15,6 +15,7 @@
 
 // Local Includes
 #include "model.h"
+#include "networkdefines.h"
 
 // Types
 
@@ -24,6 +25,7 @@
 class CGrassCLKernel;
 class COpenCLContext;
 class CResourceManager;
+class CNetwork;
 
 class CGrass : public CModel
 {
@@ -33,6 +35,7 @@ public:
 	virtual ~CGrass();
 	bool Initialise(ID3D11Device* _pDevice, COpenCLContext* _pCLKernel, CResourceManager* _pResourceManager, int _iGrassDimensions, float _fScale, D3DXVECTOR2& _rVecTiling, D3DXCOLOR& _rColour, int _iProcessingDivisionSize);
 	
+	void ProcessDistrubuted(float _fDeltaTime);
 	void ProcessOpenCL(COpenCLContext* _pCLKernel, float _fDeltaTime);
 	void SendCollisionData(std::vector<CRenderEntity*>* _pCollisionObjects);
 	void ProcessGrassSection(int _iSection, float _fDeltaTime);
@@ -42,6 +45,8 @@ public:
 
 	//Member variables
 protected:
+	CNetwork* m_pNetwork;
+
 	std::vector<CRenderEntity*>* m_pCollisionObjects;
 	CGrassCLKernel* m_pGrassCLKernel;
 	D3DXVECTOR3* m_pGrassVelocities;

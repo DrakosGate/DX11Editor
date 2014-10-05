@@ -115,6 +115,8 @@ CLevel::CLevel()
 */
 CLevel::~CLevel()
 {
+	CNetwork::DestroyInstance();
+
 	//Wait for parallel processes to finish
 	SAFEDELETE(m_pThreadPool);
 	SAFEDELETE(m_pCLKernel);
@@ -131,7 +133,6 @@ CLevel::~CLevel()
 	SAFEDELETE(m_pSceneHierarchy);
 	SAFEDELETE(m_pGraph);
 	SAFEDELETE(m_pGrass);
-	SAFEDELETE(m_pNetwork);
 	SAFEDELETE(m_pEditor);
 	SAFEDELETE(m_pCursor);
 	SAFEDELETE(m_pSelectionCursor);
@@ -288,11 +289,6 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	//Initialise lighting
 	m_pLightManager = new CLightManager();
 	m_pLightManager->Initialise();
-
-	//Setup network for distributed processing
-	m_pNetwork = new CNetwork();
-	m_pNetwork->Initialise();
-	m_pNetwork->CreateServer();
 	
 	//KEY AREA: Setup OpenCL
 	m_pCLKernel = new COpenCLContext();
@@ -409,6 +405,12 @@ CLevel::CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext
 	m_pSelectionCursor->SetDoDraw(false);
 	m_pEntityManager->AddEntity(m_pSelectionCursor, SCENE_PERMANENTSCENE);
 
+	
+	//KEY AREA: Setup network for distributed processing
+	m_pNetwork = CNetwork::GetInstance();
+	m_pNetwork->Initialise(m_pGrass, m_pHivemind); 
+	
+	
 	_pDevContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	_pDevContext->IASetInputLayout(m_pVertexLayout[VERTEX_STATIC]);
 	_pDevContext->PSSetSamplers(0, 1, &m_pSamplerState);
@@ -430,6 +432,7 @@ CLevel::Process(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDeviceContext, CC
 
 	m_pCamera->Process(_fDeltaTime);
 	m_pOrthoCamera->Process(_fDeltaTime);
+	m_pNetwork->Process(_fDeltaTime);
 
 	//Process camera and movement
 	//m_pPlayer->ProcessInput(_fDeltaTime);
@@ -467,23 +470,40 @@ CLevel::Process(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDeviceContext, CC
 		//Calculate grass offsets
 		m_pGrass->SendCollisionData(&m_vecGrassEntities);
 		if (m_vecGrassEntities.size() > 0)
-		{
-			for (int iSection = 0; iSection < m_iThreadCount; ++iSection)
+		{			
+			switch (m_eGrassProcessingMethod)
 			{
-				if (m_eGrassProcessingMethod == PROCESSING_SEQUENTIAL)
+			case PROCESSING_SEQUENTIAL:
 				{
-					m_pGrass->ProcessGrassSection(iSection, _fDeltaTime);
+					for (int iSection = 0; iSection < m_iThreadCount; ++iSection)
+					{
+						m_pGrass->ProcessGrassSection(iSection, _fDeltaTime);
+					}
+					break;
 				}
-				else if (m_eGrassProcessingMethod == PROCESSING_THREADPOOL)
+			case PROCESSING_THREADPOOL:
 				{
-					m_pGrassJobs[iSection].fDeltaTime = _fDeltaTime;
-					m_pThreadPool->AddJobToPool(&GrassProcessingThread, &m_pGrassJobs[iSection]);
+					for (int iSection = 0; iSection < m_iThreadCount; ++iSection)
+					{
+						m_pGrassJobs[iSection].fDeltaTime = _fDeltaTime;
+						m_pThreadPool->AddJobToPool(&GrassProcessingThread, &m_pGrassJobs[iSection]);
+					}
+					break;
 				}
-				else
+			case PROCESSING_OPENCL:
 				{
 					m_pGrass->ProcessOpenCL(m_pCLKernel, _fDeltaTime);
+					break;
 				}
-			}
+			case PROCESSING_DISTRIBUTED:
+				{
+					m_pNetwork->SendGrassData(m_pGrass, &m_vecGrassEntities);
+					m_pGrass->ProcessDistrubuted(_fDeltaTime);
+					break;
+				}
+			default:
+				break;
+			};
 		}
 		//Recreate the grass vertex buffer with new vertex information
 		m_pGrass->RecreateGrassMesh(_pDevice,
@@ -577,18 +597,26 @@ CLevel::ProcessInput(ID3D11Device* _pDevice, float _fDeltaTime)
 		{
 			ChangeGrassProcessingMethod(PROCESSING_OPENCL);
 		}
-		//Toggle AI processing method
 		if (m_pInput->b4.bPressed)
+		{
+			ChangeGrassProcessingMethod(PROCESSING_DISTRIBUTED);
+		}
+		//Toggle AI processing method
+		if (m_pInput->b5.bPressed)
 		{
 			ChangeAIProcessingMethod(PROCESSING_SEQUENTIAL);
 		}
-		if (m_pInput->b5.bPressed)
+		if (m_pInput->b6.bPressed)
 		{
 			ChangeAIProcessingMethod(PROCESSING_THREADPOOL);
 		}
-		if (m_pInput->b6.bPressed)
+		if (m_pInput->b7.bPressed)
 		{
 			ChangeAIProcessingMethod(PROCESSING_OPENCL);
+		}
+		if (m_pInput->b8.bPressed)
+		{
+			ChangeAIProcessingMethod(PROCESSING_DISTRIBUTED);
 		}
 		if (m_pInput->bG.bPressed && m_pInput->bG.bPreviousState == false)
 		{

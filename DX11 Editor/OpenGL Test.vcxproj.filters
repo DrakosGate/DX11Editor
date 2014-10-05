@@ -52,12 +52,6 @@
     <Filter Include="Resource Files\OpenCL Kernels">
       <UniqueIdentifier>{7594ffa1-2b7f-4c36-8b45-c1045f358c4d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Networking">
-      <UniqueIdentifier>{35d89478-0fad-45f4-ba8e-7147d467fdd1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Networking">
-      <UniqueIdentifier>{c08b261f-602a-4140-bf78-6826b4c9f866}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\Audio">
       <UniqueIdentifier>{6ad89972-7725-4098-8a5e-27ff6819522f}</UniqueIdentifier>
     </Filter>
@@ -165,9 +159,6 @@
     <ClInclude Include="fontrenderer.h">
       <Filter>Header Files\Rendering</Filter>
     </ClInclude>
-    <ClInclude Include="network.h">
-      <Filter>Header Files\Networking</Filter>
-    </ClInclude>
     <ClInclude Include="aiclkernel.h">
       <Filter>Header Files\Parallel</Filter>
     </ClInclude>
@@ -191,6 +182,9 @@
     </ClInclude>
     <ClInclude Include="scenehierarchy.h">
       <Filter>Header Files\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="network.h">
+      <Filter>Header Files\Parallel</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -284,9 +278,6 @@
     <ClCompile Include="pointlight.cpp">
       <Filter>Source Files\Lighting</Filter>
     </ClCompile>
-    <ClCompile Include="network.cpp">
-      <Filter>Source Files\Networking</Filter>
-    </ClCompile>
     <ClCompile Include="aiclkernel.cpp">
       <Filter>Source Files\Parallel</Filter>
     </ClCompile>
@@ -310,6 +301,9 @@
     </ClCompile>
     <ClCompile Include="scenehierarchy.cpp">
       <Filter>Source Files\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="network.cpp">
+      <Filter>Source Files\Parallel</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

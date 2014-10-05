@@ -62,9 +62,9 @@ struct TGrassThread
 // Prototypes
 
 //Thread Function Declarations
-void GrassProcessingThread(void* _pData, int _iThreadID);
-void PrintSomething(void* _pData, int _iThreadID);
-void AIProcessingThread(void* _pData, int _iThreadID);
+void GrassProcessingThread(PARAMETER_TYPE _pData, int _iThreadID);
+void PrintSomething(PARAMETER_TYPE _pData, int _iThreadID);
+void AIProcessingThread(PARAMETER_TYPE _pData, int _iThreadID);
 
 class CThread;
 

@@ -484,6 +484,16 @@ CWindow::msgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			m_tInput.b6.bPressed = true;
 			break;
 		}
+		case '7':
+		{
+			m_tInput.b7.bPressed = true;
+			break;
+		}
+		case '8':
+		{
+			m_tInput.b8.bPressed = true;
+			break;
+		}
 		case 'T':
 		{
 			m_tInput.bReset.bPressed = true;
@@ -596,6 +606,16 @@ CWindow::msgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		case '6':
 		{
 			m_tInput.b6.bPressed = false;
+			break;
+		}
+		case '7':
+		{
+			m_tInput.b7.bPressed = false;
+			break;
+		}
+		case '8':
+		{
+			m_tInput.b8.bPressed = false;
 			break;
 		}
 		case 'T':
