@@ -26,7 +26,7 @@ float4 FinalColourPS(PS_IN _input) : SV_TARGET
 }
 float4 PixelatePS(PS_IN _input) : SV_TARGET
 {
-	float fPixelSize = 0.008f;
+	float fPixelSize = 0.015f;
 	float2 pixelTexCoord = float2(_input.texC.x - fmod(_input.texC.x, fPixelSize), _input.texC.y - fmod(_input.texC.y, fPixelSize));
 	float4 diffuseColour = diffuseMap.Sample(textureSampler, pixelTexCoord);
 	diffuseColour.a = 1.0f;

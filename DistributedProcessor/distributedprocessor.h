@@ -32,6 +32,7 @@ private:
 	bool m_bIsActive;
 	TNetGrassData* m_pGrassData;
 	D3DXVECTOR3* m_pGrassOutData;
+	float fActiveGrassTimer;
 
 	//Networking variables
 	TIPAddress m_tIP;

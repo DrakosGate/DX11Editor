@@ -167,6 +167,7 @@ CDistributedProcessor::ProcessNetMessage(TMessage* _pMessage, sockaddr_in* _pSou
 void
 CDistributedProcessor::ProcessGrassSection(TMessage* _pMessage, int _iSection, float _fDeltaTime)
 {
+	fActiveGrassTimer += _fDeltaTime;
 	TNetGrassData tGrassData;
 	tGrassData.grassNormal = reinterpret_cast<D3DXVECTOR3*>(&_pMessage->cMessageBuffer);
 	//KEY AREA: Distributed grass processing function
@@ -177,29 +178,16 @@ CDistributedProcessor::ProcessGrassSection(TMessage* _pMessage, int _iSection, f
 		{
 			int iCurrentVertex = iStartingPosition + iBlade;
 			if (iCurrentVertex < m_pGrassData->iVertexCount)
+			{				
+				m_pGrassOutData[iCurrentVertex].x = sinf(fActiveGrassTimer) * 0.5f;
+				m_pGrassOutData[iCurrentVertex].y = 1.0f;
+				m_pGrassOutData[iCurrentVertex].z = 0.0f;
+				D3DXVec3Normalize(&m_pGrassOutData[iCurrentVertex], &m_pGrassOutData[iCurrentVertex]);
+			}
+			if (m_pGrassOutData[iCurrentVertex].y < 0.5f)
 			{
-				//Avoid entities
-				D3DXVECTOR3 vecToEntity;
-				float fAvoidanceRange = 1.0f;
-				unsigned int iNumEntities = m_pGrassData->iNumObstacles;
-				for (unsigned int iEntity = 0; iEntity < iNumEntities; ++iEntity)
-				{
-					//Obstacle info
-					D3DXVECTOR3 vecObstaclePos = D3DXVECTOR3(m_pGrassData->pObstacleData[iEntity].x, m_pGrassData->pObstacleData[iEntity].y, m_pGrassData->pObstacleData[iEntity].z);
-					float fObstacleRadius = m_pGrassData->pObstacleData[iEntity].z;
-					fAvoidanceRange = fObstacleRadius * fObstacleRadius;
-
-					vecToEntity = vecObstaclePos - m_pGrassData->grassPos[iCurrentVertex];
-					float fDistanceToEntity = D3DXVec3LengthSq(&vecToEntity);
-					if (fDistanceToEntity < fAvoidanceRange)
-					{
-						m_pGrassOutData[iCurrentVertex] -= (vecToEntity * (fAvoidanceRange - fDistanceToEntity)) * 2.0f * 5.0f * _fDeltaTime;
-					}
-				}
-				if (m_pGrassOutData[iCurrentVertex].y < 0.5f)
-				{
-					m_pGrassOutData[iCurrentVertex].y = 0.5f;
-				}
+				m_pGrassOutData[iCurrentVertex].y = 0.5f;
+			}
 			}
 		}
 	}
