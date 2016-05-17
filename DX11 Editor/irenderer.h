@@ -1,15 +1,9 @@
-//
-//  File Name   :   irenderer.h
-//  Description :   Class of IRenderer
-//  Author      :   Christopher Howlett
-//  Mail        :   drakos_gate@yahoo.com
-//
-#ifndef __IRENDERER_H__
-#define __IRENDERER_H__
+
+#pragma once
 
 #include "defines.h"
 
-class CClock;
+struct TSetupStruct;
 
 //Renderer interface
 class IRenderer
@@ -18,19 +12,13 @@ public:
 	IRenderer(){};
 	virtual ~IRenderer(){};
 
-	virtual bool Initialise(HWND _hWnd, TSetupStruct* _pSetupData, int _iWindowWidth, int _iWindowHeight, TInputStruct* _pInput){ return true; };
+	virtual bool Initialise( HWND _hWnd, TSetupStruct* _pSetupData, int _iWindowWidth, int _iWindowHeight ) = 0;
 	virtual void CleanUp(){};
-	virtual void ExecuteOneFrame(CClock* _pClock, float _fDeltaTick){};
-	virtual void SetFPSCount(int _iFramesPerSecond){};
 
 private:
 	IRenderer(const IRenderer& _kr);
 	IRenderer& operator= (const IRenderer& _rhs);
 
 protected:
-	HWND m_hWindow;
-	int m_iWindowWidth;
-	int m_iWindowHeight;
 };
 
-#endif //IRENDERER_H__

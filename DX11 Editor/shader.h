@@ -11,8 +11,6 @@
 #define __SHADER_H__
 
 // Library Includes
-#include <D3DX10.h>
-
 // Local Includes
 #include "defines.h"
 #include "light.h"
@@ -36,7 +34,7 @@ struct ID3D11GeometryShader;
 struct ID3D11PixelShader;
 struct ID3D11Buffer;
 
-class CCamera;
+class Camera;
 class CLightManager;
 
 class CShader
@@ -44,15 +42,15 @@ class CShader
 	//Shader structures
 	struct TMatBuffer
 	{
-		D3DXMATRIX matWorld;
-		D3DXMATRIX matView;
-		D3DXMATRIX matProj;
+		Math::Matrix matWorld;
+		Math::Matrix matView;
+		Math::Matrix matProj;
 	};
 	struct TLightBuffer
 	{
 		TLightInfo lightInfo[MAX_LIGHTS];		//112 bytes
 
-		D3DXVECTOR3 vecCameraPos;	//12
+		Math::Vector3 veCameraPos;	//12
 		int iActiveLightCount;		//4
 	};
 
@@ -66,8 +64,8 @@ public:
 	void CompilePixelShader(ID3D11Device* _pDevice, wchar_t* _pcPSFilename, char* _pcPSFunction);
 	void CompileGeometryShader(ID3D11Device* _pDevice, wchar_t* _pcGSFilename, char* _pcGSFunction);
 	
-	void SendWVPMatrixData(ID3D11DeviceContext* _pDeviceContext, D3DXMATRIX* _pWorld, D3DXMATRIX* _pView, D3DXMATRIX* _pProjection);
-	void SendLightInformation(ID3D11DeviceContext* _pDeviceContext, CLightManager* _pLightManager, CCamera* _pActiveCamera);
+	void SendWVPMatrixData(ID3D11DeviceContext* _pDeviceContext, Math::Matrix* _pWorld, Math::Matrix* _pView, Math::Matrix* _pProjection);
+	void SendLightInformation(ID3D11DeviceContext* _pDeviceContext, CLightManager* _pLightManager, Camera* _pActiveCamera);
 	
 	ID3D11VertexShader* GetVertexShader() const;
 	ID3D11GeometryShader* GetGeometryShader() const;

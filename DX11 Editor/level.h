@@ -34,8 +34,8 @@ struct TEntityNode;
 struct TGrassThread;
 struct TSceneNode;
 
-class CClock;
-class CModel;
+class Clock;
+class Model;
 class CAnimatedModel;
 class CGrass;
 class CScene;
@@ -43,12 +43,12 @@ class CPrefab;
 class CAIHiveMind;
 class CLightManager;
 class CPlayer;
-class CRenderEntity;
+class RenderEntity;
 class CRenderToTexture;
 class CEntityManager;
 class CShader;
-class CCamera;
-class CDirectXRenderer;
+class Camera;
+class DX11Renderer;
 class CResourceManager;
 class CEditorInterface;
 class CThreadPool;
@@ -64,31 +64,30 @@ public:
 	CLevel();
 	virtual ~CLevel();
 
-	virtual bool Initialise(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext, CDirectXRenderer* _pRenderer, TSetupStruct* _pSetupData, HWND _hWindow, TInputStruct* _pInput, int _iScreenWidth, int _iScreenHeight);
-	virtual void CreateEntities(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext, HWND _hWindow);
-	virtual void Process(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDeviceContext, CClock* _pClock, float _fDeltaTime);
-	virtual bool ProcessInput(ID3D11Device* _pDevice, float _fDeltaTime);
-	virtual void ProcessEntitySelection(ID3D11Device* _pDevice, float _fDeltaTime);
-	virtual void Draw(ID3D11DeviceContext* _pDevice);
-	virtual void DrawScene(ID3D11DeviceContext* _pDevice, CShader* _pSceneShader, CCamera* _pCurrentCamera, EGameScene _EGameScene);
-	
-	virtual void AddTextToSceneGraph(TEntityNode* _pEntityNode, int& _iTextOffset, int _iTabCount);
-	virtual void CreateRenderTargets(ID3D11Device* _pDevice);
-	
-	void OnResize(int _iWidth, int _iHeight);	
-	CPrefab* CreateObject(ID3D11Device* _pDevice, rapidxml::xml_node<>* _pNode, TEntityNode* _pParentNode);
-	CPrefab* CreateObject(ID3D11Device* _pDevice, TSceneNode* _pNode, TEntityNode* _pParentNode);
-	void LoadLevel(ID3D11Device* _pDevice, char* _pcLevelFilename);
-	void SaveLevel(ID3D11Device* _pDevice, char* _pcLevelFilename);
-	void AddChildToXMLNode(rapidxml::xml_document<>* _pDocument, rapidxml::xml_node<>* _pParentNode, TEntityNode* _pChildNode);
+	virtual bool Initialise( ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext, DX11Renderer* _pRenderer, TSetupStruct* _pSetupData, HWND _hWindow, int _iScreenWidth, int _iScreenHeight );
+	virtual void CreateEntities( ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext, HWND _hWindow );
+	virtual void Process( ID3D11Device* _pDevice, ID3D11DeviceContext* _pDeviceContext, Clock* _pClock, float _fDeltaTime );
+	virtual void ProcessEntitySelection( ID3D11Device* _pDevice, float _fDeltaTime );
+	virtual void Draw( ID3D11DeviceContext* _pDevice );
+	virtual void DrawScene( ID3D11DeviceContext* _pDevice, CShader* _pSceneShader, Camera* _pCurrentCamera, EGameScene _EGameScene );
 
-	void ChangeAIProcessingMethod(EProcessingMethod _eProcessingMethod);
-	void ChangeGrassProcessingMethod(EProcessingMethod _eProcessingMethod);
+	virtual void AddTextToSceneGraph( TEntityNode* _pEntityNode, int& _iTextOffset, int _iTabCount );
+	virtual void CreateRenderTargets( ID3D11Device* _pDevice );
+
+	void OnResize( int _iWidth, int _iHeight );
+	CPrefab* CreateObject( ID3D11Device* _pDevice, rapidxml::xml_node<>* _pNode, TEntityNode* _pParentNode );
+	CPrefab* CreateObject( ID3D11Device* _pDevice, TSceneNode* _pNode, TEntityNode* _pParentNode );
+	void LoadLevel( ID3D11Device* _pDevice, char* _pcLevelFilename );
+	void SaveLevel( ID3D11Device* _pDevice, char* _pcLevelFilename );
+	void AddChildToXMLNode( rapidxml::xml_document<>* _pDocument, rapidxml::xml_node<>* _pParentNode, TEntityNode* _pChildNode );
+
+	void ChangeAIProcessingMethod( EProcessingMethod _eProcessingMethod );
+	void ChangeGrassProcessingMethod( EProcessingMethod _eProcessingMethod );
 
 private:
-	void LoadShaderData(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext);
-	void BuildLevelVertexLayouts(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext);
- 
+	void LoadShaderData( ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext );
+	void BuildLevelVertexLayouts( ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext );
+
 private:
 	EGameScene m_eGameScene;
 	ERenderState m_eRenderState;
@@ -96,8 +95,8 @@ private:
 	EProcessingMethod m_eAIProcessingMethod;
 	std::string* m_pcProcessingMethodName;
 	TSetupStruct* m_pSetupData;
-	
-	CDirectXRenderer* m_pRenderer;
+
+	DX11Renderer* m_pRenderer;
 	CResourceManager* m_pResourceManager;
 	CSceneHierarchy* m_pSceneHierarchy;
 	COpenCLContext* m_pCLKernel;
@@ -113,15 +112,14 @@ private:
 
 	CEntityManager* m_pEntityManager;
 	TEntityNode* m_pRootNode;
-	TInputStruct* m_pInput;
 	bool m_bInputIsEnabled;
 	float m_fGameTimeElapsed;
 
 	//Game entities
 	//CPlayer* m_pPlayer;
 	CPrefab* m_pCursor;
-	CModel* m_pTerrain;
-	CModel* m_pSelectionCursor;
+	Model* m_pTerrain;
+	Model* m_pSelectionCursor;
 
 	//Editor
 	CEditorInterface* m_pEditor;
@@ -129,24 +127,24 @@ private:
 	std::string m_sSelectedPrefab;
 	bool m_bCreateObject;
 
-	CRenderEntity* m_pSelectedObject;
+	RenderEntity* m_pSelectedObject;
 	float m_fSelectedMouseDistance;
 	float m_fSelectedObjectScale;
 	bool m_bHasSelectedObject;
 
 	CGrass* m_pGrass;
-	std::vector<CRenderEntity*> m_vecGrassEntities;
+	std::vector<RenderEntity*> m_vecGrassEntities;
 	EGrassState m_eGrassState;
 	float m_fGrassScale;
 
 	CAIHiveMind* m_pHivemind;
-	
-	CCamera* m_pCamera;
-	CCamera* m_pOrthoCamera;
-	
+
+	Camera* m_pCamera;
+	Camera* m_pOrthoCamera;
+
 	//Lighting
 	CLightManager* m_pLightManager;
-	
+
 	//Render targets
 	CRenderToTexture* m_pRenderTargets;
 	CRenderToTexture* m_pDiffuseMRT;
@@ -154,19 +152,19 @@ private:
 	CRenderToTexture* m_pPositionMRT;
 	CRenderToTexture* m_pDepthMRT;
 	ID3D11RenderTargetView** m_pMRT;
-	
+
 	bool bLastMouseState;
-	
-	CModel* m_pRenderTarget;	//Main screen render target
-	CModel* m_pRenderMonitor;	//Smaller monitors to render to
+
+	Model* m_pRenderTarget;	//Main screen render target
+	Model* m_pRenderMonitor;	//Smaller monitors to render to
 
 	CShader* m_pShaderCollection;
-	
+
 	//Temp Matrices
-	D3DXMATRIX m_matWorld;
-	D3DXMATRIX m_matProjection;
-	D3DXMATRIX m_matWorldViewProjection;
-	
+	Math::Matrix m_matWorld;
+	Math::Matrix m_matProjection;
+	Math::Matrix m_matWorldViewProjection;
+
 	//Vertex Information
 	ID3D11InputLayout** m_pVertexLayout;
 	ID3D11RasterizerState* m_pRasteriserState;
@@ -176,7 +174,7 @@ private:
 	//Screen info
 	int m_iScreenWidth;
 	int m_iScreenHeight;
-	float m_pClearColour[4];
+	float m_pClearColour[ 4 ];
 };
 
 

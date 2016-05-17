@@ -66,9 +66,6 @@
     <ClInclude Include="defines.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="chrismaths.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="level.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -97,9 +94,6 @@
       <Filter>Header Files\Rendering</Filter>
     </ClInclude>
     <ClInclude Include="boundingbox.h">
-      <Filter>Header Files\Rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="directxrenderer.h">
       <Filter>Header Files\Rendering</Filter>
     </ClInclude>
     <ClInclude Include="irenderer.h">
@@ -186,12 +180,12 @@
     <ClInclude Include="network.h">
       <Filter>Header Files\Parallel</Filter>
     </ClInclude>
+    <ClInclude Include="mathlibrary.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chrismaths.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="defines.cpp">
@@ -225,9 +219,6 @@
       <Filter>Source Files\Rendering</Filter>
     </ClCompile>
     <ClCompile Include="boundingbox.cpp">
-      <Filter>Source Files\Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="directxrenderer.cpp">
       <Filter>Source Files\Rendering</Filter>
     </ClCompile>
     <ClCompile Include="model.cpp">
@@ -304,6 +295,9 @@
     </ClCompile>
     <ClCompile Include="network.cpp">
       <Filter>Source Files\Parallel</Filter>
+    </ClCompile>
+    <ClCompile Include="mathlibrary.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

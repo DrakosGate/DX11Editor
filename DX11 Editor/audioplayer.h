@@ -12,9 +12,9 @@
 
 // Library Includes
 #include "../Bin/Tools/FMOD Api/inc/fmod.hpp"
-#include <D3DX10.h>
 
 // Local Includes
+#include "mathlibrary.h"
 
 // Types
 enum E3DSoundType
@@ -32,27 +32,27 @@ enum E3DSoundType
 
 class CAudioPlayer	//			SINGLETON
 {
-//Member functions
+	//Member functions
 public:
 	virtual ~CAudioPlayer();
 
-	virtual bool Initialise(bool _bLoadSounds = true);
+	virtual bool Initialise( bool _bLoadSounds = true );
 	virtual void LoadSounds();
 	virtual void Process();
 
-	virtual void Play3DSound(E3DSoundType _eSound, D3DXVECTOR3& _vecPosition);
-	virtual void SetListenerPosition(D3DXVECTOR3& _rVecListenerPos, D3DXVECTOR3& _rVecForward, D3DXVECTOR3& _rVecUp);
+	virtual void Play3DSound( E3DSoundType _eSound, Math::Vector3& _vecPosition );
+	virtual void SetListenerPosition( Math::Vector3& _rVecListenerPos, Math::Vector3& _rVecForward, Math::Vector3& _rVecUp );
 
 	//Singleton Methods
 	static CAudioPlayer& GetInstance();
 	static void DestroyInstance();
-	
+
 private:
 	CAudioPlayer();
-	CAudioPlayer(const CAudioPlayer& _krInstanceToCopy);
-	const CAudioPlayer& operator =(const CAudioPlayer& _krInstanceToCopy);
+	CAudioPlayer( const CAudioPlayer& _krInstanceToCopy );
+	const CAudioPlayer& operator =( const CAudioPlayer& _krInstanceToCopy );
 
-//Member variables
+	//Member variables
 protected:
 	static CAudioPlayer* s_pAudio;
 

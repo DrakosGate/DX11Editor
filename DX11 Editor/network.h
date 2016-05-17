@@ -44,7 +44,7 @@ public:
 	void ProcessNetMessage(TMessage* _pMessage, sockaddr_in* _pSourceClient);
 	void ProcessGrass(float _fDeltaTime);
 	void ProcessAI(float _fDeltaTime);
-	void SendGrassData(CGrass* _pGrass, std::vector<CRenderEntity*>* _pCollisionObjects);
+	void SendGrassData(CGrass* _pGrass, std::vector<RenderEntity*>* _pCollisionObjects);
 
 	//Singleton Methods
 	static CNetwork* GetInstance();

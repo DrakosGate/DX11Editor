@@ -23,7 +23,7 @@
 
 // Prototypes
 
-class CPointSprite : public CModel
+class CPointSprite : public Model
 {
 	//Member functions
 public:
@@ -31,7 +31,7 @@ public:
 	virtual ~CPointSprite();
 
 	virtual bool Initialise();
-	virtual void AddPointSprite(ID3D11Device* _pDevice, D3DXVECTOR3& _rPosition, D3DXVECTOR3& _rDirection, D3DXVECTOR2& _rScale, D3DXCOLOR& _rColour, float _fRotation, int _iTextureID);
+	virtual void AddPointSprite(ID3D11Device* _pDevice, Math::Vector3& _rPosition, Math::Vector3& _rDirection, Math::Vector2& _rScale, Math::Colour& _rColour, float _fRotation, int _iTextureID);
 	virtual void Draw(ID3D11DeviceContext* _pDevice);
 
 	virtual void CreateVertexBuffer(ID3D11Device* _pDevice);

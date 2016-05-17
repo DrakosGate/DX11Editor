@@ -11,6 +11,7 @@
 #define __SPOTLIGHT_H__
 
 // Library Includes
+#include "mathlibrary.h"
 
 // Local Includes
 #include "light.h"
@@ -27,10 +28,10 @@ public:
 	CSpotLight();
 	virtual ~CSpotLight();
 
-	virtual bool Initialise(D3DXVECTOR3& _rVecPosition, D3DXVECTOR3& _rVecDirection, D3DXCOLOR& _rVecColour, D3DXVECTOR3& _rAttenuation, float _fCutOff, float _fSpecularPower, ELightType _eLightType);
+	virtual bool Initialise(Math::Vector3& _rVecPosition, Math::Vector3& _rVecDirection, Math::Colour& _rVecColour, Math::Vector3& _rAttenuation, float _fCutOff, float _fSpecularPower, ELightType _eLightType);
 	
-	D3DXVECTOR3& GetAttenuation();
-	void SetAttenuation(D3DXVECTOR3& _rAttenuation);
+	Math::Vector3& GetAttenuation();
+	void SetAttenuation(Math::Vector3& _rAttenuation);
 	float GetCutoff() const;
 	void SetCutoff(float _fCutoff);
 	virtual TLightInfo& GetLightInfo();
@@ -40,8 +41,8 @@ private:
 	const CSpotLight& operator =(const CSpotLight& _krInstanceToCopy);
 
 private:
-	//D3DXVECTOR3 m_vecPosition;
-	D3DXVECTOR3 m_vecAttenuation;
+	//Math::Vector3 m_vecPosition;
+	Math::Vector3 m_vecAttenuation;
 	float m_fCutOff;
 };
 #endif //__SPOTLIGHT_H__

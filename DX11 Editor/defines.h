@@ -1,45 +1,35 @@
-//
-//  File Name   :   defines.h
-//  Description :   Definition of commonly used structures, enums and #defines
-//  Author      :   Christopher Howlett
-//  Mail        :   drakos_gate@yahoo.com
-//
 #pragma once
 
-#ifndef __DEFINES_H__
-#define __DEFINES_H__
-
-#include <Windows.h>
-#include <string>
-#include <sstream>
-#include <vector>
-
-#include <D3DX10math.h>
-#include "chrismaths.h"
-
-struct ID3D11ShaderResourceView;
-struct ID3D10Blob;
-struct TRay;
-struct TSceneNode;
-
-class CModel;
 
 //Program definitions
+#define PLANET_DX11
 #define WINDOW_WIDTH 1280
 #define WINDOW_HEIGHT 720
-#define MAX_LIGHTS 50
-#define SERVER_PORT 56000
+#define NOMINMAX
+#define MAX_LIGHTS 32
+
+// Lib includes
+#include <windows.h>
+#include <cassert>
+#include <string>
+#include <sstream>
+
+// Local includes
+#include "mathlibrary.h"
 
 //Helpful defines / functions
 #define SAFEDELETE(_object) { if(_object){ delete _object;_object = 0; } }
 #define SAFEDELETEARRAY(_array){ if(_array){ delete[] _array; _array = 0; } }
 #define ReleaseCOM(_COM) { if(_COM){ _COM->Release();_COM = 0; } }
 #define Error(pwcErrorMessage) MessageBox(NULL, pwcErrorMessage, L"ERROR", MB_OK)
-void HRCheck(HRESULT _hResult, wchar_t* _pcErrorMessage);
-void BlobCheck(HRESULT _hResult, ID3D10Blob* _pBlob);
+#define Assert(expression, pwcErrorMessage) if( !expression ){ MessageBox(NULL, pwcErrorMessage, L"ERROR", MB_OK);  assert( expression ); }
+void HR( HRESULT _hResult );
+void HRCheck( HRESULT _hResult, wchar_t* _pcErrorMessage );
 
-float PlaneToLine(D3DXVECTOR3& _rPlanePoint, D3DXVECTOR3& _rPlaneNormal, TRay& _rRay);
-template<class T> T ReadFromString(std::string _sInput)
+class Model;
+class Texture;
+
+template<class T> T ReadFromString( std::string _sInput )
 {
 	std::stringstream sStream;
 	sStream << _sInput;
@@ -47,6 +37,16 @@ template<class T> T ReadFromString(std::string _sInput)
 	sStream >> result;
 	return result;
 }
+
+//Vertex structures
+//struct TVertexType
+//{
+//	Math::Vector3 vecPos;
+//	Math::Vector2 texCoord;
+//	Math::Vector3 vecNormal;
+//	Math::Vector3 vecTangent;
+//};
+
 
 //Texture types
 
@@ -65,6 +65,7 @@ enum EGameState
 	GAMESTATE_OBJECTSELECTED,
 	GAMESTATE_MAX
 };
+
 enum EGameScene
 {
 	SCENE_INVALID = -1,
@@ -78,6 +79,16 @@ enum EGameScene
 	SCENE_FINAL,
 	SCENE_MAX
 };
+
+enum EModelType
+{
+	MODEL_INVALID = -1,
+	MODEL_HUMAN,
+	MODEL_TREE,
+	MODEL_CURSOR,
+	MODEL_MAX
+};
+
 enum ETileType
 {
 	TILE_INVALID = -1,
@@ -90,14 +101,7 @@ enum ETileType
 	TILE_SELECTIONCURSOR,
 	TILE_MAX
 };
-enum EModelType
-{
-	MODEL_INVALID = -1,
-	MODEL_HUMAN,
-	MODEL_TREE,
-	MODEL_CURSOR,
-	MODEL_MAX
-};
+
 enum EAIType
 {
 	AI_INVALID = -1,
@@ -105,6 +109,7 @@ enum EAIType
 	AI_CHICKEN,
 	AI_MAX
 };
+
 enum ERenderTargetType
 {
 	RENDER_INVALID = -1,
@@ -114,6 +119,7 @@ enum ERenderTargetType
 	RENDER_FINAL,
 	RENDER_MAX
 };
+
 enum EShaderType
 {
 	SHADER_INVALID = -1,
@@ -134,6 +140,7 @@ enum EShaderType
 	SHADERPOST_RADIALBLUR,
 	SHADER_MAX
 };
+
 enum EVertexLayoutType
 {
 	VERTEX_INVALID = -1,
@@ -143,6 +150,7 @@ enum EVertexLayoutType
 	VERTEX_FONT,
 	VERTEX_MAX
 };
+
 enum ERenderState
 {
 	RENDERSTATE_INVALID = -1,
@@ -151,6 +159,7 @@ enum ERenderState
 	RENDERSTATE_DEBUG,
 	RENDERSTATE_MAX
 };
+
 enum EGrassState
 {
 	GRASS_INVALID = -1,
@@ -159,6 +168,7 @@ enum EGrassState
 	GRASS_DRAWWITHCOLLISIONS,
 	GRASS_MAX
 };
+
 enum EProcessingMethod
 {
 	PROCESSING_INVALID = -1,
@@ -168,7 +178,24 @@ enum EProcessingMethod
 	PROCESSING_DISTRIBUTED,
 	PROCESSING_MAX
 };
-//Data Structures
+
+//Texture types
+enum ETextureType
+{
+	TEXTURE_INVALID = -1,
+	TEXTURE_STONE,
+	TEXTURE_STONENORMAL,
+	TEXTURE_HUMAN,
+	TEXTURE_TREE,
+	TEXTURE_GRASS, 
+	TEXTURE_SQUARES,
+	TEXTURE_FLOORTILE,
+	TEXTURE_FLOORNORMAL,
+	TEXTURE_SHIP,
+	TEXTURE_SHIPNORMAL,
+	TEXTURE_MAX
+};
+
 struct TSetupStruct
 {
 	TSetupStruct()
@@ -213,169 +240,68 @@ struct TSetupStruct
 	char* pcLogDescription;
 	char* pcDefaultLevel;
 };
-struct TButtonState
-{
-	void RecordPreviousState()
-	{
-		bPreviousState = bPressed;
-	}
-	bool bPressed;
-	bool bPreviousState;
-};
-struct TRay
-{
-	TRay()
-	{
-		vecPosition *= 0.0f;
-		vecDirection *= 0.0f;
-	}
-	D3DXVECTOR3 vecPosition;
-	D3DXVECTOR3 vecDirection;
-};
+
+
 struct TPrefabOptions
 {
-	TPrefabOptions(std::string& _pcPrefabName, CModel* _pModel, ID3D11ShaderResourceView* _pTexture, D3DXVECTOR3& _rScale, EAIType _eAIType, bool _bIsAnimated, bool _bIsStatic)
-	{
-		pcPrefabName = _pcPrefabName;
-		pModel = _pModel;
-		pTexture = _pTexture;
-		vecScale = _rScale;
-		eAIType = _eAIType;
-		bIsAnimated = _bIsAnimated;
-		bIsStatic = _bIsStatic;
-	}
-	~TPrefabOptions()
-	{
-		vecChildren.clear();
-	}
-	std::string pcPrefabName;
-	CModel* pModel;
-	ID3D11ShaderResourceView* pTexture;
-	D3DXVECTOR3 vecScale;
-	EAIType eAIType;
-	bool bIsAnimated;
-	bool bIsStatic;
-
-	std::vector<TSceneNode*> vecChildren;
-};
-struct TInputStruct
-{
-	TInputStruct()
-	{
-		bUp.bPressed = false;
-		bDown.bPressed = false;
-		bLeft.bPressed = false;
-		bRight.bPressed = false;
-		bW.bPressed = false;
-		bA.bPressed = false;
-		bS.bPressed = false;
-		bD.bPressed = false;
-		bG.bPressed = false;
-		bToggleRender.bPressed = false;
-		b1.bPressed = false;
-		b2.bPressed = false;
-		b3.bPressed = false;
-		b4.bPressed = false;
-		b5.bPressed = false;
-		b6.bPressed = false;
-		b8.bPressed = false;
-		bReset.bPressed = false;
-		bShift.bPressed = false;
-		bCtrl.bPressed = false;
-		bTilde.bPressed = false;
-		bDelete.bPressed = false;
-		bLeftMouseClick.bPressed = false;
-		bRightMouseClick.bPressed = false;
-		vecMouse *= 0.0f;
-		vecPreviousMouse *= 0.0f;
-		fMouseWheel = 0.0f;
-		ZeroMemory(&msg, sizeof(MSG));
-	}
-	void RecordPreviousInput()
-	{
-		bUp.RecordPreviousState();
-		bDown.RecordPreviousState();
-		bLeft.RecordPreviousState();
-		bRight.RecordPreviousState();
-		bW.RecordPreviousState();
-		bA.RecordPreviousState();
-		bS.RecordPreviousState();
-		bD.RecordPreviousState();
-		bG.RecordPreviousState();
-		bToggleRender.RecordPreviousState();
-		b1.RecordPreviousState();
-		b2.RecordPreviousState();
-		b3.RecordPreviousState();
-		b4.RecordPreviousState();
-		b5.RecordPreviousState();
-		b6.RecordPreviousState();
-		b7.RecordPreviousState();
-		bReset.RecordPreviousState();
-		bShift.RecordPreviousState();
-		bCtrl.RecordPreviousState();
-		bTilde.RecordPreviousState();
-		bDelete.RecordPreviousState();
-		bLeftMouseClick.RecordPreviousState();
-		bRightMouseClick.RecordPreviousState();
-		vecPreviousMouse = vecMouse;
-		fMouseWheel = 0.0f;
-	}
-	//Keys
-	TButtonState bUp;
-	TButtonState bDown;
-	TButtonState bLeft;
-	TButtonState bRight;
-	TButtonState bW;
-	TButtonState bA;
-	TButtonState bS;
-	TButtonState bD;
-	TButtonState bG;
-	TButtonState bToggleRender;
-	TButtonState bReset;
-	TButtonState bShift;
-	TButtonState bCtrl;
-	TButtonState bTilde;
-	TButtonState bDelete;
-	//Numbers
-	TButtonState b1;
-	TButtonState b2;
-	TButtonState b3;
-	TButtonState b4;
-	TButtonState b5;
-	TButtonState b6;
-	TButtonState b7;
-	TButtonState b8;
-	//Mouse
-	TButtonState bLeftMouseClick;
-	TButtonState bRightMouseClick;
-	float fMouseWheel;
-	D3DXVECTOR2 vecMouse;
-	D3DXVECTOR2 vecPreviousMouse;
-	MSG msg;
-	TRay m_tMouseRay;
-};
-struct TClothParticle
-{
-	void Initialise(TVector3& _rPosition)
-	{
-		vecPosition = _rPosition;
-		vecPreviousPosition = _rPosition;
-		vecStartPosition = _rPosition;
-		bIsFixed = false;
-	}
-	void ResetParticle()
-	{
-		vecPosition = vecStartPosition;
-		vecPreviousPosition = vecStartPosition;
-	}
-	void SetFixed(bool _bIsFixed)
-	{
-		bIsFixed = _bIsFixed;
-	}
-	TVector3 vecPosition;
-	TVector3 vecPreviousPosition;
-	TVector3 vecStartPosition;
-	bool bIsFixed;
+	//TPrefabOptions(std::string& _pcPrefabName, Model* _pModel, ID3D11ShaderResourceView* _pTexture, Math::Vector3& _rScale, EAIType _eAIType, bool _bIsAnimated, bool _bIsStatic)
+	//{
+	//	pcPrefabName = _pcPrefabName;
+	//	pModel = _pModel;
+	//	pTexture = _pTexture;
+	//	vecScale = _rScale;
+	//	eAIType = _eAIType;
+	//	bIsAnimated = _bIsAnimated;
+	//	bIsStatic = _bIsStatic;
+	//}
+	//~TPrefabOptions()
+	//{
+	//	vecChildren.clear();
+	//}
+	//std::string pcPrefabName;
+	//Model* pModel;
+	//ID3D11ShaderResourceView* pTexture;
+	//Math::Vector3 vecScale;
+	//EAIType eAIType;
+	//bool bIsAnimated;
+	//bool bIsStatic;
+	//
+	//std::vector<TSceneNode*> vecChildren;
 };
 
-#endif //DEFINES_H__
+//Data Structures
+//struct TRay
+//{
+//	TRay()
+//	{
+//		vecPosition *= 0.0f;
+//		vecDirection *= 0.0f;
+//	}
+//	Math::Vector3 vecPosition;
+//	Math::Vector3 vecDirection;
+//};
+
+//struct TClothParticle
+//{
+//	void Initialise(Math::Vector3& _rPosition)
+//	{
+//		vecPosition = _rPosition;
+//		vecPreviousPosition = _rPosition;
+//		vecStartPosition = _rPosition;
+//		bIsFixed = false;
+//	}
+//	void ResetParticle()
+//	{
+//		vecPosition = vecStartPosition;
+//		vecPreviousPosition = vecStartPosition;
+//	}
+//	void SetFixed(bool _bIsFixed)
+//	{
+//		bIsFixed = _bIsFixed;
+//	}
+//	Math::Vector3 vecPosition;
+//	Math::Vector3 vecPreviousPosition;
+//	Math::Vector3 vecStartPosition;
+//	bool bIsFixed;
+//};
+

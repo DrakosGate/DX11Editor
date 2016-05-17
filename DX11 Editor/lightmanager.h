@@ -36,9 +36,9 @@ public:
 	bool Initialise();
 	void DestroyLights();
 	
-	CSpotLight* AddSpot(D3DXVECTOR3& _rVecPosition, D3DXVECTOR3& _rVecDirection, D3DXCOLOR& _rVecColour, D3DXVECTOR3& _rAttenuation, float _fCutOff, float _fSpecularPower);
-	CPointLight* AddPoint(D3DXVECTOR3& _rVecPosition, D3DXCOLOR& _rVecColour, D3DXVECTOR3& _rAttenuation, float _fSpecularPower);
-	CDirectionalLight* AddDirectional(D3DXVECTOR3& _rVecDir, D3DXCOLOR& _rVecColour, float _fSpecularPower);
+	CSpotLight* AddSpot(Math::Vector3& _rVecPosition, Math::Vector3& _rVecDirection, Math::Colour& _rVecColour, Math::Vector3& _rAttenuation, float _fCutOff, float _fSpecularPower);
+	CPointLight* AddPoint(Math::Vector3& _rVecPosition, Math::Colour& _rVecColour, Math::Vector3& _rAttenuation, float _fSpecularPower);
+	CDirectionalLight* AddDirectional(Math::Vector3& _rVecDir, Math::Colour& _rVecColour, float _fSpecularPower);
 
 	int GetLightCount(ELightType _eLightType) const;
 	TLightInfo* GetLightInfo(ELightType _eLightType);

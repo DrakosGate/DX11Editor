@@ -1,16 +1,3 @@
-//
-// Bachelor of Software Engineering - Year 2
-// Media Design School
-// Auckland 
-// New Zealand
-//
-// (c) 2013 Media Design School
-//
-//  File Name   :   pointlight.cpp
-//  Description :   Code for Class pointlight
-//  Author      :   Christopher Howlett
-//  Mail        :   drakos_gate@yahoo.com
-//
 
 // Library Includes
 
@@ -57,8 +44,8 @@ CPointLight::~CPointLight()
 * @param _fSpecularPower Light specular power
 *
 */
-bool 
-CPointLight::Initialise(D3DXVECTOR3& _rVecPosition, D3DXCOLOR& _rVecColour, D3DXVECTOR3& _rAttenuation, float _fSpecularPower, ELightType _eLightType)
+bool
+CPointLight::Initialise( Math::Vector3& _rVecPosition, Math::Colour& _rVecColour, Math::Vector3& _rAttenuation, float _fSpecularPower, ELightType _eLightType )
 {
 	m_vecOffsetPosition = _rVecPosition;
 	m_vecWorldPosition = _rVecPosition;
@@ -78,7 +65,7 @@ CPointLight::Initialise(D3DXVECTOR3& _rVecPosition, D3DXCOLOR& _rVecColour, D3DX
 * @return Returns attenuation
 *
 */
-D3DXVECTOR3& 
+Math::Vector3&
 CPointLight::GetAttenuation()
 {
 	return m_vecAttenuation;
@@ -91,8 +78,8 @@ CPointLight::GetAttenuation()
 * @param _rAttenuation New attenuation
 *
 */
-void 
-CPointLight::SetAttenuation(D3DXVECTOR3& _rAttenuation)
+void
+CPointLight::SetAttenuation( Math::Vector3& _rAttenuation )
 {
 	m_vecAttenuation = _rAttenuation;
 }
@@ -104,9 +91,9 @@ CPointLight::SetAttenuation(D3DXVECTOR3& _rAttenuation)
 * @return Returns Light information structure
 *
 */
-TLightInfo& 
+TLightInfo&
 CPointLight::GetLightInfo()
 {
-	m_tLightInfo = TLightInfo(m_vecWorldPosition, D3DXVECTOR3(1.0f, 0.0f, 0.0f), D3DXCOLOR(0.0f, 0.0f, 0.0f, 0.0f), m_vecColour, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f), m_vecAttenuation, m_fSpecularPower, 10.0f, m_eLightType); 
+	m_tLightInfo = TLightInfo( m_vecWorldPosition, Math::Vector3( 1.0f, 0.0f, 0.0f ), Math::Colour( 0.0f, 0.0f, 0.0f, 0.0f ), m_vecColour, Math::Colour( 1.0f, 1.0f, 1.0f, 1.0f ), m_vecAttenuation, m_fSpecularPower, 10.0f, m_eLightType );
 	return m_tLightInfo;
 }

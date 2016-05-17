@@ -27,10 +27,10 @@ public:
 	CPointLight();
 	virtual ~CPointLight();
 
-	virtual bool Initialise(D3DXVECTOR3& _rVecPosition, D3DXCOLOR& _rVecColour, D3DXVECTOR3& _rAttenuation, float _fSpecularPower, ELightType _eLightType);
+	virtual bool Initialise(Math::Vector3& _rVecPosition, Math::Colour& _rVecColour, Math::Vector3& _rAttenuation, float _fSpecularPower, ELightType _eLightType);
 	
-	D3DXVECTOR3& GetAttenuation();
-	void SetAttenuation(D3DXVECTOR3& _rAttenuation);
+	Math::Vector3& GetAttenuation();
+	void SetAttenuation(Math::Vector3& _rAttenuation);
 	virtual TLightInfo& GetLightInfo();
 
 private:
@@ -38,7 +38,7 @@ private:
 	const CPointLight& operator =(const CPointLight& _krInstanceToCopy);
 
 private:
-	D3DXVECTOR3 m_vecAttenuation;
+	Math::Vector3 m_vecAttenuation;
 };
 
 #endif //__POINTLIGHT_H__

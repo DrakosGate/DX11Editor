@@ -20,7 +20,7 @@
 // Constants
 
 // Prototypes
-class CRenderEntity;
+class RenderEntity;
 class CAIHiveMind;
 
 class CAIController
@@ -29,16 +29,16 @@ public:
 	CAIController();
 	virtual ~CAIController();
 
-	virtual bool Initialise(CAIHiveMind* _pHivemind, CRenderEntity* _pEntity, float _fMovementSpeed, float _fRotationSpeed);
-	void Process(float _fDeltaTime, D3DXVECTOR3& _rAvoidance);
+	virtual bool Initialise(CAIHiveMind* _pHivemind, RenderEntity* _pEntity, float _fMovementSpeed, float _fRotationSpeed);
+	void Process(float _fDeltaTime, Math::Vector3& _rAvoidance);
 	void ProcessWaypointMovement(float _fDeltaTime);
 	void ProcessAStarMovement(int _iPathLength, float _fDeltaTime);
-	void SetAStarTarget(D3DXVECTOR3& _rVecTarget);
+	void SetAStarTarget(Math::Vector3& _rVecTarget);
 	void CheckWaypointReached();
 	
-	D3DXVECTOR3& GetCurrentWaypoint();
+	Math::Vector3& GetCurrentWaypoint();
 	void SetAIType(EAIType _eAIType);
-	CRenderEntity* GetEntity() const;
+	RenderEntity* GetEntity() const;
 	EAIType GetAIType() const;
 
 private:
@@ -47,10 +47,10 @@ private:
 
 private:
 	CAIHiveMind* m_pHivemind;
-	CRenderEntity* m_pEntity;
-	D3DXVECTOR3 m_vecWaypoint;
+	RenderEntity* m_pEntity;
+	Math::Vector3 m_vecWaypoint;
 
-	D3DXVECTOR3 m_vecAStarActivePoint;
+	Math::Vector3 m_vecAStarActivePoint;
 	float m_fMovementSpeed;
 	float m_fRotationSpeed;
 	float m_fThoughtDelay;

@@ -1,16 +1,3 @@
-//
-// Bachelor of Software Engineering - Year 2
-// Media Design School
-// Auckland 
-// New Zealand
-//
-// (c) 2013 Media Design School
-//
-//  File Name   :   CRenderEntity.cpp
-//  Description :   Code for Class CRenderEntity
-//  Author      :   Christopher Howlett
-//  Mail        :   drakos_gate@yahoo.com
-//
 
 // Library Includes
 #include <D3D11.h>
@@ -33,35 +20,35 @@
 
 /**
 *
-* CRenderEntity class constructor
+* RenderEntity class constructor
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
 *
 */
-CRenderEntity::CRenderEntity()
-: m_pVertexBuffer(0)
-, m_pIndexBuffer(0)
-, m_pVertices(0)
-, m_pIndices(0)
-, m_pObjectShader(0)
-, m_pBoundingBox(0)
-, m_iVertexCount(0)
-, m_iIndexCount(0)
-, m_bIsShadowed(false)
-, m_bIsTransparent(false)
-, m_bIsBillboarded(false)
-, m_bDoDraw(true)
-, m_fRadius(0.0f)
-, m_pDiffuseMap(0)
-, m_pNormalMap(0)
-, m_pNode(0)
+RenderEntity::RenderEntity()
+	: m_pVertexBuffer( 0 )
+	, m_pIndexBuffer( 0 )
+	, m_pVertices( 0 )
+	, m_pIndices( 0 )
+	, m_pObjectShader( 0 )
+	, m_pBoundingBox( 0 )
+	, m_iVertexCount( 0 )
+	, m_iIndexCount( 0 )
+	, m_bIsShadowed( false )
+	, m_bIsTransparent( false )
+	, m_bIsBillboarded( false )
+	, m_bDoDraw( true )
+	, m_fRadius( 0.0f )
+	, m_pDiffuseMap( 0 )
+	, m_pNormalMap( 0 )
+	, m_pNode( 0 )
 {
-	D3DXMatrixIdentity(&m_matWorld);
+	m_matWorld = Math::MatrixIdentity();
 	m_vecPosition *= 0.0f;
-	m_vecScale = D3DXVECTOR3(1.0f, 1.0f, 1.0f);
+	m_vecScale = Math::Vector3( 1.0f, 1.0f, 1.0f );
 	m_vecRotation *= 0.0f;
-	
+
 	m_vecLook *= 0.0f;
 	m_vecUp *= 0.0f;
 	m_vecRight *= 0.0f;
@@ -71,42 +58,42 @@ CRenderEntity::CRenderEntity()
 
 /**
 *
-* CRenderEntity class destructor
+* RenderEntity class destructor
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
 *
 */
-CRenderEntity::~CRenderEntity()
+RenderEntity::~RenderEntity()
 {
-	if (m_pNode)
+	if( m_pNode )
 	{
 		delete m_pNode;
 		m_pNode = 0;
 	}
-	if (m_pBoundingBox)
+	if( m_pBoundingBox )
 	{
 		delete m_pBoundingBox;
 		m_pBoundingBox = 0;
 	}
-	if (m_pVertices)
+	if( m_pVertices )
 	{
 		delete[] m_pVertices;
 		m_pVertices = 0;
 	}
-	if (m_pIndices)
+	if( m_pIndices )
 	{
 		delete[] m_pIndices;
 		m_pIndices = 0;
 	}
 	m_pDiffuseMap = 0;
 	m_pNormalMap = 0;
-	ReleaseCOM(m_pVertexBuffer);
-	ReleaseCOM(m_pIndexBuffer);
+	ReleaseCOM( m_pVertexBuffer );
+	ReleaseCOM( m_pIndexBuffer );
 }
 /**
 *
-* CRenderEntity class Initialise
+* RenderEntity class Initialise
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -114,58 +101,58 @@ CRenderEntity::~CRenderEntity()
 * @return Returns true
 *
 */
-bool 
-CRenderEntity::Initialise(ID3D11Device* _pDevice, float _fScale)
+bool
+RenderEntity::Initialise( ID3D11Device* _pDevice, float _fScale )
 {
 	//Render entity will never be created
 	return true;
 }
 /**
 *
-* CRenderEntity class Update
+* RenderEntity class Update
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
 * @param _fDeltaTime Time elapsed
 *
 */
-void 
-CRenderEntity::Process(float _fDeltaTime, D3DXMATRIX* _pParentMatrix)
+void
+RenderEntity::Process( float _fDeltaTime, Math::Matrix* _pParentMatrix )
 {
-	if (DoDraw())
+	if( DoDraw() )
 	{
-		if (m_bIsBillboarded == false)
+		if( m_bIsBillboarded == false )
 		{
 			//Calculate world matrix
-			D3DXQuaternionRotationYawPitchRoll(&m_quatRot, m_vecRotation.y, m_vecRotation.x, m_vecRotation.z);
-			D3DXMatrixTransformation(&m_matWorld,
+			D3DXQuaternionRotationYawPitchRoll( &m_quatRot, m_vecRotation.y, m_vecRotation.x, m_vecRotation.z );
+			D3DXMatrixTransformation( &m_matWorld,
 				NULL,
 				NULL,
 				&m_vecScale,
 				NULL,
 				&m_quatRot,
-				&m_vecPosition);
+				&m_vecPosition );
 			//Check if this matrix must be multiplied by the parent matrix
-			if (_pParentMatrix)
+			if( _pParentMatrix )
 			{
 				m_matWorld = m_matWorld * *_pParentMatrix;
 			}
 
 			//Process all children of this entity
-			if (m_pNode)
+			if( m_pNode )
 			{
-				if (m_pNode->pEntity)
+				if( m_pNode->pEntity )
 				{
-					for (unsigned int iChild = 0; iChild < m_pNode->vecChildren.size(); ++iChild)
+					for( unsigned int iChild = 0; iChild < m_pNode->vecChildren.size(); ++iChild )
 					{
-						m_pNode->vecChildren[iChild]->pEntity->Process(_fDeltaTime, &m_matWorld);
+						m_pNode->vecChildren[ iChild ]->pEntity->Process( _fDeltaTime, &m_matWorld );
 					}
 					//Process all lights attached to this entity
-					for (unsigned int iLight = 0; iLight < m_pNode->vecLights.size(); ++iLight)
+					for( unsigned int iLight = 0; iLight < m_pNode->vecLights.size(); ++iLight )
 					{
-						CLight* pCurrentLight = m_pNode->vecLights[iLight];
-						pCurrentLight->SetPosition(GetPosition() + pCurrentLight->GetOffset());
-						pCurrentLight->SetDirection(GetForward());
+						CLight* pCurrentLight = m_pNode->vecLights[ iLight ];
+						pCurrentLight->SetPosition( GetPosition() + pCurrentLight->GetOffset() );
+						pCurrentLight->SetDirection( GetForward() );
 					}
 				}
 			}
@@ -174,61 +161,61 @@ CRenderEntity::Process(float _fDeltaTime, D3DXMATRIX* _pParentMatrix)
 }
 /**
 *
-* CRenderEntity class Draw
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-*
-*/
-void 
-CRenderEntity::Draw(ID3D11DeviceContext* _pDevice)
-{
-	UINT stride = sizeof(TVertex);
-	UINT offset = 0;
-	_pDevice->IASetVertexBuffers(0, 1, &m_pVertexBuffer, &stride, &offset);
-	_pDevice->IASetIndexBuffer(m_pIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
-	_pDevice->DrawIndexed(m_iIndexCount, 0, 0);
-}
-/**
-*
-* CRenderEntity class CreateModelBuffers
+* RenderEntity class Draw
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
 *
 */
 void
-CRenderEntity::CreateVertexBuffer(ID3D11Device* _pDevice)
+RenderEntity::Draw( ID3D11DeviceContext* _pDevice )
+{
+	UINT stride = sizeof( TVertex );
+	UINT offset = 0;
+	_pDevice->IASetVertexBuffers( 0, 1, &m_pVertexBuffer, &stride, &offset );
+	_pDevice->IASetIndexBuffer( m_pIndexBuffer, DXGI_FORMAT_R32_UINT, 0 );
+	_pDevice->DrawIndexed( m_iIndexCount, 0, 0 );
+}
+/**
+*
+* RenderEntity class CreateModelBuffers
+* (Task ID: n/a)
+*
+* @author Christopher Howlett
+*
+*/
+void
+RenderEntity::CreateVertexBuffer( ID3D11Device* _pDevice )
 {
 	D3D11_BUFFER_DESC tVertexBufferDesc;
 	tVertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	tVertexBufferDesc.ByteWidth = sizeof(TVertex)* m_iVertexCount;
+	tVertexBufferDesc.ByteWidth = sizeof( TVertex )* m_iVertexCount;
 	tVertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	tVertexBufferDesc.CPUAccessFlags = 0;
 	tVertexBufferDesc.MiscFlags = 0;
 	tVertexBufferDesc.StructureByteStride = 0;
-	
+
 	D3D11_SUBRESOURCE_DATA tVertexData;
 	tVertexData.pSysMem = m_pVertices;
 	tVertexData.SysMemPitch = 0;
 	tVertexData.SysMemSlicePitch = 0;
 
-	_pDevice->CreateBuffer(&tVertexBufferDesc, &tVertexData, &m_pVertexBuffer);
+	_pDevice->CreateBuffer( &tVertexBufferDesc, &tVertexData, &m_pVertexBuffer );
 }
 /**
 *
-* CRenderEntity class CreateModelBuffers
+* RenderEntity class CreateModelBuffers
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
 *
 */
 void
-CRenderEntity::CreateIndexBuffer(ID3D11Device* _pDevice)
+RenderEntity::CreateIndexBuffer( ID3D11Device* _pDevice )
 {
 	D3D11_BUFFER_DESC tIndexBufferDesc;
 	tIndexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	tIndexBufferDesc.ByteWidth = sizeof(unsigned int) * m_iIndexCount;
+	tIndexBufferDesc.ByteWidth = sizeof( unsigned int ) * m_iIndexCount;
 	tIndexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	tIndexBufferDesc.CPUAccessFlags = 0;
 	tIndexBufferDesc.MiscFlags = 0;
@@ -239,11 +226,11 @@ CRenderEntity::CreateIndexBuffer(ID3D11Device* _pDevice)
 	tIndexBufferData.SysMemPitch = 0;
 	tIndexBufferData.SysMemSlicePitch = 0;
 
-	_pDevice->CreateBuffer(&tIndexBufferDesc, &tIndexBufferData, &m_pIndexBuffer);
+	_pDevice->CreateBuffer( &tIndexBufferDesc, &tIndexBufferData, &m_pIndexBuffer );
 }
 /**
 *
-* CRenderEntity class Creates an Entity Node for this object
+* RenderEntity class Creates an Entity Node for this object
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -252,12 +239,12 @@ CRenderEntity::CreateIndexBuffer(ID3D11Device* _pDevice)
 *
 */
 TEntityNode*
-CRenderEntity::CreateNode(TEntityNode* _pParentNode)
+RenderEntity::CreateNode( TEntityNode* _pParentNode )
 {
-	m_pNode = new TEntityNode(this, _pParentNode);
-	if (_pParentNode)
+	m_pNode = new TEntityNode( this, _pParentNode );
+	if( _pParentNode )
 	{
-		_pParentNode->vecChildren.push_back(m_pNode);
+		_pParentNode->vecChildren.push_back( m_pNode );
 	}
 	else
 	{
@@ -267,7 +254,7 @@ CRenderEntity::CreateNode(TEntityNode* _pParentNode)
 }
 /**
 *
-* CRenderEntity class GetNode Returns this objects "Entity Node"
+* RenderEntity class GetNode Returns this objects "Entity Node"
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -275,69 +262,69 @@ CRenderEntity::CreateNode(TEntityNode* _pParentNode)
 *
 */
 TEntityNode*
-CRenderEntity::GetNode() const
+RenderEntity::GetNode() const
 {
 	return m_pNode;
 }
 /**
 *
-* CRenderEntity class GetPosition
+* RenderEntity class GetPosition
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
 * @return Returns position
 *
 */
-D3DXVECTOR3&
-CRenderEntity::GetPosition()
+Math::Vector3&
+RenderEntity::GetPosition()
 {
 	return m_vecPosition;
 }
 /**
 *
-* CRenderEntity class GetRotation
+* RenderEntity class GetRotation
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
 * @return Returns rotation
 *
 */
-D3DXVECTOR3&
-CRenderEntity::GetRotation()
+Math::Vector3&
+RenderEntity::GetRotation()
 {
 	return m_vecRotation;
 }
 /**
 *
-* CRenderEntity class GetForward
+* RenderEntity class GetForward
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
 * @return Returns Forward
 *
 */
-D3DXVECTOR3&
-CRenderEntity::GetForward()
+Math::Vector3&
+RenderEntity::GetForward()
 {
 	return m_vecLook;
 }
 /**
 *
-* CRenderEntity class GetWorld
+* RenderEntity class GetWorld
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
 * @return Returns world matrix
 *
 */
-D3DXMATRIX&
-CRenderEntity::GetWorld()
+Math::Matrix&
+RenderEntity::GetWorld()
 {
 	return m_matWorld;
 }
 /**
 *
-* CRenderEntity class GetEntityType
+* RenderEntity class GetEntityType
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -345,13 +332,13 @@ CRenderEntity::GetWorld()
 *
 */
 std::string&
-CRenderEntity::GetEntityType()
+RenderEntity::GetEntityType()
 {
 	return m_sEntityType;
 }
 /**
 *
-* CRenderEntity class SetRotation
+* RenderEntity class SetRotation
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -359,13 +346,13 @@ CRenderEntity::GetEntityType()
 *
 */
 void
-CRenderEntity::SetRotation(D3DXVECTOR3& _rVecRotation)
+RenderEntity::SetRotation( Math::Vector3& _rVecRotation )
 {
 	m_vecRotation = _rVecRotation;
 }
 /**
 *
-* CRenderEntity class SetPosition
+* RenderEntity class SetPosition
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -373,13 +360,13 @@ CRenderEntity::SetRotation(D3DXVECTOR3& _rVecRotation)
 *
 */
 void
-CRenderEntity::SetPosition(D3DXVECTOR3& _rVecPosition)
+RenderEntity::SetPosition( Math::Vector3& _rVecPosition )
 {
 	m_vecPosition = _rVecPosition;
 }
 /**
 *
-* CRenderEntity class SetPosition
+* RenderEntity class SetPosition
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -387,14 +374,14 @@ CRenderEntity::SetPosition(D3DXVECTOR3& _rVecPosition)
 *
 */
 void
-CRenderEntity::SetForward(D3DXVECTOR3& _rVecForward)
+RenderEntity::SetForward( Math::Vector3& _rVecForward )
 {
-	m_vecRotation.y = atan2(_rVecForward.x, _rVecForward.z);
+	m_vecRotation.y = atan2( _rVecForward.x, _rVecForward.z );
 	m_vecLook = _rVecForward;
 }
 /**
 *
-* CRenderEntity class SetPosition
+* RenderEntity class SetPosition
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -402,29 +389,14 @@ CRenderEntity::SetForward(D3DXVECTOR3& _rVecForward)
 *
 */
 void
-CRenderEntity::SetEntityType(std::string& _sType)
+RenderEntity::SetEntityType( std::string& _sType )
 {
 	m_sEntityType = _sType;
 }
+
 /**
 *
-* CRenderEntity class ProcessInpt
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-* @param _pKeys Pointer to input struct
-* @param _fDT Time elapsed
-*
-*/
-bool
-CRenderEntity::ProcessInput(TInputStruct& _pKeys, float _fDT)
-{
-	//Do nothing
-	return false;
-}
-/**
-*
-* CRenderEntity class SetWorldMatrix
+* RenderEntity class SetWorldMatrix
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -432,33 +404,33 @@ CRenderEntity::ProcessInput(TInputStruct& _pKeys, float _fDT)
 *
 */
 void
-CRenderEntity::SetWorldMatrix(D3DXMATRIX& _rWorld)
+RenderEntity::SetWorldMatrix( Math::Matrix& _rWorld )
 {
 	m_matWorld = _rWorld;
 }
 void
-CRenderEntity::SetScale(D3DXVECTOR3& _rVecScale)
+RenderEntity::SetScale( Math::Vector3& _rVecScale )
 {
 	m_vecScale = _rVecScale;
 }
 void
-CRenderEntity::SetLocalScale(D3DXVECTOR3& _rLocalScale)
+RenderEntity::SetLocalScale( Math::Vector3& _rLocalScale )
 {
 	m_vecLocalScale = _rLocalScale;
 }
-D3DXVECTOR3&
-CRenderEntity::GetScale()
+Math::Vector3&
+RenderEntity::GetScale()
 {
 	return m_vecScale;
 }
-D3DXVECTOR3&
-CRenderEntity::GetLocalScale()
+Math::Vector3&
+RenderEntity::GetLocalScale()
 {
 	return m_vecLocalScale;
 }
 /**
 *
-* CRenderEntity class GetTexture
+* RenderEntity class GetTexture
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -466,13 +438,13 @@ CRenderEntity::GetLocalScale()
 *
 */
 ID3D11ShaderResourceView*
-CRenderEntity::GetDiffuseMap()
+RenderEntity::GetDiffuseMap()
 {
 	return m_pDiffuseMap;
 }
 /**
 *
-* CRenderEntity class GetNormalMap
+* RenderEntity class GetNormalMap
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -480,13 +452,13 @@ CRenderEntity::GetDiffuseMap()
 *
 */
 ID3D11ShaderResourceView*
-CRenderEntity::GetNormalMap()
+RenderEntity::GetNormalMap()
 {
 	return m_pNormalMap;
 }
 /**
 *
-* CRenderEntity class SetTexture
+* RenderEntity class SetTexture
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -494,13 +466,13 @@ CRenderEntity::GetNormalMap()
 *
 */
 void
-CRenderEntity::SetDiffuseMap(ID3D11ShaderResourceView* _pDiffuseMap)
+RenderEntity::SetDiffuseMap( ID3D11ShaderResourceView* _pDiffuseMap )
 {
 	m_pDiffuseMap = _pDiffuseMap;
 }
 /**
 *
-* CRenderEntity class Sets the Normal map for this object
+* RenderEntity class Sets the Normal map for this object
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -508,13 +480,13 @@ CRenderEntity::SetDiffuseMap(ID3D11ShaderResourceView* _pDiffuseMap)
 *
 */
 void
-CRenderEntity::SetNormalMap(ID3D11ShaderResourceView* _pNormalMap)
+RenderEntity::SetNormalMap( ID3D11ShaderResourceView* _pNormalMap )
 {
 	m_pNormalMap = _pNormalMap;
 }
 /**
 *
-* CRenderEntity class Sends the required texture data to the shader
+* RenderEntity class Sends the required texture data to the shader
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -522,18 +494,18 @@ CRenderEntity::SetNormalMap(ID3D11ShaderResourceView* _pNormalMap)
 *
 */
 void
-CRenderEntity::SendTextureDataToShader(ID3D11DeviceContext* _pDevContext)
+RenderEntity::SendTextureDataToShader( ID3D11DeviceContext* _pDevContext )
 {
-	if (GetDiffuseMap())
+	if( GetDiffuseMap() )
 	{
-		ID3D11ShaderResourceView* const textureData[2] = {	GetDiffuseMap(),
-															GetNormalMap() };
-		_pDevContext->PSSetShaderResources(0, 2, textureData);
+		ID3D11ShaderResourceView* const textureData[ 2 ] = {GetDiffuseMap(),
+															GetNormalMap()};
+		_pDevContext->PSSetShaderResources( 0, 2, textureData );
 	}
 }
 /**
 *
-* CRenderEntity class Returns a struct containing vertex data
+* RenderEntity class Returns a struct containing vertex data
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -541,14 +513,14 @@ CRenderEntity::SendTextureDataToShader(ID3D11DeviceContext* _pDevContext)
 * @return Returns entity vertex
 *
 */
-TVertex* 
-CRenderEntity::GetVertexData(int _iVertex)
+TVertex*
+RenderEntity::GetVertexData( int _iVertex )
 {
-	return &m_pVertices[_iVertex];
+	return &m_pVertices[ _iVertex ];
 }
 /**
 *
-* CRenderEntity class GetVertexCount
+* RenderEntity class GetVertexCount
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -556,13 +528,13 @@ CRenderEntity::GetVertexData(int _iVertex)
 *
 */
 int
-CRenderEntity::GetVertexCount() const
+RenderEntity::GetVertexCount() const
 {
 	return m_iVertexCount;
 }
 /**
 *
-* CRenderEntity class SetObjectShader
+* RenderEntity class SetObjectShader
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -570,13 +542,13 @@ CRenderEntity::GetVertexCount() const
 *
 */
 void
-CRenderEntity::SetObjectShader(CShader* _pObjectShader)
+RenderEntity::SetObjectShader( CShader* _pObjectShader )
 {
 	m_pObjectShader = _pObjectShader;
 }
 /**
 *
-* CRenderEntity class GetVertexCount
+* RenderEntity class GetVertexCount
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -584,13 +556,13 @@ CRenderEntity::SetObjectShader(CShader* _pObjectShader)
 *
 */
 CShader*
-CRenderEntity::GetObjectShader()
+RenderEntity::GetObjectShader()
 {
 	return m_pObjectShader;
 }
 /**
 *
-* CRenderEntity class ProcessBillboard
+* RenderEntity class ProcessBillboard
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -598,12 +570,12 @@ CRenderEntity::GetObjectShader()
 *
 */
 void
-CRenderEntity::ProcessBillboard(CCamera* _pCurrentCamera, D3DXMATRIX& _rBillboardMat)
+RenderEntity::ProcessBillboard( Camera* _pCurrentCamera, Math::Matrix& _rBillboardMat )
 {
 	//Check Direction to camera
-	D3DXVECTOR3 vecCamRight;
-	D3DXVec3Cross(&vecCamRight, &_pCurrentCamera->GetLook(), &D3DXVECTOR3(0.0f, 1.0f, 0.0f));
-	if (D3DXVec3Dot(&vecCamRight, &m_vecLook) > 0.0f)
+	Math::Vector3 vecCamRight;
+	vecCamRight = Math::Cross( _pCurrentCamera->GetLook(), Math::Vector3( 0.0f, 1.0f, 0.0f ) );
+	if( Math::Dot( vecCamRight, m_vecLook ) > 0.0f )
 	{
 		m_fBillboardFlip = 1.0f;
 	}
@@ -613,10 +585,10 @@ CRenderEntity::ProcessBillboard(CCamera* _pCurrentCamera, D3DXMATRIX& _rBillboar
 	}
 
 	//Construct billboard matrix
-	D3DXMATRIX scaleMat;
-	D3DXMatrixScaling(&scaleMat, m_vecScale.x, m_vecScale.y, m_vecScale.z);
+	Math::Matrix scaleMat;
+	scaleMat = Math::Scale( Math::MatrixIdentity(), m_vecScale );
 
-	D3DXMATRIX billboardMat = _rBillboardMat * scaleMat;
+	Math::Matrix billboardMat = _rBillboardMat * scaleMat;
 	billboardMat._41 = m_vecPosition.x;
 	billboardMat._42 = m_vecPosition.y;
 	billboardMat._43 = m_vecPosition.z;
@@ -625,7 +597,7 @@ CRenderEntity::ProcessBillboard(CCamera* _pCurrentCamera, D3DXMATRIX& _rBillboar
 }
 /**
 *
-* CRenderEntity class IsBillboarded
+* RenderEntity class IsBillboarded
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -633,13 +605,13 @@ CRenderEntity::ProcessBillboard(CCamera* _pCurrentCamera, D3DXMATRIX& _rBillboar
 *
 */
 bool
-CRenderEntity::IsBillboarded() const
+RenderEntity::IsBillboarded() const
 {
 	return m_bIsBillboarded;
 }
 /**
 *
-* CRenderEntity class ToggleBillboarded
+* RenderEntity class ToggleBillboarded
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -647,13 +619,13 @@ CRenderEntity::IsBillboarded() const
 *
 */
 void
-CRenderEntity::ToggleBillboarded(bool _bIsBillboard)
+RenderEntity::ToggleBillboarded( bool _bIsBillboard )
 {
 	m_bIsBillboarded = _bIsBillboard;
 }
 /**
 *
-* CRenderEntity class IsShadowed
+* RenderEntity class IsShadowed
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -661,13 +633,13 @@ CRenderEntity::ToggleBillboarded(bool _bIsBillboard)
 *
 */
 bool
-CRenderEntity::IsShadowed() const
+RenderEntity::IsShadowed() const
 {
 	return m_bIsShadowed;
 }
 /**
 *
-* CRenderEntity class ToggleShadowed
+* RenderEntity class ToggleShadowed
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -675,13 +647,13 @@ CRenderEntity::IsShadowed() const
 *
 */
 void
-CRenderEntity::ToggleShadowed(bool _bIsShadowed)
+RenderEntity::ToggleShadowed( bool _bIsShadowed )
 {
 	m_bIsShadowed = _bIsShadowed;
 }
 /**
 *
-* CRenderEntity class IsTransparent
+* RenderEntity class IsTransparent
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -689,13 +661,13 @@ CRenderEntity::ToggleShadowed(bool _bIsShadowed)
 *
 */
 bool
-CRenderEntity::IsTransparent() const
+RenderEntity::IsTransparent() const
 {
 	return m_bIsTransparent;
 }
 /**
 *
-* CRenderEntity class ToggleTransparency
+* RenderEntity class ToggleTransparency
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -703,31 +675,31 @@ CRenderEntity::IsTransparent() const
 *
 */
 void
-CRenderEntity::ToggleTransparency(bool _bIsTransparent)
+RenderEntity::ToggleTransparency( bool _bIsTransparent )
 {
 	m_bIsTransparent = _bIsTransparent;
 }
 /**
 *
-* CRenderEntity class CalculateBoundingBox
+* RenderEntity class CalculateBoundingBox
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
 *
 */
 void
-CRenderEntity::CalculateBoundingBox()
+RenderEntity::CalculateBoundingBox()
 {
-	if (m_pVertices)
+	if( m_pVertices )
 	{
 		m_pBoundingBox = new CBoundingBox();
-		m_pBoundingBox->Initialise(m_pVertices, m_iVertexCount);
+		m_pBoundingBox->Initialise( m_pVertices, m_iVertexCount );
 		m_fRadius = m_pBoundingBox->GetRadius();
 	}
 }
 /**
 *
-* CRenderEntity class GetBoundingBox
+* RenderEntity class GetBoundingBox
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -735,13 +707,13 @@ CRenderEntity::CalculateBoundingBox()
 *
 */
 CBoundingBox*
-CRenderEntity::GetBoundingBox()
+RenderEntity::GetBoundingBox()
 {
 	return m_pBoundingBox;
 }
 /**
 *
-* CRenderEntity class GetBoundingBox
+* RenderEntity class GetBoundingBox
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -749,13 +721,13 @@ CRenderEntity::GetBoundingBox()
 *
 */
 float
-CRenderEntity::GetRadius() const
+RenderEntity::GetRadius() const
 {
 	return m_fRadius;
 }
 /**
 *
-* CRenderEntity class SetRadius
+* RenderEntity class SetRadius
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -763,13 +735,13 @@ CRenderEntity::GetRadius() const
 *
 */
 void
-CRenderEntity::SetRadius(float _fRadius)
+RenderEntity::SetRadius( float _fRadius )
 {
 	m_fRadius = _fRadius;
 }
 /**
 *
-* CRenderEntity class HasCollided
+* RenderEntity class HasCollided
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -778,14 +750,14 @@ CRenderEntity::SetRadius(float _fRadius)
 *
 */
 bool
-CRenderEntity::HasCollided(CRenderEntity* _pOtherEntity)
+RenderEntity::HasCollided( RenderEntity* _pOtherEntity )
 {
-	float fRadius = (m_fRadius + _pOtherEntity->GetRadius());
-	return (D3DXVec3LengthSq(&(m_vecPosition - _pOtherEntity->GetPosition())) < (fRadius * 0.25f));
+	float fRadius = ( m_fRadius + _pOtherEntity->GetRadius() );
+	return ( m_vecPosition - _pOtherEntity->GetPosition() ).LengthSq() < ( fRadius * 0.25f );
 }
 /**
 *
-* CRenderEntity class DoDraw
+* RenderEntity class DoDraw
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -793,13 +765,13 @@ CRenderEntity::HasCollided(CRenderEntity* _pOtherEntity)
 *
 */
 bool
-CRenderEntity::DoDraw() const
+RenderEntity::DoDraw() const
 {
 	return m_bDoDraw;
 }
 /**
 *
-* CRenderEntity class Sets whether or not to draw the object
+* RenderEntity class Sets whether or not to draw the object
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -807,7 +779,7 @@ CRenderEntity::DoDraw() const
 *
 */
 void
-CRenderEntity::SetDoDraw(bool _bDoDraw)
+RenderEntity::SetDoDraw( bool _bDoDraw )
 {
 	m_bDoDraw = _bDoDraw;
 }

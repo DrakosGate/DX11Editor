@@ -75,7 +75,7 @@ CFontRenderer::~CFontRenderer()
 *
 */
 bool 
-CFontRenderer::Initialise(char* _pcFontFilename, int _iFileWidth, int _iFileHeight, D3DXVECTOR3& _rPosition, D3DXVECTOR2& _rCharacterSize, D3DXCOLOR& _rFontColour)
+CFontRenderer::Initialise(char* _pcFontFilename, int _iFileWidth, int _iFileHeight, Math::Vector3& _rPosition, Math::Vector2& _rCharacterSize, Math::Colour& _rFontColour)
 {
 	m_iNumFontLetters = _iFileWidth * _iFileHeight;
 	m_pLetterCoordinates = new TLetterCoordinates[m_iNumFontLetters];
@@ -90,8 +90,8 @@ CFontRenderer::Initialise(char* _pcFontFilename, int _iFileWidth, int _iFileHeig
 	{
 		for (int iWidth = 0; iWidth < _iFileWidth; ++iWidth)
 		{
-			m_pLetterCoordinates[iCurrentLetter] = TLetterCoordinates(	D3DXVECTOR2(iWidth * fWidthPercentage, iHeight * fHeightPercentage),
-																		D3DXVECTOR2((iWidth + 1) * fWidthPercentage, (iHeight + 1) * fHeightPercentage));
+			m_pLetterCoordinates[iCurrentLetter] = TLetterCoordinates(	Math::Vector2(iWidth * fWidthPercentage, iHeight * fHeightPercentage),
+																		Math::Vector2((iWidth + 1) * fWidthPercentage, (iHeight + 1) * fHeightPercentage));
 			++iCurrentLetter;
 		}
 	}
@@ -130,7 +130,7 @@ CFontRenderer::ProcessFont(ID3D11Device* _pDevice)
 {
 	if (m_bHasChanged)
 	{
-		D3DXVECTOR3 vecScreenOffset(WINDOW_WIDTH * 0.5f, WINDOW_HEIGHT * -0.5f, 0.0f);
+		Math::Vector3 vecScreenOffset(WINDOW_WIDTH * 0.5f, WINDOW_HEIGHT * -0.5f, 0.0f);
 		for (unsigned int iVert = 0; iVert < m_Vertices.size(); ++iVert)
 		{
 			delete m_Vertices[iVert];
@@ -141,24 +141,24 @@ CFontRenderer::ProcessFont(ID3D11Device* _pDevice)
 			for (unsigned int iLetter = 0; iLetter < m_Messages[iRow].size(); ++iLetter)
 			{
 				int iLetterIndex = m_Messages[iRow][iLetter] - 32;
-				D3DXVECTOR3 vecCurrentLetterPos(iLetter * m_vecCharacterSize.x, iRow * -m_vecCharacterSize.y, 0.0f);
-				D3DXVECTOR3 vecScreenPos(m_vecPosition.x, -m_vecPosition.y, m_vecPosition.z);
+				Math::Vector3 vecCurrentLetterPos(iLetter * m_vecCharacterSize.x, iRow * -m_vecCharacterSize.y, 0.0f);
+				Math::Vector3 vecScreenPos(m_vecPosition.x, -m_vecPosition.y, m_vecPosition.z);
 				vecCurrentLetterPos += vecScreenPos - vecScreenOffset;
 				m_Vertices.push_back(new TFontVertex(vecCurrentLetterPos, m_vecCharacterSize, m_fontColour, m_pLetterCoordinates[iLetterIndex].uvTopLeft, m_pLetterCoordinates[iLetterIndex].uvBottomRight));
 			}
 			//int iStringLength = strlen(_pcMessage);
-			//D3DXVECTOR3 vecScreenOffset(WINDOW_WIDTH * 0.5f, WINDOW_HEIGHT * -0.5f, 0.0f);
-			//D3DXVECTOR3 vecStartPos(_rPos.x, -_rPos.y, _rPos.z);
+			//Math::Vector3 vecScreenOffset(WINDOW_WIDTH * 0.5f, WINDOW_HEIGHT * -0.5f, 0.0f);
+			//Math::Vector3 vecStartPos(_rPos.x, -_rPos.y, _rPos.z);
 			//
 			//for (int iLetter = 0; iLetter < iStringLength; ++iLetter)
 			//{
 			//	if (_pcMessage[iLetter] != ' ')
 			//	{
-			//		D3DXVECTOR3 vecOffset(iLetter * _rCharacterSize.x, 0.0f, 0.0f);
+			//		Math::Vector3 vecOffset(iLetter * _rCharacterSize.x, 0.0f, 0.0f);
 			//		int iLetterIndex = static_cast<int>(_pcMessage[iLetter]) - 32;
 			//		m_Letters.push_back(new TLetter(_pcMessage[iLetter], vecStartPos + vecOffset - vecScreenOffset, _rCharacterSize, m_pLetterCoordinates[iLetterIndex]));
 			//
-			//		m_Vertices.push_back(new TFontVertex(vecStartPos + vecOffset - vecScreenOffset, _rCharacterSize, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f), m_pLetterCoordinates[iLetterIndex].uvTopLeft, m_pLetterCoordinates[iLetterIndex].uvBottomRight));
+			//		m_Vertices.push_back(new TFontVertex(vecStartPos + vecOffset - vecScreenOffset, _rCharacterSize, Math::Colour(1.0f, 1.0f, 1.0f, 1.0f), m_pLetterCoordinates[iLetterIndex].uvTopLeft, m_pLetterCoordinates[iLetterIndex].uvBottomRight));
 			//	}
 			//}
 		}

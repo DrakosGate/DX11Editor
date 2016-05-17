@@ -1,16 +1,3 @@
-//
-// Bachelor of Software Engineering - Year 2
-// Media Design School
-// Auckland 
-// New Zealand
-//
-// (c) 2013 Media Design School
-//
-//  File Name   :   entitymanager.cpp
-//  Description :   Code for Class CEntityManager
-//  Author      :   Christopher Howlett
-//  Mail        :   drakos_gate@yahoo.com
-//
 
 // Library Includes
 #include <D3D11.h>
@@ -41,11 +28,11 @@
 *
 */
 CEntityManager::CEntityManager()
-: m_pRenderEntities(0)
-, m_pTransparentEntities(0)
-, m_pCameraDepths(0)
+	: m_pRenderEntities( 0 )
+	, m_pTransparentEntities( 0 )
+	, m_pCameraDepths( 0 )
 {
-	
+
 }
 /**
 *
@@ -57,41 +44,41 @@ CEntityManager::CEntityManager()
 */
 CEntityManager::~CEntityManager()
 {
-	for (unsigned int iPrefab = 0; iPrefab < m_vecPrefabTypes.size(); ++iPrefab)
+	for( unsigned int iPrefab = 0; iPrefab < m_vecPrefabTypes.size(); ++iPrefab )
 	{
-		delete m_vecPrefabTypes[iPrefab];
-		m_vecPrefabTypes[iPrefab] = 0;
+		delete m_vecPrefabTypes[ iPrefab ];
+		m_vecPrefabTypes[ iPrefab ] = 0;
 	}
 	m_vecPrefabTypes.clear();
-	if(m_pRenderEntities)
+	if( m_pRenderEntities )
 	{
-		for(int iScene = 0; iScene < SCENE_MAX; ++iScene)
+		for( int iScene = 0; iScene < SCENE_MAX; ++iScene )
 		{
-			for (unsigned int iObject = 0; iObject < m_pRenderEntities[iScene].size(); ++iObject)
+			for( unsigned int iObject = 0; iObject < m_pRenderEntities[ iScene ].size(); ++iObject )
 			{
 				//delete m_pRenderEntities[iScene][iObject];
 				//m_pRenderEntities[iScene][iObject] = 0;
 			}
-			m_pRenderEntities[iScene].clear();
+			m_pRenderEntities[ iScene ].clear();
 		}
 		delete[] m_pRenderEntities;
 		m_pRenderEntities = 0;
 	}
-	if(m_pTransparentEntities)
+	if( m_pTransparentEntities )
 	{
-		for (int iScene = 0; iScene < SCENE_MAX; ++iScene)
+		for( int iScene = 0; iScene < SCENE_MAX; ++iScene )
 		{
-			for (unsigned int iObject = 0; iObject < m_pTransparentEntities[iScene].size(); ++iObject)
+			for( unsigned int iObject = 0; iObject < m_pTransparentEntities[ iScene ].size(); ++iObject )
 			{
 				//delete m_pTransparentEntities[iScene][iObject];
 				//m_pTransparentEntities[iScene][iObject] = 0;
 			}
-			m_pTransparentEntities[iScene].clear();
+			m_pTransparentEntities[ iScene ].clear();
 		}
 		delete[] m_pTransparentEntities;
 		m_pTransparentEntities = 0;
 	}
-	if(m_pCameraDepths)
+	if( m_pCameraDepths )
 	{
 		delete[] m_pCameraDepths;
 		m_pCameraDepths = 0;
@@ -106,12 +93,12 @@ CEntityManager::~CEntityManager()
 * @return Returns success of initialisation
 *
 */
-bool 
-CEntityManager::Initialise(ID3D11Device* _pDevice)
+bool
+CEntityManager::Initialise( ID3D11Device* _pDevice )
 {
 	//Set resources that will never change
-	m_pRenderEntities = new std::vector<CRenderEntity*>[SCENE_MAX];
-	m_pTransparentEntities = new std::vector<CRenderEntity*>[SCENE_MAX];
+	m_pRenderEntities = new std::vector<RenderEntity*>[ SCENE_MAX ];
+	m_pTransparentEntities = new std::vector<RenderEntity*>[ SCENE_MAX ];
 
 	return true;
 }
@@ -126,7 +113,7 @@ CEntityManager::Initialise(ID3D11Device* _pDevice)
 *
 */
 void
-CEntityManager::SetLevelInformation(CAIHiveMind* _pHivemind, CLightManager* _pLightManager)
+CEntityManager::SetLevelInformation( CAIHiveMind* _pHivemind, CLightManager* _pLightManager )
 {
 	m_pAIHivemind = _pHivemind;
 	m_pLightManager = _pLightManager;
@@ -140,17 +127,17 @@ CEntityManager::SetLevelInformation(CAIHiveMind* _pHivemind, CLightManager* _pLi
 * @param _fDeltaTime Game time elapsed
 *
 */
-void 
-CEntityManager::Process(float _fDeltaTime, EGameScene _eGameScene)
+void
+CEntityManager::Process( float _fDeltaTime, EGameScene _eGameScene )
 {
 	//_pRootNode->pEntity->Process(_fDeltaTime, NULL);
-	for (int iScene = 0; iScene < SCENE_MAX; ++iScene)
+	for( int iScene = 0; iScene < SCENE_MAX; ++iScene )
 	{
-		for (unsigned int iEntity = 0; iEntity < m_pRenderEntities[iScene].size(); ++iEntity)
+		for( unsigned int iEntity = 0; iEntity < m_pRenderEntities[ iScene ].size(); ++iEntity )
 		{
-			if (m_pRenderEntities[iScene][iEntity]->DoDraw())
+			if( m_pRenderEntities[ iScene ][ iEntity ]->DoDraw() )
 			{
-				m_pRenderEntities[iScene][iEntity]->Process(_fDeltaTime, NULL);
+				m_pRenderEntities[ iScene ][ iEntity ]->Process( _fDeltaTime, NULL );
 			}
 		}
 	}
@@ -165,40 +152,40 @@ CEntityManager::Process(float _fDeltaTime, EGameScene _eGameScene)
 * @param _pCurrentCamera Pointer to current camera
 *
 */
-void 
-CEntityManager::Draw(ID3D11DeviceContext* _pDevice, CCamera* _pCurrentCamera, EGameScene _eScene)
+void
+CEntityManager::Draw( ID3D11DeviceContext* _pDevice, Camera* _pCurrentCamera, EGameScene _eScene )
 {
 	//Draw entities
-	CRenderEntity* pCurrentEntity = 0;
-	D3DXMATRIX matBillboard;
-	D3DXMatrixInverse(&matBillboard, 0, &_pCurrentCamera->GetViewMatrix());
-	
-	for(unsigned int iEntity = 0; iEntity < m_pRenderEntities[_eScene].size(); ++iEntity)
+	RenderEntity* pCurrentEntity = 0;
+	Math::Matrix matBillboard;
+	matBillboard = Math::MatrixInverse( nullptr, _pCurrentCamera->GetViewMatrix() );
+
+	for( unsigned int iEntity = 0; iEntity < m_pRenderEntities[ _eScene ].size(); ++iEntity )
 	{
-		pCurrentEntity = m_pRenderEntities[_eScene][iEntity];
-		if(pCurrentEntity->IsTransparent())
+		pCurrentEntity = m_pRenderEntities[ _eScene ][ iEntity ];
+		if( pCurrentEntity->IsTransparent() )
 		{
 			//Render this later
 		}
 		else
 		{
 			//Check frustum culling of camera
-			if (_pCurrentCamera->IsInFrustum(pCurrentEntity->GetPosition(), pCurrentEntity->GetRadius() * pCurrentEntity->GetScale().x))
+			if( _pCurrentCamera->IsInFrustum( pCurrentEntity->GetPosition(), pCurrentEntity->GetRadius() * pCurrentEntity->GetScale().x ) )
 			{
-				if(pCurrentEntity->IsBillboarded())
+				if( pCurrentEntity->IsBillboarded() )
 				{
-					pCurrentEntity->ProcessBillboard(_pCurrentCamera, matBillboard);
+					pCurrentEntity->ProcessBillboard( _pCurrentCamera, matBillboard );
 				}
 				//Check if this entity is set to be drawn
-				if(pCurrentEntity->DoDraw() && pCurrentEntity)
+				if( pCurrentEntity->DoDraw() && pCurrentEntity )
 				{
 					//Send object matrices to server
-					pCurrentEntity->GetObjectShader()->SendWVPMatrixData(_pDevice, &pCurrentEntity->GetWorld(), &_pCurrentCamera->GetViewMatrix(), &_pCurrentCamera->GetProjection());
+					pCurrentEntity->GetObjectShader()->SendWVPMatrixData( _pDevice, &pCurrentEntity->GetWorld(), &_pCurrentCamera->GetViewMatrix(), &_pCurrentCamera->GetProjection() );
 
 					//Send texture data to shader
-					pCurrentEntity->SendTextureDataToShader(_pDevice);
+					pCurrentEntity->SendTextureDataToShader( _pDevice );
 
-					pCurrentEntity->Draw(_pDevice);
+					pCurrentEntity->Draw( _pDevice );
 				}
 			}
 			else
@@ -207,7 +194,7 @@ CEntityManager::Draw(ID3D11DeviceContext* _pDevice, CCamera* _pCurrentCamera, EG
 			}
 		}
 	}
-	DrawTransparentEntities(_pDevice, _pCurrentCamera, _eScene);
+	DrawTransparentEntities( _pDevice, _pCurrentCamera, _eScene );
 }
 /**
 *
@@ -219,39 +206,39 @@ CEntityManager::Draw(ID3D11DeviceContext* _pDevice, CCamera* _pCurrentCamera, EG
 * @param _pCurrentCamera Pointer to current camera
 *
 */
-void 
-CEntityManager::DrawTransparentEntities(ID3D11DeviceContext* _pDevice, CCamera* _pCurrentCamera, EGameScene _eScene)
+void
+CEntityManager::DrawTransparentEntities( ID3D11DeviceContext* _pDevice, Camera* _pCurrentCamera, EGameScene _eScene )
 {
-	if(m_pTransparentEntities[_eScene].size() > 0)
+	if( m_pTransparentEntities[ _eScene ].size() > 0 )
 	{
 		//Draw entities
-		CRenderEntity* pCurrentEntity = 0;
-		D3DXMATRIX matBillboard;
-		D3DXMatrixInverse(&matBillboard, 0, &_pCurrentCamera->GetViewMatrix());
+		RenderEntity* pCurrentEntity = 0;
+		Math::Matrix matBillboard;
+		matBillboard = Math::MatrixInverse( nullptr, _pCurrentCamera->GetViewMatrix() );
 		//SortTransparentEntities(_pCurrentCamera, _eScene);
 
-		for(unsigned int iEntity = 0; iEntity < m_pTransparentEntities[_eScene].size(); ++iEntity)
+		for( unsigned int iEntity = 0; iEntity < m_pTransparentEntities[ _eScene ].size(); ++iEntity )
 		{
-			pCurrentEntity = m_pTransparentEntities[_eScene][iEntity];
+			pCurrentEntity = m_pTransparentEntities[ _eScene ][ iEntity ];
 			//Check frustum culling of camera
-			if(_pCurrentCamera->IsInFrustum(pCurrentEntity->GetPosition(), pCurrentEntity->GetRadius() * pCurrentEntity->GetScale().x))
+			if( _pCurrentCamera->IsInFrustum( pCurrentEntity->GetPosition(), pCurrentEntity->GetRadius() * pCurrentEntity->GetScale().x ) )
 			{
-				if(pCurrentEntity->IsBillboarded())
+				if( pCurrentEntity->IsBillboarded() )
 				{
-					pCurrentEntity->ProcessBillboard(_pCurrentCamera, matBillboard);
+					pCurrentEntity->ProcessBillboard( _pCurrentCamera, matBillboard );
 				}
 				//Check if this entity is set to be drawn
-				if(pCurrentEntity->DoDraw() && pCurrentEntity)
+				if( pCurrentEntity->DoDraw() && pCurrentEntity )
 				{
 					//Send object matrices to server
-					pCurrentEntity->GetObjectShader()->SendWVPMatrixData(_pDevice, &pCurrentEntity->GetWorld(), &_pCurrentCamera->GetViewMatrix(), &_pCurrentCamera->GetProjection());
-					
+					pCurrentEntity->GetObjectShader()->SendWVPMatrixData( _pDevice, &pCurrentEntity->GetWorld(), &_pCurrentCamera->GetViewMatrix(), &_pCurrentCamera->GetProjection() );
+
 					//Send texture data to shader
-					ID3D11ShaderResourceView* const texture[1] = { pCurrentEntity->GetDiffuseMap() };
-					_pDevice->PSSetShaderResources(0, 1, texture);
+					ID3D11ShaderResourceView* const texture[ 1 ] = {pCurrentEntity->GetDiffuseMap()};
+					_pDevice->PSSetShaderResources( 0, 1, texture );
 
 
-					pCurrentEntity->Draw(_pDevice);
+					pCurrentEntity->Draw( _pDevice );
 				}
 			}
 			else
@@ -261,34 +248,34 @@ CEntityManager::DrawTransparentEntities(ID3D11DeviceContext* _pDevice, CCamera* 
 		}
 	}
 }
-void 
-CEntityManager::SortTransparentEntities(CCamera* _pCurrentCamera, EGameScene _eGameScene)
+void
+CEntityManager::SortTransparentEntities( Camera* _pCurrentCamera, EGameScene _eGameScene )
 {
 	//Calculate camera depths
-	for(unsigned int iEntity = 0; iEntity < m_pTransparentEntities[_eGameScene].size(); ++iEntity)
+	for( unsigned int iEntity = 0; iEntity < m_pTransparentEntities[ _eGameScene ].size(); ++iEntity )
 	{
-		m_pCameraDepths[iEntity] = D3DXVec3LengthSq(&(m_pTransparentEntities[_eGameScene][iEntity]->GetPosition() - _pCurrentCamera->GetPosition()));
+		m_pCameraDepths[ iEntity ] = ( m_pTransparentEntities[ _eGameScene ][ iEntity ]->GetPosition() - _pCurrentCamera->GetPosition() ).LengthSq();
 	}
 
 	//Sort camera depths
 	bool bIsSorted = false;
-	while(bIsSorted == false)
+	while( bIsSorted == false )
 	{
 		bIsSorted = true;
-		for (unsigned int iEntity = 0; iEntity < m_pTransparentEntities[_eGameScene].size(); ++iEntity)
+		for( unsigned int iEntity = 0; iEntity < m_pTransparentEntities[ _eGameScene ].size(); ++iEntity )
 		{
-			for (unsigned int iOther = iEntity + 1; iOther < m_pTransparentEntities[_eGameScene].size(); ++iOther)
+			for( unsigned int iOther = iEntity + 1; iOther < m_pTransparentEntities[ _eGameScene ].size(); ++iOther )
 			{
-				if(m_pCameraDepths[iEntity] < m_pCameraDepths[iOther])
+				if( m_pCameraDepths[ iEntity ] < m_pCameraDepths[ iOther ] )
 				{
 					//Swap entities
-					CRenderEntity* pSwappedEntity = m_pTransparentEntities[_eGameScene][iEntity];
-					m_pTransparentEntities[_eGameScene][iEntity] = m_pTransparentEntities[_eGameScene][iOther];
-					m_pTransparentEntities[_eGameScene][iOther] = pSwappedEntity;
+					RenderEntity* pSwappedEntity = m_pTransparentEntities[ _eGameScene ][ iEntity ];
+					m_pTransparentEntities[ _eGameScene ][ iEntity ] = m_pTransparentEntities[ _eGameScene ][ iOther ];
+					m_pTransparentEntities[ _eGameScene ][ iOther ] = pSwappedEntity;
 					//Swap camera depths
-					float fSwappedDistance = m_pCameraDepths[iEntity];
-					m_pCameraDepths[iEntity] = m_pCameraDepths[iOther];
-					m_pCameraDepths[iOther] = fSwappedDistance;
+					float fSwappedDistance = m_pCameraDepths[ iEntity ];
+					m_pCameraDepths[ iEntity ] = m_pCameraDepths[ iOther ];
+					m_pCameraDepths[ iOther ] = fSwappedDistance;
 					bIsSorted = false;
 				}
 			}
@@ -307,11 +294,11 @@ CEntityManager::SortTransparentEntities(CCamera* _pCurrentCamera, EGameScene _eG
 * @param _pProjectedMap Texture to project
 *
 */
-void 
-CEntityManager::DrawProjection(ID3D11DeviceContext* _pDevice, CCamera* _pCurrentCamera, CCamera* _pProjectionCamera, ID3D10ShaderResourceView* _pProjectedMap, EGameScene _eScene)
+void
+CEntityManager::DrawProjection( ID3D11DeviceContext* _pDevice, Camera* _pCurrentCamera, Camera* _pProjectionCamera, ID3D10ShaderResourceView* _pProjectedMap, EGameScene _eScene )
 {
 	//m_pLightMatrix->SetMatrix((float*)(_pProjectionCamera->GetViewMatrix() * _pProjectionCamera->GetProjection()));
-	//CRenderEntity* pCurrentEntity = 0;
+	//RenderEntity* pCurrentEntity = 0;
 	//
 	////Set texture resources
 	//D3D10_TECHNIQUE_DESC techDesc;
@@ -353,16 +340,16 @@ CEntityManager::DrawProjection(ID3D11DeviceContext* _pDevice, CCamera* _pCurrent
 * @param _pNewEntity Entity to add to vector
 *
 */
-void 
-CEntityManager::AddEntity(CRenderEntity* _pNewEntity, EGameScene _eScene)
+void
+CEntityManager::AddEntity( RenderEntity* _pNewEntity, EGameScene _eScene )
 {
-	if (_pNewEntity->IsTransparent())
+	if( _pNewEntity->IsTransparent() )
 	{
-		m_pTransparentEntities[_eScene].push_back(_pNewEntity);
+		m_pTransparentEntities[ _eScene ].push_back( _pNewEntity );
 	}
 	else
 	{
-		m_pRenderEntities[_eScene].push_back(_pNewEntity);
+		m_pRenderEntities[ _eScene ].push_back( _pNewEntity );
 	}
 }
 /**
@@ -374,11 +361,11 @@ CEntityManager::AddEntity(CRenderEntity* _pNewEntity, EGameScene _eScene)
 * @param _pNewEntity Entity to add to vector
 *
 */
-void 
-CEntityManager::AddPrefab(TPrefabOptions* _pPrefab)
+void
+CEntityManager::AddPrefab( TPrefabOptions* _pPrefab )
 {
-	m_mapPrefabIndex[_pPrefab->pcPrefabName] = m_vecPrefabTypes.size();
-	m_vecPrefabTypes.push_back(_pPrefab);
+	m_mapPrefabIndex[ _pPrefab->pcPrefabName ] = m_vecPrefabTypes.size();
+	m_vecPrefabTypes.push_back( _pPrefab );
 }
 /**
 *
@@ -391,10 +378,10 @@ CEntityManager::AddPrefab(TPrefabOptions* _pPrefab)
 *
 */
 TPrefabOptions*
-CEntityManager::GetPrefabOptions(std::string& _pcPrefabName)
+CEntityManager::GetPrefabOptions( std::string& _pcPrefabName )
 {
-	int iPrefabIndex = m_mapPrefabIndex[_pcPrefabName];
-	return m_vecPrefabTypes[iPrefabIndex];
+	int iPrefabIndex = m_mapPrefabIndex[ _pcPrefabName ];
+	return m_vecPrefabTypes[ iPrefabIndex ];
 }
 /**
 *
@@ -407,9 +394,9 @@ CEntityManager::GetPrefabOptions(std::string& _pcPrefabName)
 *
 */
 TPrefabOptions*
-CEntityManager::GetPrefabOptions(int _iPrefabIndex)
+CEntityManager::GetPrefabOptions( int _iPrefabIndex )
 {
-	return m_vecPrefabTypes[_iPrefabIndex];
+	return m_vecPrefabTypes[ _iPrefabIndex ];
 }
 /**
 *
@@ -435,52 +422,52 @@ CEntityManager::GetPrefabCount() const
 *
 */
 CPrefab*
-CEntityManager::InstantiatePrefab(	ID3D11Device* _pDevice, 
-									TEntityNode* _pParentNode, 
-									std::string& _pcPrefabName, 
-									CShader* _pShader,
-									std::vector<CRenderEntity*>& _rGrassColliders,
-									EGameScene _eScene, 
-									D3DXVECTOR3& _rPos, 
-									D3DXVECTOR3& _rScale, 
-									D3DXVECTOR3& _rRotation, 
-									D3DXCOLOR& _rColour)
+CEntityManager::InstantiatePrefab( ID3D11Device* _pDevice,
+	TEntityNode* _pParentNode,
+	std::string& _pcPrefabName,
+	CShader* _pShader,
+	std::vector<RenderEntity*>& _rGrassColliders,
+	EGameScene _eScene,
+	Math::Vector3& _rPos,
+	Math::Vector3& _rScale,
+	Math::Vector3& _rRotation,
+	Math::Colour& _rColour )
 {
 	CPrefab* pNewEntity = new CPrefab();
-	TPrefabOptions* pPrefabOptions = GetPrefabOptions(_pcPrefabName);
-	D3DXVECTOR3 vecInstanceScale = D3DXVECTOR3(_rScale.x * pPrefabOptions->vecScale.x, _rScale.y * pPrefabOptions->vecScale.y, _rScale.z * pPrefabOptions->vecScale.z);
+	TPrefabOptions* pPrefabOptions = GetPrefabOptions( _pcPrefabName );
+	Math::Vector3 vecInstanceScale = Math::Vector3( _rScale.x * pPrefabOptions->vecScale.x, _rScale.y * pPrefabOptions->vecScale.y, _rScale.z * pPrefabOptions->vecScale.z );
 
-	pNewEntity->Initialise(_pDevice, 1.0f);
-	pNewEntity->SetModel(pPrefabOptions->pModel);
-	pNewEntity->SetDiffuseMap(pPrefabOptions->pTexture);
-	pNewEntity->SetObjectShader(_pShader);
-	pNewEntity->SetPosition(_rPos); //Offset the position above the ground
-	pNewEntity->SetScale(vecInstanceScale);
-	pNewEntity->SetLocalScale(_rScale);
-	pNewEntity->SetRotation(_rRotation);
-	pNewEntity->SetEntityType(_pcPrefabName);
-	pNewEntity->CreateNode(_pParentNode);
+	pNewEntity->Initialise( _pDevice, 1.0f );
+	pNewEntity->SetModel( pPrefabOptions->pModel );
+	pNewEntity->SetDiffuseMap( pPrefabOptions->pTexture );
+	pNewEntity->SetObjectShader( _pShader );
+	pNewEntity->SetPosition( _rPos ); //Offset the position above the ground
+	pNewEntity->SetScale( vecInstanceScale );
+	pNewEntity->SetLocalScale( _rScale );
+	pNewEntity->SetRotation( _rRotation );
+	pNewEntity->SetEntityType( _pcPrefabName );
+	pNewEntity->CreateNode( _pParentNode );
 
 	//Check if this is a static obstacle in the scene
-	if (pPrefabOptions->bIsStatic)
+	if( pPrefabOptions->bIsStatic )
 	{
-		m_pAIHivemind->AddStaticObject(_pDevice, pNewEntity);
+		m_pAIHivemind->AddStaticObject( _pDevice, pNewEntity );
 	}
 	//This object moves
 	else
 	{
-		_rGrassColliders.push_back(pNewEntity);
+		_rGrassColliders.push_back( pNewEntity );
 		//Check if this is controlled by AI
-		if (pPrefabOptions->eAIType != AI_INVALID)
+		if( pPrefabOptions->eAIType != AI_INVALID )
 		{
 			//Only add AI to children of the root node
-			if (_pParentNode->pParent == NULL)
+			if( _pParentNode->pParent == NULL )
 			{
-				m_pAIHivemind->AddAI(pNewEntity, pPrefabOptions->eAIType);
+				m_pAIHivemind->AddAI( pNewEntity, pPrefabOptions->eAIType );
 			}
 		}
 	}
-	AddEntity(pNewEntity, _eScene);
+	AddEntity( pNewEntity, _eScene );
 
 	return pNewEntity;
 }
@@ -494,12 +481,12 @@ CEntityManager::InstantiatePrefab(	ID3D11Device* _pDevice,
 * @param _pBoundingBox Object bounding box
 *
 */
-bool 
-CEntityManager::IsEntityInFrustum(CCamera* _pCamera, CBoundingBox* _pBoundingBox)
+bool
+CEntityManager::IsEntityInFrustum( Camera* _pCamera, CBoundingBox* _pBoundingBox )
 {
 	bool bIsInFrustum = true;
 
-	if(_pBoundingBox)
+	if( _pBoundingBox )
 	{
 
 	}
@@ -516,7 +503,7 @@ CEntityManager::IsEntityInFrustum(CCamera* _pCamera, CBoundingBox* _pBoundingBox
 *
 */
 void
-CEntityManager::ClearScene(EGameScene _eScene)
+CEntityManager::ClearScene( EGameScene _eScene )
 {
-	m_pRenderEntities[_eScene].clear();
+	m_pRenderEntities[ _eScene ].clear();
 }

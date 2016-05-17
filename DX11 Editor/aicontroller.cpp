@@ -1,17 +1,3 @@
-//
-// Bachelor of Software Engineering - Year 2
-// Media Design School
-// Auckland 
-// New Zealand
-//
-// (c) 2013 Media Design School
-//
-//  File Name   :   AIController.cpp
-//  Description :   Code for CAIController 
-//  Author      :   Christopher Howlett
-//  Mail        :   drakos_gate@yahoo.com
-//
-
 // Library Includes
 
 // Local Includes
@@ -36,11 +22,11 @@
 *
 */
 CAIController::CAIController()
-: m_fMovementSpeed(0.0f)
-, m_fRotationSpeed(0.0f)
-, m_eAIType(AI_INVALID)
-, m_pHivemind(0)
-, m_fThoughtDelay(0.0f)
+	: m_fMovementSpeed( 0.0f )
+	, m_fRotationSpeed( 0.0f )
+	, m_eAIType( AI_INVALID )
+	, m_pHivemind( 0 )
+	, m_fThoughtDelay( 0.0f )
 {
 	m_vecWaypoint *= 0.0f;
 	m_vecAStarActivePoint *= 0.0f;
@@ -66,8 +52,8 @@ CAIController::~CAIController()
 * @return Returns true
 *
 */
-bool 
-CAIController::Initialise(CAIHiveMind* _pHivemind, CRenderEntity* _pEntity, float _fMovementSpeed, float _fRotationSpeed)
+bool
+CAIController::Initialise( CAIHiveMind* _pHivemind, RenderEntity* _pEntity, float _fMovementSpeed, float _fRotationSpeed )
 {
 	bool bResult = false;
 
@@ -78,8 +64,8 @@ CAIController::Initialise(CAIHiveMind* _pHivemind, CRenderEntity* _pEntity, floa
 
 	m_iCurrentWaypointIndex = rand() % _pHivemind->GetNavigationGridSize();
 	m_vecWaypoint = m_pHivemind->GetRandomWaypoint();
-	D3DXVECTOR3* pWaypoint = m_pHivemind->GetNextWaypoint(m_vecWaypoint, m_iCurrentWaypointIndex);
-	if (pWaypoint)
+	Math::Vector3* pWaypoint = m_pHivemind->GetNextWaypoint( m_vecWaypoint, m_iCurrentWaypointIndex );
+	if( pWaypoint )
 	{
 		m_vecAStarActivePoint = *pWaypoint;
 	}
@@ -95,20 +81,20 @@ CAIController::Initialise(CAIHiveMind* _pHivemind, CRenderEntity* _pEntity, floa
 * @param _fDeltaTime Game time elapsed
 *
 */
-void 
-CAIController::Process(float _fDeltaTime, D3DXVECTOR3& _rAvoidance)
+void
+CAIController::Process( float _fDeltaTime, Math::Vector3& _rAvoidance )
 {
 	//Check if thought process is delayed
-	if (m_fThoughtDelay > 0.0f)
+	if( m_fThoughtDelay > 0.0f )
 	{
 		m_fThoughtDelay -= _fDeltaTime;
 	}
-	
+
 	CheckWaypointReached();
 	//Avoid obstacles
-	D3DXVECTOR3 vecCurrentPos = m_pEntity->GetPosition();
+	Math::Vector3 vecCurrentPos = m_pEntity->GetPosition();
 	vecCurrentPos += _rAvoidance * m_fMovementSpeed * 5.0f * _fDeltaTime;
-	m_pEntity->SetPosition(vecCurrentPos);
+	m_pEntity->SetPosition( vecCurrentPos );
 }
 /**
 *
@@ -119,21 +105,21 @@ CAIController::Process(float _fDeltaTime, D3DXVECTOR3& _rAvoidance)
 * @param _fDeltaTime Game time elapsed
 *
 */
-void 
-CAIController::ProcessWaypointMovement(float _fDeltaTime)
+void
+CAIController::ProcessWaypointMovement( float _fDeltaTime )
 {
-	if (m_fThoughtDelay <= 0.0f)
+	if( m_fThoughtDelay <= 0.0f )
 	{
-		D3DXVECTOR3 vecForward = m_pEntity->GetForward();
-		D3DXVECTOR3 vecCurrentPos = m_pEntity->GetPosition();
-		D3DXVECTOR3 vecToWaypoint = m_vecWaypoint - vecCurrentPos;
+		Math::Vector3 vecForward = m_pEntity->GetForward();
+		Math::Vector3 vecCurrentPos = m_pEntity->GetPosition();
+		Math::Vector3 vecToWaypoint = m_vecWaypoint - vecCurrentPos;
 		vecToWaypoint.y = 0.0f;
 		vecForward += vecToWaypoint * m_fRotationSpeed * _fDeltaTime;
-		D3DXVec3Normalize(&vecForward, &vecForward);
+		vecForward = Math::Normalise( vecForward );
 
 		vecCurrentPos += vecForward * m_fMovementSpeed * _fDeltaTime;
-		m_pEntity->SetPosition(vecCurrentPos);
-		m_pEntity->SetForward(vecForward);
+		m_pEntity->SetPosition( vecCurrentPos );
+		m_pEntity->SetForward( vecForward );
 	}
 }
 /**
@@ -147,24 +133,24 @@ CAIController::ProcessWaypointMovement(float _fDeltaTime)
 *
 */
 void
-CAIController::ProcessAStarMovement(int _iPathLength, float _fDeltaTime)
+CAIController::ProcessAStarMovement( int _iPathLength, float _fDeltaTime )
 {
-	if (m_fThoughtDelay <= 0.0f)
+	if( m_fThoughtDelay <= 0.0f )
 	{
-		D3DXVECTOR3 vecForward = m_pEntity->GetForward();
-		D3DXVECTOR3 vecCurrentPos = m_pEntity->GetPosition();
-		D3DXVECTOR3 vecToWaypoint = m_vecAStarActivePoint - vecCurrentPos;
+		Math::Vector3 vecForward = m_pEntity->GetForward();
+		Math::Vector3 vecCurrentPos = m_pEntity->GetPosition();
+		Math::Vector3 vecToWaypoint = m_vecAStarActivePoint - vecCurrentPos;
 		vecToWaypoint.y = 0.0f;
 		vecForward += vecToWaypoint * m_fRotationSpeed * _fDeltaTime;
-		D3DXVec3Normalize(&vecForward, &vecForward);
+		vecForward = Math::Normalise( vecForward );
 
 		vecCurrentPos += vecForward * m_fMovementSpeed * _fDeltaTime;
-		m_pEntity->SetPosition(vecCurrentPos);
-		m_pEntity->SetForward(vecForward);
+		m_pEntity->SetPosition( vecCurrentPos );
+		m_pEntity->SetForward( vecForward );
 	}
 }
 void
-CAIController::SetAStarTarget(D3DXVECTOR3& _rVecTarget)
+CAIController::SetAStarTarget( Math::Vector3& _rVecTarget )
 {
 	m_vecWaypoint = _rVecTarget;
 }
@@ -176,36 +162,36 @@ CAIController::SetAStarTarget(D3DXVECTOR3& _rVecTarget)
 * @author Christopher Howlett
 *
 */
-void 
+void
 CAIController::CheckWaypointReached()
 {
 	//Check target waypoint
-	D3DXVECTOR3 vecCurrentPos = m_pEntity->GetPosition();
-	D3DXVECTOR3 vecToWaypoint = m_vecWaypoint - vecCurrentPos;
+	Math::Vector3 vecCurrentPos = m_pEntity->GetPosition();
+	Math::Vector3 vecToWaypoint = m_vecWaypoint - vecCurrentPos;
 	vecToWaypoint.y = 0.0f;
-	float fDistanceToWaypoint = D3DXVec3LengthSq(&vecToWaypoint);
-	if (fDistanceToWaypoint < 0.5f)
+	float fDistanceToWaypoint = vecToWaypoint.LengthSq();
+	if( fDistanceToWaypoint < 0.5f )
 	{
 		m_fThoughtDelay = 0.0f;
 		m_vecWaypoint = m_pHivemind->GetRandomWaypoint();
-		D3DXVECTOR3* pWaypoint = m_pHivemind->GetNextWaypoint(m_vecWaypoint, m_iCurrentWaypointIndex);
-		if (pWaypoint)
+		Math::Vector3* pWaypoint = m_pHivemind->GetNextWaypoint( m_vecWaypoint, m_iCurrentWaypointIndex );
+		if( pWaypoint )
 		{
 			m_vecAStarActivePoint = *pWaypoint;
 		}
 	}
-	if (true)
+	if( true )
 	{
 		//Also check current A* waypoint
 		vecCurrentPos = m_pEntity->GetPosition();
 		vecToWaypoint = m_vecAStarActivePoint - vecCurrentPos;
 		vecToWaypoint.y = 0.0f;
-		fDistanceToWaypoint = D3DXVec3LengthSq(&vecToWaypoint);
-		if (fDistanceToWaypoint < 0.5f)
+		fDistanceToWaypoint = vecToWaypoint.LengthSq();
+		if( fDistanceToWaypoint < 0.5f )
 		{
 			m_fThoughtDelay = 0.0f;
-			D3DXVECTOR3* pWaypoint = m_pHivemind->GetNextWaypoint(m_vecWaypoint, m_iCurrentWaypointIndex);
-			if (pWaypoint)
+			Math::Vector3* pWaypoint = m_pHivemind->GetNextWaypoint( m_vecWaypoint, m_iCurrentWaypointIndex );
+			if( pWaypoint )
 			{
 				m_vecAStarActivePoint = *pWaypoint;
 			}
@@ -220,7 +206,7 @@ CAIController::CheckWaypointReached()
 * @author Christopher Howlett
 *
 */
-D3DXVECTOR3&
+Math::Vector3&
 CAIController::GetCurrentWaypoint()
 {
 	return m_vecWaypoint;
@@ -233,8 +219,8 @@ CAIController::GetCurrentWaypoint()
 * @author Christopher Howlett
 *
 */
-void 
-CAIController::SetAIType(EAIType _eAIType)
+void
+CAIController::SetAIType( EAIType _eAIType )
 {
 	m_eAIType = _eAIType;
 }
@@ -246,7 +232,7 @@ CAIController::SetAIType(EAIType _eAIType)
 * @author Christopher Howlett
 *
 */
-CRenderEntity* 
+RenderEntity*
 CAIController::GetEntity() const
 {
 	return m_pEntity;
@@ -259,7 +245,7 @@ CAIController::GetEntity() const
 * @author Christopher Howlett
 *
 */
-EAIType 
+EAIType
 CAIController::GetAIType() const
 {
 	return m_eAIType;

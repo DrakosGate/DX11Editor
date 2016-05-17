@@ -1,16 +1,3 @@
-//
-// Bachelor of Software Engineering - Year 2
-// Media Design School
-// Auckland 
-// New Zealand
-//
-// (c) 2013 Media Design School
-//
-//  File Name   :   model.cpp
-//  Description :   Code for class CPointSprite
-//  Author      :   Christopher Howlett
-//  Mail        :   drakos_gate@yahoo.com
-//
 
 // Library Includes
 #include <D3D11.h>
@@ -88,7 +75,7 @@ CPointSprite::Initialise()
 *
 */
 void
-CPointSprite::AddPointSprite(ID3D11Device* _pDevice, D3DXVECTOR3& _rPosition, D3DXVECTOR3& _rDirection, D3DXVECTOR2& _rScale, D3DXCOLOR& _rColour, float _fRotation, int _iTextureID)
+CPointSprite::AddPointSprite(ID3D11Device* _pDevice, Math::Vector3& _rPosition, Math::Vector3& _rDirection, Math::Vector2& _rScale, Math::Colour& _rColour, float _fRotation, int _iTextureID)
 {
 	++m_iVertexCount;
 	++m_iIndexCount;

@@ -25,7 +25,7 @@ public:
 	CPerformanceGraph();
 	virtual ~CPerformanceGraph();
 
-	virtual bool Initialise(ID3D11Device* _pDevice, D3DXVECTOR3& _rPosition, D3DXVECTOR3& _rScale, int _iNumNodes);
+	virtual bool Initialise(ID3D11Device* _pDevice, Math::Vector3& _rPosition, Math::Vector3& _rScale, int _iNumNodes);
 	void LogPerformance(char* _pcLogFilename, char* _pcLogDescription, int _iLogAfterFrames);
 	void OutputLog();
 
@@ -37,8 +37,8 @@ public:
 
 //Member variables
 protected:
-	D3DXVECTOR3 m_vecGraphPos;
-	D3DXVECTOR3 m_vecGraphScale;
+	Math::Vector3 m_vecGraphPos;
+	Math::Vector3 m_vecGraphScale;
 
 	float* m_pNodeValues;
 	int m_iNumNodes;

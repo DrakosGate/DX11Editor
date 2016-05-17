@@ -33,7 +33,7 @@
 * @author Christopher Howlett
 *
 */
-CClock::CClock()
+Clock::Clock()
 :	m_fStartTime(0.0f)
 ,	m_fEndTime(0.0f)
 ,	m_fDeltaTime(0.0f)
@@ -58,7 +58,7 @@ CClock::CClock()
 * @author Christopher Howlett
 *
 */
-CClock::~CClock()
+Clock::~Clock()
 {
 
 }
@@ -71,7 +71,7 @@ CClock::~CClock()
 *
 */
 bool
-CClock::Initialise()
+Clock::Initialise()
 {
 	//Check if QueryPerformanceCounter can be used
 	if(QueryPerformanceFrequency(&m_iTimerFrequency))
@@ -94,7 +94,7 @@ CClock::Initialise()
 *
 */
 void
-CClock::Process()
+Clock::Process()
 {
 	m_fLastTime = m_fCurrentTime;
 	
@@ -142,7 +142,7 @@ CClock::Process()
 *
 */
 float
-CClock::GetDeltaTick()
+Clock::GetDeltaTick()
 {
 	return(static_cast<float>(m_fDeltaTime));
 }
@@ -154,7 +154,7 @@ CClock::GetDeltaTick()
 *
 */
 void 
-CClock::LimitFramesPerSecond(float _fMaxFramesPerSecond)
+Clock::LimitFramesPerSecond(float _fMaxFramesPerSecond)
 {
 	m_bIsLimittingFPS = true;
 	m_fFramesPerSecondLimit = 1.0f / _fMaxFramesPerSecond;
@@ -167,7 +167,7 @@ CClock::LimitFramesPerSecond(float _fMaxFramesPerSecond)
 *
 */
 void
-CClock::StartTimer()
+Clock::StartTimer()
 {
 	QueryPerformanceCounter(&m_iNumCounts);
 	m_fStartTime = static_cast<double>(m_iNumCounts.QuadPart) * m_fTimerFrequency;
@@ -180,7 +180,7 @@ CClock::StartTimer()
 *
 */
 void 
-CClock::EndTimer()
+Clock::EndTimer()
 {
 	QueryPerformanceCounter(&m_iNumCounts);
 	m_fEndTime = static_cast<double>(m_iNumCounts.QuadPart) * m_fTimerFrequency;
@@ -196,7 +196,7 @@ CClock::EndTimer()
 *
 */
 float
-CClock::GetTimeElapsed()
+Clock::GetTimeElapsed()
 {
 	double fTimeElapsed = m_fTotalAverageTimeElapsed / m_fFramesCounted;
 	m_fTotalAverageTimeElapsed = 0.0f;
@@ -211,7 +211,7 @@ CClock::GetTimeElapsed()
 *
 */
 int
-CClock::GetFPS() const
+Clock::GetFPS() const
 {
 	return m_iFramesPerSecond;
 }

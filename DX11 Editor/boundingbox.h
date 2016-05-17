@@ -51,8 +51,8 @@ private:
 	const CBoundingBox& operator =(const CBoundingBox& _krInstanceToCopy);
 
 private:
-	D3DXVECTOR3 m_vecPosition;
-	D3DXVECTOR3 m_vecScale;
+	Math::Vector3 m_vecPosition;
+	Math::Vector3 m_vecScale;
 	float m_fRadius;
 	TBoundingBox m_tBoundingBox;
 

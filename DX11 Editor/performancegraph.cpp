@@ -1,16 +1,3 @@
-//
-// Bachelor of Software Engineering - Year 2
-// Media Design School
-// Auckland 
-// New Zealand
-//
-// (c) 2013 Media Design School
-//
-//  File Name   :   model.cpp
-//  Description :   Code for class CPerformanceGraph
-//  Author      :   Christopher Howlett
-//  Mail        :   drakos_gate@yahoo.com
-//
 
 // Library Includes
 #include <D3D11.h>
@@ -73,21 +60,21 @@ CPerformanceGraph::~CPerformanceGraph()
 *
 */
 bool 
-CPerformanceGraph::Initialise(ID3D11Device* _pDevice, D3DXVECTOR3& _rPosition, D3DXVECTOR3& _rScale, int _iNumNodes)
+CPerformanceGraph::Initialise(ID3D11Device* _pDevice, Math::Vector3& _rPosition, Math::Vector3& _rScale, int _iNumNodes)
 {
 	m_fScaleOffset = _rScale.x / static_cast<float>(_iNumNodes);
 	m_iNumNodes = _iNumNodes;
-	m_vecGraphPos = D3DXVECTOR3(_rPosition.x - WINDOW_WIDTH * 0.5f, WINDOW_HEIGHT * 0.5f - _rPosition.y, 0.0f);
+	m_vecGraphPos = Math::Vector3(_rPosition.x - WINDOW_WIDTH * 0.5f, WINDOW_HEIGHT * 0.5f - _rPosition.y, 0.0f);
 	m_vecGraphScale = _rScale;
 	m_pNodeValues = new float[m_iNumNodes];
 	
 	for (int iNode = 0; iNode < _iNumNodes; ++iNode)
 	{
 		m_pNodeValues[iNode] = 0.0f;
-		AddPointSprite(_pDevice, _rPosition + D3DXVECTOR3(m_fScaleOffset * iNode, 0.0f, 0.0f), D3DXVECTOR3(10.0f, 0.0f, 0.0f), D3DXVECTOR2(m_fScaleOffset, 1.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 0.5f), 0.0f, 0);
+		AddPointSprite(_pDevice, _rPosition + Math::Vector3(m_fScaleOffset * iNode, 0.0f, 0.0f), Math::Vector3(10.0f, 0.0f, 0.0f), Math::Vector2(m_fScaleOffset, 1.0f), Math::Colour(1.0f, 1.0f, 1.0f, 0.5f), 0.0f, 0);
 	}
 	//Add background sprite
-	AddPointSprite(_pDevice, m_vecGraphPos, D3DXVECTOR3(10.0f, 0.0f, 0.0f), D3DXVECTOR2(_rScale.x, _rScale.y), D3DXCOLOR(0.2f, 0.2f, 1.0f, 0.3f), 0.0f, 0);
+	AddPointSprite(_pDevice, m_vecGraphPos, Math::Vector3(10.0f, 0.0f, 0.0f), Math::Vector2(_rScale.x, _rScale.y), Math::Colour(0.2f, 0.2f, 1.0f, 0.3f), 0.0f, 0);
 
 	return true;
 }
@@ -210,7 +197,7 @@ CPerformanceGraph::AddNode(ID3D11Device* _pDevice, float _fValue)
 	for (int iVertex = 0; iVertex < m_iNumNodes; ++iVertex)
 	{
 		float fHeightOffset = ((m_pNodeValues[iVertex] - m_fMinRange) * m_fHeightPercentage) * m_vecGraphScale.y;
-		m_pPointSpriteVertices[iVertex]->pos = D3DXVECTOR3(m_vecGraphPos.x + (m_fScaleOffset * iVertex), m_vecGraphPos.y - m_vecGraphScale.y + fHeightOffset, m_vecGraphPos.z);
+		m_pPointSpriteVertices[iVertex]->pos = Math::Vector3(m_vecGraphPos.x + (m_fScaleOffset * iVertex), m_vecGraphPos.y - m_vecGraphScale.y + fHeightOffset, m_vecGraphPos.z);
 		m_pPointSpriteVertices[iVertex]->scale.y = m_pPointSpriteVertices[iVertex]->pos.y - (m_vecGraphPos.y - m_vecGraphScale.y);
 	}
 	RefreshBuffers(_pDevice);

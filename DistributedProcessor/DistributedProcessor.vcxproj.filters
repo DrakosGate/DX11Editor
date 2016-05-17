@@ -21,9 +21,15 @@
     <ClCompile Include="distributedprocessor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\DX11 Editor\mathlibrary.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="distributedprocessor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DX11 Editor\mathlibrary.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

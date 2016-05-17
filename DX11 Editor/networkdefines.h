@@ -2,9 +2,7 @@
 #ifndef __NETDEFINES_H__
 #define __NETDEFINES_H__
 
-#include <D3DX10.h>
 #include "defines.h"
-
 
 // Types
 #define SERVER_PORT 56000
@@ -77,9 +75,9 @@ struct TNetGrassData
 		SAFEDELETEARRAY(grassNormal);
 		SAFEDELETEARRAY(pObstacleData);
 	}
-	D3DXVECTOR3* grassPos;
-	D3DXVECTOR3* grassNormal;
-	D3DXVECTOR4* pObstacleData; //3x position data + 1x radius
+	Math::Vector3* grassPos;
+	Math::Vector3* grassNormal;
+	Math::Vector4* pObstacleData; //3x position data + 1x radius
 	int iDivisionSize;
 	int iVertexCount;
 	int iNumObstacles;

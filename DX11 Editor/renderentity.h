@@ -1,6 +1,6 @@
 //
-//  File Name   :   CRenderEntity.h
-//  Description :   Class of CRenderEntity
+//  File Name   :   RenderEntity.h
+//  Description :   Class of RenderEntity
 //  Author      :   Christopher Howlett
 //  Mail        :   drakos_gate@yahoo.com
 //
@@ -11,7 +11,6 @@
 #define __RENDERENTITY_H__
 
 // Library Includes
-#include <D3DX10math.h>
 #include <vector>
 
 // Local Includes
@@ -19,7 +18,7 @@
 #include "defines.h"
 
 // Types
-class CRenderEntity;
+class RenderEntity;
 class CLight;
 
 struct TEntityNode
@@ -28,7 +27,7 @@ struct TEntityNode
 	: pEntity(0)
 	, pParent(0)
 	{}
-	TEntityNode(CRenderEntity* _pEntity, TEntityNode* _pParent)
+	TEntityNode(RenderEntity* _pEntity, TEntityNode* _pParent)
 	{
 		pEntity = _pEntity;
 		pParent = _pParent;
@@ -44,7 +43,7 @@ struct TEntityNode
 		}
 		vecChildren.clear();
 	}
-	CRenderEntity* pEntity;
+	RenderEntity* pEntity;
 	TEntityNode* pParent;
 	std::vector<TEntityNode*> vecChildren;
 	std::vector<CLight*> vecLights;
@@ -59,18 +58,18 @@ struct ID3D11ShaderResourceView;
 struct ID3D11Buffer;
 
 class CBoundingBox;
-class CCamera;
+class Camera;
 class CShader;
 
-class CRenderEntity
+class RenderEntity
 {
 //Member functions
 public:
-	CRenderEntity();
-	virtual ~CRenderEntity();
+	RenderEntity();
+	virtual ~RenderEntity();
 
 	virtual bool Initialise(ID3D11Device* _pDevice, float _fScale);
-	virtual void Process(float _fDeltaTime, D3DXMATRIX* _pParentMatrix);
+	virtual void Process(float _fDeltaTime, Math::Matrix* _pParentMatrix);
 	virtual void Draw(ID3D11DeviceContext* _pDevice);
 	
 	virtual void CreateVertexBuffer(ID3D11Device* _pDevice);
@@ -78,20 +77,19 @@ public:
 	virtual TEntityNode* CreateNode(TEntityNode* _pParentNode);
 	virtual TEntityNode* GetNode() const;
 
-	virtual D3DXVECTOR3& GetPosition();
-	virtual D3DXVECTOR3& GetRotation();
-	virtual D3DXVECTOR3& GetScale();
-	virtual D3DXVECTOR3& GetLocalScale();
-	virtual D3DXVECTOR3& GetForward();
-	virtual D3DXMATRIX& GetWorld();
+	virtual Math::Vector3& GetPosition();
+	virtual Math::Vector3& GetRotation();
+	virtual Math::Vector3& GetScale();
+	virtual Math::Vector3& GetLocalScale();
+	virtual Math::Vector3& GetForward();
+	virtual Math::Matrix& GetWorld();
 	virtual std::string& GetEntityType();
-	virtual void SetRotation(D3DXVECTOR3& _rVecRotation);
-	virtual void SetPosition(D3DXVECTOR3& _rVecPosition);
-	virtual void SetForward(D3DXVECTOR3& _rVecForward);
-	virtual bool ProcessInput(TInputStruct& _pKeys, float _fDT);
-	virtual void SetWorldMatrix(D3DXMATRIX& _rWorld);
-	virtual void SetScale(D3DXVECTOR3& _rVecScale);
-	virtual void SetLocalScale(D3DXVECTOR3& _rLocalScale);
+	virtual void SetRotation(Math::Vector3& _rVecRotation);
+	virtual void SetPosition(Math::Vector3& _rVecPosition);
+	virtual void SetForward(Math::Vector3& _rVecForward);
+	virtual void SetWorldMatrix(Math::Matrix& _rWorld);
+	virtual void SetScale(Math::Vector3& _rVecScale);
+	virtual void SetLocalScale(Math::Vector3& _rLocalScale);
 	virtual void SetEntityType(std::string& _sType);
 
 	virtual ID3D11ShaderResourceView* GetDiffuseMap();
@@ -105,7 +103,7 @@ public:
 	virtual void SetObjectShader(CShader* _pObjectShader);
 	virtual CShader* GetObjectShader();
 
-	virtual void ProcessBillboard(CCamera* _pCurrentCamera, D3DXMATRIX& _rBillboardMat);
+	virtual void ProcessBillboard(Camera* _pCurrentCamera, Math::Matrix& _rBillboardMat);
 	virtual bool IsBillboarded() const;
 	virtual void ToggleBillboarded(bool _bIsBillboard);
 	virtual bool IsShadowed() const;
@@ -116,14 +114,14 @@ public:
 	virtual CBoundingBox* GetBoundingBox();
 	virtual float GetRadius() const;
 	virtual void SetRadius(float _fRadius);
-	virtual bool HasCollided(CRenderEntity* _pOtherEntity);
+	virtual bool HasCollided(RenderEntity* _pOtherEntity);
 
 	virtual bool DoDraw() const;
 	virtual void SetDoDraw(bool _bDoDraw);
 
 private:
-	CRenderEntity(const CRenderEntity& _krInstanceToCopy);
-	const CRenderEntity& operator =(const CRenderEntity& _krInstanceToCopy);
+	RenderEntity(const RenderEntity& _krInstanceToCopy);
+	const RenderEntity& operator =(const RenderEntity& _krInstanceToCopy);
 	
 //Member variables
 protected:
@@ -133,16 +131,16 @@ protected:
 	float m_fRadius;
 	float m_fBillboardFlip;
 
-	D3DXMATRIX m_matWorld;
-	D3DXVECTOR3 m_vecPosition;
-	D3DXVECTOR3 m_vecRotation;
-	D3DXVECTOR3 m_vecScale;
-	D3DXVECTOR3 m_vecLocalScale;
+	Math::Matrix m_matWorld;
+	Math::Vector3 m_vecPosition;
+	Math::Vector3 m_vecRotation;
+	Math::Vector3 m_vecScale;
+	Math::Vector3 m_vecLocalScale;
 
-	D3DXVECTOR3 m_vecLook;
-	D3DXVECTOR3 m_vecUp;
-	D3DXVECTOR3 m_vecRight;
-	D3DXQUATERNION m_quatRot;
+	Math::Vector3 m_vecLook;
+	Math::Vector3 m_vecUp;
+	Math::Vector3 m_vecRight;
+	Math::Quaternion m_quatRot;
 	std::string m_sEntityType;
 
 	int m_iVertexCount;

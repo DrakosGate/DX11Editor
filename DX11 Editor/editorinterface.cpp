@@ -1,17 +1,3 @@
-//
-// Bachelor of Software Engineering - Year 2
-// Media Design School
-// Auckland 
-// New Zealand
-//
-// (c) 2013 Media Design School
-//
-//  File Name   :   model.cpp
-//  Description :   Code for class CEditorInterface
-//  Author      :   Christopher Howlett
-//  Mail        :   drakos_gate@yahoo.com
-//
-
 // Library Includes
 #include <D3D11.h>
 #include <rapidxml_utils.hpp>
@@ -95,11 +81,11 @@ CEditorInterface::~CEditorInterface()
 bool 
 CEditorInterface::Initialise(HWND _hWindow, CLevel* _pLevel)
 {
-	m_pWindowColours = new D3DXCOLOR[WINDOWSTATE_MAX];
-	m_pWindowColours[WINDOWSTATE_OPEN] = D3DXCOLOR(1.0f, 1.0f, 1.0f, 0.8f);
-	m_pWindowColours[WINDOWSTATE_CLOSED] = D3DXCOLOR(0.0f, 0.0f, 0.0f, 0.0f);
-	m_pWindowColours[WINDOWSTATE_MOUSEOVER] = D3DXCOLOR(0.5f, 0.7f, 0.8f, 1.0f);
-	m_pWindowColours[WINDOWSTATE_CLOSEBUTTON] = D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f);
+	m_pWindowColours = new Math::Colour[WINDOWSTATE_MAX];
+	m_pWindowColours[WINDOWSTATE_OPEN] = Math::Colour(1.0f, 1.0f, 1.0f, 0.8f);
+	m_pWindowColours[WINDOWSTATE_CLOSED] = Math::Colour(0.0f, 0.0f, 0.0f, 0.0f);
+	m_pWindowColours[WINDOWSTATE_MOUSEOVER] = Math::Colour(0.5f, 0.7f, 0.8f, 1.0f);
+	m_pWindowColours[WINDOWSTATE_CLOSEBUTTON] = Math::Colour(1.0f, 0.0f, 0.0f, 1.0f);
 
 	m_hWindow = _hWindow;
 	m_pCurrentLevel = _pLevel;
@@ -118,116 +104,6 @@ void
 CEditorInterface::Process(float _fDeltaTime)
 {
 	
-}
-/**
-*
-* CEditorInterface class Processes input received
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-* @param _pKeys Input structure
-* @param _fDeltaTime Game time elapsed
-*
-*/
-bool
-CEditorInterface::ProcessInput(ID3D11Device* _pDevice, TInputStruct* _pKeys, float _fDeltaTime)
-{
-	bool bHasReceivedInput = false;
-	m_bCreateObject = false;
-	m_eEditorState = EDITOR_IDLE;
-
-	float fColourChangeSpeed = 5.0f;
-
-	//Check for input received through button presses or window interaction
-	m_bHasChanged = false;
-	bool bIsOverButton = false;
-	bool bWindowHasCollided = false;
-	m_bHasChanged = true;
-	for (unsigned int iWindow = 0; iWindow < m_vecWindows.size(); ++iWindow)
-	{
-		if (m_bIsActive && m_vecWindows[iWindow]->bIsActive)
-		{
-			//Check if the mouse is within the range of a window
-			bWindowHasCollided = HasCollided(_pKeys->vecMouse, m_vecWindows[iWindow]);
-			bIsOverButton = false;
-			if (HasCollided(_pKeys->vecMouse, m_vecWindows[iWindow]))
-			{
-				m_vecWindows[iWindow]->targetColour = m_pWindowColours[WINDOWSTATE_MOUSEOVER];
-				bHasReceivedInput = true;
-			}
-			else
-			{
-				m_vecWindows[iWindow]->targetColour = m_pWindowColours[WINDOWSTATE_OPEN];
-			}
-		}
-		//Check for buttons within this window
-		for (unsigned int iButton = 0; iButton < m_vecWindows[iWindow]->vecButtons.size(); ++iButton)
-		{
-			TButton* pCurrentButton = m_vecWindows[iWindow]->vecButtons[iButton];
-			if (m_vecWindows[iWindow]->bIsActive)
-			{
-				if (m_bIsActive)
-				{
-					if (bWindowHasCollided)
-					{
-						if (HasCollided(_pKeys->vecMouse, pCurrentButton))
-						{
-							bIsOverButton = true;
-							if (pCurrentButton->sName == "Close")
-							{
-								pCurrentButton->targetColour = m_pWindowColours[WINDOWSTATE_CLOSEBUTTON];
-							}
-							else
-							{
-								pCurrentButton->targetColour = m_pWindowColours[WINDOWSTATE_MOUSEOVER];
-							}
-							if (_pKeys->bLeftMouseClick.bPressed && _pKeys->bLeftMouseClick.bPreviousState == false)
-							{
-								ProcessButtonPressed(_pDevice, m_vecWindows[iWindow], pCurrentButton);
-								break;
-							}
-						}
-						else
-						{
-							pCurrentButton->targetColour = m_pWindowColours[WINDOWSTATE_OPEN];
-						}
-					}
-				}
-			}
-			pCurrentButton->pForegroundVertex->colour += (pCurrentButton->targetColour - pCurrentButton->pForegroundVertex->colour) * fColourChangeSpeed * _fDeltaTime;
-			pCurrentButton->pBackgroundVertex->colour += (pCurrentButton->targetColour - pCurrentButton->pBackgroundVertex->colour) * fColourChangeSpeed * _fDeltaTime;
-		}
-		m_vecWindows[iWindow]->pForegroundVertex->colour += (m_vecWindows[iWindow]->targetColour - m_vecWindows[iWindow]->pForegroundVertex->colour) * fColourChangeSpeed * _fDeltaTime;
-		m_vecWindows[iWindow]->pBackgroundVertex->colour += (m_vecWindows[iWindow]->targetColour - m_vecWindows[iWindow]->pBackgroundVertex->colour) * fColourChangeSpeed * _fDeltaTime;
-		
-		//Check if user is currently dragging a window
-		if (m_pDraggedWindow != 0)
-		{
-			if (_pKeys->bLeftMouseClick.bPressed == false)
-			{
-				m_pDraggedWindow = 0;
-			}
-			else
-			{
-				D3DXVECTOR3 vecToMouse = D3DXVECTOR3(_pKeys->vecMouse.x, _pKeys->vecMouse.y, 0.0f) - m_pDraggedWindow->pForegroundVertex->pos;
-				m_pDraggedWindow->OffsetWindow(vecToMouse - m_vecInitialDraggedWindowOffset);
-			}
-		}
-		//Check if the user wants to drag this window
-		else if (bWindowHasCollided && m_vecWindows[iWindow]->bCanMove && bIsOverButton == false)
-		{
-			if (_pKeys->bLeftMouseClick.bPressed)
-			{
-				m_pDraggedWindow = m_vecWindows[iWindow];
-				m_vecInitialDraggedWindowOffset = D3DXVECTOR3(_pKeys->vecMouse.x, _pKeys->vecMouse.y, 0.0f) - m_pDraggedWindow->pForegroundVertex->pos;
-			}
-		}
-		else
-		{
-
-		}
-	}
-	return bHasReceivedInput;
 }
 /**
 *
@@ -416,7 +292,7 @@ CEditorInterface::RefreshBuffers(ID3D11Device* _pDevice)
 *
 */
 bool
-CEditorInterface::HasCollided(D3DXVECTOR2& _rPoint, TButton* _pButton)
+CEditorInterface::HasCollided(Math::Vector2& _rPoint, TButton* _pButton)
 {
 	_pButton->vecPosition = _pButton->pForegroundVertex->pos;
 	return (_rPoint.x > _pButton->vecPosition.x &&
@@ -435,7 +311,7 @@ CEditorInterface::HasCollided(D3DXVECTOR2& _rPoint, TButton* _pButton)
 void
 CEditorInterface::ProcessButtonPressed(ID3D11Device* _pDevice, TWindow* _pWindow, TButton* _pButton)
 {
-	CAudioPlayer::GetInstance().Play3DSound(SOUND_BUTTONPRESS, D3DXVECTOR3(0.0f, 0.0f, 0.0f));
+	CAudioPlayer::GetInstance().Play3DSound(SOUND_BUTTONPRESS, Math::Vector3(0.0f, 0.0f, 0.0f));
 	if (strcmp(_pButton->sName.c_str(), "Close") == 0)
 	{
 		m_eEditorState = EDITOR_CLOSED;
@@ -496,23 +372,23 @@ CEditorInterface::LoadFromXML(ID3D11Device* _pDevice, CResourceManager* _pResour
 	//Find root node
 	rapidxml::xml_node<>* pWindows = pRoot->first_node("window");
 
-	D3DXCOLOR initialColour(0.0f, 0.0f, 0.0f, 0.0f);
+	Math::Colour initialColour(0.0f, 0.0f, 0.0f, 0.0f);
 
 	//Loop through windows in the XML file
 	for (rapidxml::xml_node<>* pCurrentWindow = pWindows; pCurrentWindow; pCurrentWindow = pCurrentWindow->next_sibling())
 	{
-		D3DXVECTOR2 vecWindowSize(static_cast<float>(WINDOW_WIDTH), static_cast<float>(WINDOW_HEIGHT));
+		Math::Vector2 vecWindowSize(static_cast<float>(WINDOW_WIDTH), static_cast<float>(WINDOW_HEIGHT));
 		TWindow* pNewWindow = new TWindow;
 		pNewWindow->sName = pCurrentWindow->first_attribute("id")->value();
 		pNewWindow->iForegroundTexture = _pResourceManager->GetTextureID(std::string(pCurrentWindow->first_node("foregroundtexture")->value()));
 		pNewWindow->iBackgroundTexture = _pResourceManager->GetTextureID(std::string(pCurrentWindow->first_node("backgroundtexture")->value()));
 
-		pNewWindow->vecScale = D3DXVECTOR2(
+		pNewWindow->vecScale = Math::Vector2(
 			ReadFromString<float>(pCurrentWindow->first_node("scale")->first_attribute("x")->value()) * vecWindowSize.x,
 			ReadFromString<float>(pCurrentWindow->first_node("scale")->first_attribute("y")->value()) * vecWindowSize.y);
 		if (pCurrentWindow->first_node("position"))
 		{
-			pNewWindow->vecPosition = D3DXVECTOR3(
+			pNewWindow->vecPosition = Math::Vector3(
 				ReadFromString<float>(pCurrentWindow->first_node("position")->first_attribute("x")->value()) * vecWindowSize.x - (vecWindowSize.x * 0.5f),
 				-ReadFromString<float>(pCurrentWindow->first_node("position")->first_attribute("y")->value()) * vecWindowSize.y + (vecWindowSize.y * 0.5f),
 				ReadFromString<float>(pCurrentWindow->first_node("position")->first_attribute("z")->value()));
@@ -540,11 +416,11 @@ CEditorInterface::LoadFromXML(ID3D11Device* _pDevice, CResourceManager* _pResour
 			pNewButton->iForegroundTexture = _pResourceManager->GetTextureID(std::string(pButtons->first_node("maintexture")->value()));
 			pNewButton->iBackgroundTexture = _pResourceManager->GetTextureID(std::string(pButtons->first_node("bgtexture")->value()));
 
-			pNewButton->vecScale = D3DXVECTOR2(	ReadFromString<float>(pButtons->first_node("scale")->first_attribute("x")->value()) * pNewWindow->vecScale.x,
+			pNewButton->vecScale = Math::Vector2(	ReadFromString<float>(pButtons->first_node("scale")->first_attribute("x")->value()) * pNewWindow->vecScale.x,
 												ReadFromString<float>(pButtons->first_node("scale")->first_attribute("y")->value()) * pNewWindow->vecScale.x);
 			if (pButtons->first_node("position"))
 			{
-				pNewButton->vecPosition = D3DXVECTOR3(	(ReadFromString<float>(pButtons->first_node("position")->first_attribute("x")->value()) * pNewWindow->vecScale.x),
+				pNewButton->vecPosition = Math::Vector3(	(ReadFromString<float>(pButtons->first_node("position")->first_attribute("x")->value()) * pNewWindow->vecScale.x),
 														-(ReadFromString<float>(pButtons->first_node("position")->first_attribute("y")->value()) * pNewWindow->vecScale.y),
 														ReadFromString<float>(pButtons->first_node("position")->first_attribute("z")->value())) + 
 														pNewWindow->vecPosition;
@@ -552,7 +428,7 @@ CEditorInterface::LoadFromXML(ID3D11Device* _pDevice, CResourceManager* _pResour
 			else
 			{
 				//Generate a position for this button
-				D3DXVECTOR3 vecButtonOffset = D3DXVECTOR3(	(pNewButton->vecScale.x * iButtonPositionsGenerated * 1.1f) + pNewButton->vecScale.x * 0.5f,
+				Math::Vector3 vecButtonOffset = Math::Vector3(	(pNewButton->vecScale.x * iButtonPositionsGenerated * 1.1f) + pNewButton->vecScale.x * 0.5f,
 															-pNewButton->vecScale.y * 0.5f - (pNewButton->vecScale.y),
 															0.0f);
 				pNewButton->vecPosition = pNewWindow->vecPosition + vecButtonOffset;
@@ -574,11 +450,11 @@ CEditorInterface::LoadFromXML(ID3D11Device* _pDevice, CResourceManager* _pResour
 	{
 		for (int iButton = static_cast<int>(m_vecWindows[iWindow]->vecButtons.size()) - 1; iButton >= 0; --iButton)
 		{
-			m_vecWindows[iWindow]->vecButtons[iButton]->pBackgroundVertex = CreatePointSprite(_pDevice, m_vecWindows[iWindow]->vecButtons[iButton]->vecPosition + D3DXVECTOR3(0.0f, 0.0f, 0.1f), m_vecWindows[iWindow]->vecButtons[iButton]->vecScale, m_vecWindows[iWindow]->vecButtons[iButton]->colour, 0.0f, m_vecWindows[iWindow]->vecButtons[iButton]->iBackgroundTexture);
-			m_vecWindows[iWindow]->vecButtons[iButton]->pForegroundVertex = CreatePointSprite(_pDevice, m_vecWindows[iWindow]->vecButtons[iButton]->vecPosition + D3DXVECTOR3(0.0f, 0.0f, 0.05f), m_vecWindows[iWindow]->vecButtons[iButton]->vecScale, m_vecWindows[iWindow]->vecButtons[iButton]->colour, 0.0f, m_vecWindows[iWindow]->vecButtons[iButton]->iForegroundTexture);
+			m_vecWindows[iWindow]->vecButtons[iButton]->pBackgroundVertex = CreatePointSprite(_pDevice, m_vecWindows[iWindow]->vecButtons[iButton]->vecPosition + Math::Vector3(0.0f, 0.0f, 0.1f), m_vecWindows[iWindow]->vecButtons[iButton]->vecScale, m_vecWindows[iWindow]->vecButtons[iButton]->colour, 0.0f, m_vecWindows[iWindow]->vecButtons[iButton]->iBackgroundTexture);
+			m_vecWindows[iWindow]->vecButtons[iButton]->pForegroundVertex = CreatePointSprite(_pDevice, m_vecWindows[iWindow]->vecButtons[iButton]->vecPosition + Math::Vector3(0.0f, 0.0f, 0.05f), m_vecWindows[iWindow]->vecButtons[iButton]->vecScale, m_vecWindows[iWindow]->vecButtons[iButton]->colour, 0.0f, m_vecWindows[iWindow]->vecButtons[iButton]->iForegroundTexture);
 		}
-		m_vecWindows[iWindow]->pBackgroundVertex = CreatePointSprite(_pDevice, m_vecWindows[iWindow]->vecPosition + D3DXVECTOR3(0.0f, 0.0f, 0.1f), m_vecWindows[iWindow]->vecScale, m_vecWindows[iWindow]->colour, 0.0f, m_vecWindows[iWindow]->iBackgroundTexture);
-		m_vecWindows[iWindow]->pForegroundVertex = CreatePointSprite(_pDevice, m_vecWindows[iWindow]->vecPosition + D3DXVECTOR3(0.0f, 0.0f, 0.05f), m_vecWindows[iWindow]->vecScale, m_vecWindows[iWindow]->colour, 0.0f, m_vecWindows[iWindow]->iForegroundTexture);
+		m_vecWindows[iWindow]->pBackgroundVertex = CreatePointSprite(_pDevice, m_vecWindows[iWindow]->vecPosition + Math::Vector3(0.0f, 0.0f, 0.1f), m_vecWindows[iWindow]->vecScale, m_vecWindows[iWindow]->colour, 0.0f, m_vecWindows[iWindow]->iBackgroundTexture);
+		m_vecWindows[iWindow]->pForegroundVertex = CreatePointSprite(_pDevice, m_vecWindows[iWindow]->vecPosition + Math::Vector3(0.0f, 0.0f, 0.05f), m_vecWindows[iWindow]->vecScale, m_vecWindows[iWindow]->colour, 0.0f, m_vecWindows[iWindow]->iForegroundTexture);
 	}
 
 	delete[] pcBuffer;
@@ -616,7 +492,7 @@ CEditorInterface::AddPrefabCreationButtons(CEntityManager* _pEntityManager, CRes
 		TButton* pNewPrefab = new TButton();
 		*pNewPrefab = *_pNewPrefabButton;
 
-		pNewPrefab->vecPosition += D3DXVECTOR3(_pNewPrefabButton->vecScale.x * fButtonGap * iButtonWidth, _pNewPrefabButton->vecScale.y * fButtonGap * -iButtonHeight, 0.0f);
+		pNewPrefab->vecPosition += Math::Vector3(_pNewPrefabButton->vecScale.x * fButtonGap * iButtonWidth, _pNewPrefabButton->vecScale.y * fButtonGap * -iButtonHeight, 0.0f);
 		//Set the button type to "Create"
 		pNewPrefab->sName = "Create";
 		//Set the button options to the name of the prefab
@@ -634,12 +510,12 @@ CEditorInterface::AddPrefabCreationButtons(CEntityManager* _pEntityManager, CRes
 *
 */
 TPointSpriteVertex*
-CEditorInterface::CreatePointSprite(ID3D11Device* _pDevice, D3DXVECTOR3& _rPosition, D3DXVECTOR2& _rScale, D3DXCOLOR& _rColour, float _fRotation, int _iTextureID)
+CEditorInterface::CreatePointSprite(ID3D11Device* _pDevice, Math::Vector3& _rPosition, Math::Vector2& _rScale, Math::Colour& _rColour, float _fRotation, int _iTextureID)
 {
 	++m_iVertexCount;
 	++m_iIndexCount;
 
-	TPointSpriteVertex* pNewVertex = new TPointSpriteVertex(_rPosition, D3DXVECTOR3(0.0f, 0.0f, 0.0f), _rScale, _rColour, _fRotation, _iTextureID);
+	TPointSpriteVertex* pNewVertex = new TPointSpriteVertex(_rPosition, Math::Vector3(0.0f, 0.0f, 0.0f), _rScale, _rColour, _fRotation, _iTextureID);
 	m_pPointSpriteVertices.push_back(pNewVertex);
 
 	// Create the index buffer

@@ -1,17 +1,3 @@
-//
-// Bachelor of Software Engineering - Year 2
-// Media Design School
-// Auckland 
-// New Zealand
-//
-// (c) 2013 Media Design School
-//
-//  File Name   :   audioplayer.cpp
-//  Description :   Code for Class CAudioPlayer
-//  Author      :   Christopher Howlett
-//  Mail        :   drakos_gate@yahoo.com
-//
-
 // Library Includes
 #include <iostream>
 #include <stdio.h>
@@ -129,7 +115,7 @@ CAudioPlayer::Process()
 }
 
 void 
-CAudioPlayer::Play3DSound(E3DSoundType _eSound, D3DXVECTOR3& _vecPosition)
+CAudioPlayer::Play3DSound(E3DSoundType _eSound, Math::Vector3& _vecPosition)
 {
 	if (m_bSoundsAreLoaded)
 	{
@@ -146,7 +132,7 @@ CAudioPlayer::Play3DSound(E3DSoundType _eSound, D3DXVECTOR3& _vecPosition)
 	}
 }
 void 
-CAudioPlayer::SetListenerPosition(D3DXVECTOR3& _rVecListenerPos, D3DXVECTOR3& _rVecForward, D3DXVECTOR3& _rVecUp)
+CAudioPlayer::SetListenerPosition(Math::Vector3& _rVecListenerPos, Math::Vector3& _rVecForward, Math::Vector3& _rVecUp)
 {
 	if (m_bSoundsAreLoaded)
 	{

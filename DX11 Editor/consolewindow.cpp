@@ -1,16 +1,3 @@
-//
-// Bachelor of Software Engineering - Year 2
-// Media Design School
-// Auckland 
-// New Zealand
-//
-// (c) 2013 Media Design School
-//
-//  File Name   :   consolewindow.cpp
-//  Description :   Code for CConsoleWindow class
-//  Author      :   Christopher Howlett
-//  Mail        :   drakos_gate@yahoo.com
-//
 
 // Library Includes
 #include <Windows.h>
@@ -55,7 +42,7 @@ CConsoleWindow::~CConsoleWindow()
 * @author Christopher Howlett
 *
 */
-void 
+void
 CConsoleWindow::InitialiseConsole()
 {
 	//Initialise a seperate console window for debug output
@@ -64,8 +51,8 @@ CConsoleWindow::InitialiseConsole()
 	FILE tIostream;
 	FILE* pFile = &tIostream;
 	//Enable iostream functionality
-	freopen_s(&pFile, "CONIN$", "r", stdin);
-	freopen_s(&pFile, "CONOUT$", "w", stdout);
+	freopen_s( &pFile, "CONIN$", "r", stdin );
+	freopen_s( &pFile, "CONOUT$", "w", stdout );
 }
 /**
 *
@@ -74,7 +61,7 @@ CConsoleWindow::InitialiseConsole()
 * @author Christopher Howlett
 *
 */
-void 
+void
 CConsoleWindow::ShutdownConsole()
 {
 	FreeConsole();

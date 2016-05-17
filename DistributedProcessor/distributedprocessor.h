@@ -12,7 +12,7 @@
 
 class CDistributedProcessor
 {
-//Member variables
+	//Member variables
 public:
 	CDistributedProcessor();
 	~CDistributedProcessor();
@@ -23,15 +23,15 @@ public:
 	bool IsActive() const;
 
 	//Distributed Processes
-	void ProcessNetMessage(TMessage* _pMessage, sockaddr_in* _pSourceClient);
-	void ProcessGrassSection(TMessage* _pMessage, int _iSection, float _fDeltaTime);
+	void ProcessNetMessage( TMessage* _pMessage, sockaddr_in* _pSourceClient );
+	void ProcessGrassSection( TMessage* _pMessage, int _iSection, float _fDeltaTime );
 
-//Member functions
+	//Member functions
 private:
 	//General Processing
 	bool m_bIsActive;
 	TNetGrassData* m_pGrassData;
-	D3DXVECTOR3* m_pGrassOutData;
+	Math::Vector3* m_pGrassOutData;
 	float fActiveGrassTimer;
 
 	//Networking variables
@@ -43,7 +43,7 @@ private:
 	SOCKET m_sendSocket;
 	SOCKET m_receiveSocket;
 	struct hostent* m_pHostInfo;
-	char m_cHostName[256];
+	char m_cHostName[ 256 ];
 	int m_iServerLength;
 
 	//Sockets

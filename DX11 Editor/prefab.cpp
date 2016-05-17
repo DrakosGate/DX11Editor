@@ -75,7 +75,7 @@ CPrefab::Draw(ID3D11DeviceContext* _pDevice)
 	m_pModel->Draw(_pDevice);
 }
 void 
-CPrefab::SetModel(CModel* _pModel)
+CPrefab::SetModel(Model* _pModel)
 {
 	m_pModel = _pModel;
 	
@@ -108,7 +108,7 @@ CPrefab::ToggleIsCollidable(bool _bIsCollidable)
 	m_bIsCollidable = _bIsCollidable;
 }
 bool 
-CPrefab::CheckPointCollision(D3DXVECTOR3& _rPoint)
+CPrefab::CheckPointCollision(Math::Vector3& _rPoint)
 {
 	TBoundingBox* pBox = m_pBoundingBox->GetRect();
 	return (	pBox->fLeft + m_vecPosition.x < _rPoint.x &&
@@ -117,7 +117,7 @@ CPrefab::CheckPointCollision(D3DXVECTOR3& _rPoint)
 				pBox->fTop + m_vecPosition.y > _rPoint.y);
 }
 void 
-CPrefab::SetScale(D3DXVECTOR3& _rVecScale)
+CPrefab::SetScale(Math::Vector3& _rVecScale)
 {
 	m_vecScale = _rVecScale;
 

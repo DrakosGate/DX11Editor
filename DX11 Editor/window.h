@@ -29,7 +29,7 @@ enum ERendererType
 
 // Prototypes
 class IRenderer;
-class CClock;
+class Clock;
 class CConsoleWindow;
 
 class CWindow
@@ -57,7 +57,6 @@ private:
 
 protected:
 	IRenderer* m_pRenderer;
-	TInputStruct m_tInput;
 	CConsoleWindow* m_pConsoleWindow;
 	TSetupStruct* m_pSetupData;
 
@@ -67,7 +66,7 @@ protected:
 	bool      mMaximized;
 	bool      mResizing;
 
-	CClock* m_pClock;
+	Clock* m_pClock;
 
 	// Derived class should set these in derived constructor to customize starting values.
 	int m_iClientWidth;

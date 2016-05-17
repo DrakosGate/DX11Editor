@@ -54,7 +54,7 @@ struct TGridNode
 		pLeft = 0;
 		pRight = 0;
 	}
-	D3DXVECTOR3 vecPosition;
+	Math::Vector3 vecPosition;
 	bool bIsActive;
 
 	TGridNode* pUp;
@@ -76,7 +76,7 @@ enum ENavigationMethod
 struct ID3D11Device;
 
 class CShader;
-class CRenderEntity;
+class RenderEntity;
 class CAIController;
 class CPointSprite;
 class CEntityManager;
@@ -95,13 +95,13 @@ public:
 	void ProcessIndividualAIMovement(int _iAIIndex, float _fDeltaTime);
 	void ProcessIndividualAIController(int _iAIIndex, float _fDeltaTime);
 	void ProcessOpenCLKernel(COpenCLContext* _pCLKernel, float _fDeltaTime);
-	void AddAI(CRenderEntity* _pEntity, EAIType _eAIType);
-	void AddStaticObject(ID3D11Device* _pDevice, CRenderEntity* _pObject);
+	void AddAI(RenderEntity* _pEntity, EAIType _eAIType);
+	void AddStaticObject(ID3D11Device* _pDevice, RenderEntity* _pObject);
 
 	void CreateNavigationGrid(ID3D11Device* _pDevice, CEntityManager* _pEntityManager, CShader* _pShader, float _fGridScale, int _iWidth, int _iHeight);
-	D3DXVECTOR3& GetRandomWaypoint() const;
-	D3DXVECTOR3* GetNextWaypoint(D3DXVECTOR3& _rVecTarget, int& _iCurrentWaypoint);
-	float GetAStarNodeValue(TGridNode* _pCurrentNode, TGridNode* _pPreviousNode, D3DXVECTOR3& _rVecTarget, int _iTreeDepth);
+	Math::Vector3& GetRandomWaypoint() const;
+	Math::Vector3* GetNextWaypoint(Math::Vector3& _rVecTarget, int& _iCurrentWaypoint);
+	float GetAStarNodeValue(TGridNode* _pCurrentNode, TGridNode* _pPreviousNode, Math::Vector3& _rVecTarget, int _iTreeDepth);
 	TGridNode* GetNavigationGrid();
 	CAIController* GetAI(int _iIndex) const;
 	int GetNavigationGridSize() const;
@@ -121,7 +121,7 @@ private:
 
 	CAICLKernel* m_pCLKernel;
 	CAIController** m_pAI;
-	std::vector<CRenderEntity*> m_vecStaticObstacles;
+	std::vector<RenderEntity*> m_vecStaticObstacles;
 	int m_iNumAI;
 
 	TAIDescription* m_pAIDescriptions;

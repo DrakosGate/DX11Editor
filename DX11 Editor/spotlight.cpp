@@ -1,16 +1,3 @@
-//
-// Bachelor of Software Engineering - Year 2
-// Media Design School
-// Auckland 
-// New Zealand
-//
-// (c) 2013 Media Design School
-//
-//  File Name   :   spotlight.cpp
-//  Description :   Code for Class spotlight
-//  Author      :   Christopher Howlett
-//  Mail        :   drakos_gate@yahoo.com
-//
 
 // Library Includes
 
@@ -59,8 +46,8 @@ CSpotLight::~CSpotLight()
 * @param _fSpecularPower Light specular power
 *
 */
-bool 
-CSpotLight::Initialise(D3DXVECTOR3& _rVecPosition, D3DXVECTOR3& _rVecDirection, D3DXCOLOR& _rVecColour, D3DXVECTOR3& _rAttenuation, float _fCutOff, float _fSpecularPower, ELightType _eLightType)
+bool
+CSpotLight::Initialise( Math::Vector3& _rVecPosition, Math::Vector3& _rVecDirection, Math::Colour& _rVecColour, Math::Vector3& _rAttenuation, float _fCutOff, float _fSpecularPower, ELightType _eLightType )
 {
 	m_vecOffsetPosition = _rVecPosition;
 	m_vecWorldPosition = _rVecPosition;
@@ -68,7 +55,7 @@ CSpotLight::Initialise(D3DXVECTOR3& _rVecPosition, D3DXVECTOR3& _rVecDirection, 
 	m_vecAttenuation = _rAttenuation;
 	m_fSpecularPower = _fSpecularPower;
 	m_fCutOff = _fCutOff;
-	D3DXVec3Normalize(&m_vecDirection, &_rVecDirection);
+	m_vecDirection = Math::Normalise( _rVecDirection );
 
 	m_eLightType = _eLightType;
 
@@ -82,7 +69,7 @@ CSpotLight::Initialise(D3DXVECTOR3& _rVecPosition, D3DXVECTOR3& _rVecDirection, 
 * @return Returns Attenuation
 *
 */
-D3DXVECTOR3& 
+Math::Vector3&
 CSpotLight::GetAttenuation()
 {
 	return m_vecAttenuation;
@@ -95,8 +82,8 @@ CSpotLight::GetAttenuation()
 * @param Sets Attenuation
 *
 */
-void 
-CSpotLight::SetAttenuation(D3DXVECTOR3& _rAttenuation)
+void
+CSpotLight::SetAttenuation( Math::Vector3& _rAttenuation )
 {
 	m_vecAttenuation = _rAttenuation;
 }
@@ -108,7 +95,7 @@ CSpotLight::SetAttenuation(D3DXVECTOR3& _rAttenuation)
 * @return Returns Cutoff
 *
 */
-float 
+float
 CSpotLight::GetCutoff() const
 {
 	return m_fCutOff;
@@ -121,8 +108,8 @@ CSpotLight::GetCutoff() const
 * @param _fCutoff Sets Cutoff
 *
 */
-void 
-CSpotLight::SetCutoff(float _fCutoff)
+void
+CSpotLight::SetCutoff( float _fCutoff )
 {
 	m_fCutOff = _fCutoff;
 }
@@ -134,9 +121,9 @@ CSpotLight::SetCutoff(float _fCutoff)
 * @return Returns Light information structure
 *
 */
-TLightInfo& 
+TLightInfo&
 CSpotLight::GetLightInfo()
 {
-	m_tLightInfo = TLightInfo(m_vecWorldPosition, m_vecDirection, D3DXCOLOR(0.1f, 0.1f, 0.1f, 0.1f), m_vecColour, m_vecColour, m_vecAttenuation, m_fSpecularPower, 1000.0f, m_eLightType); 
+	m_tLightInfo = TLightInfo( m_vecWorldPosition, m_vecDirection, Math::Colour( 0.1f, 0.1f, 0.1f, 0.1f ), m_vecColour, m_vecColour, m_vecAttenuation, m_fSpecularPower, 1000.0f, m_eLightType );
 	return m_tLightInfo;
 }

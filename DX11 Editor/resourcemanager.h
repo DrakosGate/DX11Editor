@@ -32,8 +32,8 @@ struct TTexturePoolData
 struct ID3D11Device;
 struct TPrefabDefinition;
 
-class CModel;
-class CAnimatedModel;
+class Model;
+//class CAnimatedModel;
 class CEntityManager;
 class CSceneHierarchy;
 
@@ -48,8 +48,8 @@ public:
 	void AddPrefabToEntityManager(CEntityManager* _pEntityManager, TPrefabDefinition* _pPrefab);
 	ID3D11ShaderResourceView* CreateTextureFromData(ID3D11Device* _pDevice, unsigned char* _pcData, std::string& _sTextureString, int _iWidth, int _iHeight);
 
-	CModel*  GetModel(std::string& _pcModelName) const;
-	CAnimatedModel* GetAnimatedModel(std::string& _pcAnimatedModelName) const;
+	Model*  GetModel(std::string& _pModelName) const;
+	//CAnimatedModel* GetAnimatedModel(std::string& _pcAnimatedModelName) const;
 	ID3D11ShaderResourceView* GetTexture(std::string& _pcTextureName) const;
 	int GetTextureID(std::string& _pcTextureName) const;
 	int GetTextureID(ID3D11ShaderResourceView* _pTexture) const;
@@ -63,8 +63,8 @@ private:
 //Member variables
 protected:
 	std::vector<TTexturePoolData*> m_TexturePool;
-	std::map<std::string, CModel*> m_mapModels;
-	std::map<std::string, CAnimatedModel*> m_mapAnimations;
+	std::map<std::string, Model*> m_mapModels;
+	//std::map<std::string, CAnimatedModel*> m_mapAnimations;
 
 	ID3D11ShaderResourceView** m_pTextureArray;
 

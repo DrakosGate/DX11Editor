@@ -1,6 +1,6 @@
 //
 //  File Name   :   model.h
-//  Description :   Class of CModel
+//  Description :   Class of Model
 //  Author      :   Christopher Howlett
 //  Mail        :   drakos_gate@yahoo.com
 //
@@ -27,19 +27,19 @@ class COpenCLContext;
 class CResourceManager;
 class CNetwork;
 
-class CGrass : public CModel
+class CGrass : public Model
 {
 	//Member functions
 public:
 	CGrass();
 	virtual ~CGrass();
-	bool Initialise(ID3D11Device* _pDevice, COpenCLContext* _pCLKernel, CResourceManager* _pResourceManager, int _iGrassDimensions, float _fScale, D3DXVECTOR2& _rVecTiling, D3DXCOLOR& _rColour, int _iProcessingDivisionSize);
+	bool Initialise(ID3D11Device* _pDevice, COpenCLContext* _pCLKernel, CResourceManager* _pResourceManager, int _iGrassDimensions, float _fScale, Math::Vector2& _rVecTiling, Math::Colour& _rColour, int _iProcessingDivisionSize);
 	
 	void ProcessDistrubuted(float _fDeltaTime);
 	void ProcessOpenCL(COpenCLContext* _pCLKernel, float _fDeltaTime);
-	void SendCollisionData(std::vector<CRenderEntity*>* _pCollisionObjects);
+	void SendCollisionData(std::vector<RenderEntity*>* _pCollisionObjects);
 	void ProcessGrassSection(int _iSection, float _fDeltaTime);
-	void RecreateGrassMesh(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDeviceContext, D3DXVECTOR3& _rCameraPos, std::vector<CRenderEntity*>& _pEntities, float _fDeltaTime);
+	void RecreateGrassMesh(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDeviceContext, Math::Vector3& _rCameraPos, std::vector<RenderEntity*>& _pEntities, float _fDeltaTime);
 	
 	int GetDimensionSize() const;
 
@@ -47,9 +47,9 @@ public:
 protected:
 	CNetwork* m_pNetwork;
 
-	std::vector<CRenderEntity*>* m_pCollisionObjects;
+	std::vector<RenderEntity*>* m_pCollisionObjects;
 	CGrassCLKernel* m_pGrassCLKernel;
-	D3DXVECTOR3* m_pGrassVelocities;
+	Math::Vector3* m_pGrassVelocities;
 
 	float m_fGrassSpeed;
 	float m_fGrassStiffness;

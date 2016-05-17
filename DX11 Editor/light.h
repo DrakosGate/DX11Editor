@@ -11,7 +11,7 @@
 #define __LIGHT_H__
 
 // Library Includes
-#include <D3DX10.h>
+#include "mathlibrary.h"
 
 // Local Includes
 
@@ -20,11 +20,11 @@ struct TLightInfo
 {
 	TLightInfo()
 	{
-		ZeroMemory(this, sizeof(TLightInfo));
+		ZeroMemory( this, sizeof( TLightInfo ) );
 	}
-	TLightInfo(D3DXVECTOR3& _rPos, D3DXVECTOR3& _rDir, D3DXCOLOR& _rAmbient, D3DXCOLOR& _rDiffuse, D3DXCOLOR& _rSpecular, D3DXVECTOR3& _rAtt, float _fSpotPow, float _fRange, int _iLightType)
+	TLightInfo( Math::Vector3& _rPos, Math::Vector3& _rDir, Math::Colour& _rAmbient, Math::Colour& _rDiffuse, Math::Colour& _rSpecular, Math::Vector3& _rAtt, float _fSpotPow, float _fRange, int _iLightType )
 	{
-		ZeroMemory(this, sizeof(TLightInfo));
+		ZeroMemory( this, sizeof( TLightInfo ) );
 		pos = _rPos;
 		dir = _rDir;
 		ambient = _rAmbient;
@@ -35,19 +35,19 @@ struct TLightInfo
 		range = _fRange;
 		iLightType = _iLightType;
 	}
-	D3DXVECTOR3 pos;	//12
+	Math::Vector3 pos;	//12
 	float pad;			//4
 
-	D3DXVECTOR3 dir;	//12
+	Math::Vector3 dir;	//12
 	float pad2;			//4
 
-	D3DXCOLOR ambient;	//16
+	Math::Colour ambient;	//16
 
-	D3DXCOLOR diffuse;	//16
+	Math::Colour diffuse;	//16
 
-	D3DXCOLOR specular;	//16
+	Math::Colour specular;	//16
 
-	D3DXVECTOR3 att;	//12
+	Math::Vector3 att;	//12
 	float pad3;			//4
 
 	float spotPow;		//4
@@ -74,31 +74,31 @@ public:
 	CLight();
 	virtual ~CLight();
 
-	virtual void Initialise(D3DXVECTOR3& _rVecDir, D3DXCOLOR& _rVecColour, float _fSpecularPower, ELightType _eLightType);
-	virtual void ProcessParent(float _fDeltaTime);
-	
-	virtual void SetPosition(D3DXVECTOR3& _rVecPosition);
-	virtual D3DXVECTOR3& GetOffset();
-	virtual D3DXVECTOR3& GetPosition();
-	virtual void SetDirection(D3DXVECTOR3& _rVecDir);
-	virtual D3DXVECTOR3& GetDirection();
-	virtual void SetColour(D3DXCOLOR& _rVecColour);
-	virtual D3DXCOLOR& GetColour();
+	virtual void Initialise( Math::Vector3& _rVecDir, Math::Colour& _rVecColour, float _fSpecularPower, ELightType _eLightType );
+	virtual void ProcessParent( float _fDeltaTime );
+
+	virtual void SetPosition( Math::Vector3& _rVecPosition );
+	virtual Math::Vector3& GetOffset();
+	virtual Math::Vector3& GetPosition();
+	virtual void SetDirection( Math::Vector3& _rVecDir );
+	virtual Math::Vector3& GetDirection();
+	virtual void SetColour( Math::Colour& _rVecColour );
+	virtual Math::Colour& GetColour();
 	virtual float GetSpecularPower() const;
 
 	virtual bool IsOn() const;
-	virtual void ToggleIsOn(bool _bIsOn);
+	virtual void ToggleIsOn( bool _bIsOn );
 	virtual TLightInfo& GetLightInfo();
 
 private:
-	CLight(const CLight& _kr);
-	CLight& operator= (const CLight& _rhs);
+	CLight( const CLight& _kr );
+	CLight& operator= ( const CLight& _rhs );
 
 protected:
-	D3DXVECTOR3 m_vecOffsetPosition;
-	D3DXVECTOR3 m_vecWorldPosition;
-	D3DXVECTOR3 m_vecDirection;
-	D3DXCOLOR m_vecColour;
+	Math::Vector3 m_vecOffsetPosition;
+	Math::Vector3 m_vecWorldPosition;
+	Math::Vector3 m_vecDirection;
+	Math::Colour m_vecColour;
 	float m_fSpecularPower;
 	bool m_bIsOn;
 	TLightInfo m_tLightInfo;

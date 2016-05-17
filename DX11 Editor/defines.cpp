@@ -19,6 +19,13 @@
 // Static Function Prototypes
 
 // Implementation
+void HR( HRESULT _hResult )
+{
+	if( _hResult != S_OK )
+	{
+		assert( false );
+	}
+}
 void HRCheck(HRESULT _hResult, wchar_t* _pcErrorMessage)
 {
 	if (_hResult != S_OK)
@@ -42,10 +49,10 @@ void BlobCheck(HRESULT _hResult, ID3D10Blob* _pBlob)
 		ReleaseCOM(_pBlob);
 	}
 }
-float
-PlaneToLine(D3DXVECTOR3& _rPlanePoint, D3DXVECTOR3& _rPlaneNormal, TRay& _rRay)
-{
-	float fPointOfIntersection =	D3DXVec3Dot(&_rPlaneNormal, &(_rPlanePoint - _rRay.vecPosition)) / 
-									D3DXVec3Dot(&_rPlaneNormal, &(_rRay.vecDirection));
-	return fPointOfIntersection;
-}
+//float
+//PlaneToLine( Math::Vector3& _rPlanePoint, Math::Vector3& _rPlaneNormal, TRay& _rRay)
+//{
+//	float fPointOfIntersection =	D3DXVec3Dot(&_rPlaneNormal, &(_rPlanePoint - _rRay.vecPosition)) / 
+//									D3DXVec3Dot(&_rPlaneNormal, &(_rRay.vecDirection));
+//	return fPointOfIntersection;
+//}

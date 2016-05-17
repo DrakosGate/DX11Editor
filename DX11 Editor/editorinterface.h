@@ -25,7 +25,7 @@ struct TButton
 	{
 		targetColour *= 0.0f;
 	}
-	TButton(TPointSpriteVertex* _pForeVertex, TPointSpriteVertex* _pBackVertex, D3DXVECTOR3& _rPosition, D3DXVECTOR2& _rScale, D3DXCOLOR& _rColour, bool _bIsActive)
+	TButton( TPointSpriteVertex* _pForeVertex, TPointSpriteVertex* _pBackVertex, Math::Vector3& _rPosition, Math::Vector2& _rScale, Math::Colour& _rColour, bool _bIsActive )
 	{
 		pForegroundVertex = _pForeVertex;
 		pBackgroundVertex = _pBackVertex;
@@ -37,10 +37,10 @@ struct TButton
 	}
 	TPointSpriteVertex* pForegroundVertex;
 	TPointSpriteVertex* pBackgroundVertex;
-	D3DXVECTOR3 vecPosition;
-	D3DXVECTOR2 vecScale;
-	D3DXCOLOR colour;
-	D3DXCOLOR targetColour;
+	Math::Vector3 vecPosition;
+	Math::Vector2 vecScale;
+	Math::Colour colour;
+	Math::Colour targetColour;
 	bool bIsActive;
 	std::string sName;
 	std::string sOptions;
@@ -49,26 +49,26 @@ struct TButton
 };
 struct TWindow : public TButton
 {
-	void OffsetWindow(D3DXVECTOR3& _rMousePos)
+	void OffsetWindow( Math::Vector3& _rMousePos )
 	{
-		for (unsigned int iButton = 0; iButton < vecButtons.size(); ++iButton)
+		for( unsigned int iButton = 0; iButton < vecButtons.size(); ++iButton )
 		{
-			vecButtons[iButton]->pForegroundVertex->pos += _rMousePos;
-			vecButtons[iButton]->pBackgroundVertex->pos += _rMousePos;
+			vecButtons[ iButton ]->pForegroundVertex->pos += _rMousePos;
+			vecButtons[ iButton ]->pBackgroundVertex->pos += _rMousePos;
 		}
 		pForegroundVertex->pos += _rMousePos;
 		pBackgroundVertex->pos += _rMousePos;
 	}
-	void SetIsActive(bool _bIsActive, D3DXCOLOR& _rColour)
+	void SetIsActive( bool _bIsActive, Math::Colour& _rColour )
 	{
-		for (unsigned int iButton = 0; iButton < vecButtons.size(); ++iButton)
+		for( unsigned int iButton = 0; iButton < vecButtons.size(); ++iButton )
 		{
-			vecButtons[iButton]->bIsActive = _bIsActive;
-			vecButtons[iButton]->targetColour = _rColour;
+			vecButtons[ iButton ]->bIsActive = _bIsActive;
+			vecButtons[ iButton ]->targetColour = _rColour;
 			//Set the colour of all buttons in this to the default colour
-			for (unsigned int iButton = 0; iButton < vecButtons.size(); ++iButton)
+			for( unsigned int iButton = 0; iButton < vecButtons.size(); ++iButton )
 			{
-				vecButtons[iButton]->targetColour = _rColour;
+				vecButtons[ iButton ]->targetColour = _rColour;
 			}
 		}
 		bIsActive = _bIsActive;
@@ -114,41 +114,40 @@ public:
 	CEditorInterface();
 	virtual ~CEditorInterface();
 
-	virtual bool Initialise(HWND _hWindow, CLevel* _pLevel);
-	virtual void Process(float _fDeltaTime);
-	virtual bool ProcessInput(ID3D11Device* _pDevice, TInputStruct* _pKeys, float _fDeltaTime);
+	virtual bool Initialise( HWND _hWindow, CLevel* _pLevel );
+	virtual void Process( float _fDeltaTime );
 	virtual EEditorState GetEditorState() const;
 	virtual std::string& GetSelectedPrefab();
 
-	virtual void ToggleEditor(bool _bIsActive);
+	virtual void ToggleEditor( bool _bIsActive );
 	virtual bool IsActive() const;
 
-	void LoadLevel(ID3D11Device* _pDevice);
-	void SaveLevel(ID3D11Device* _pDevice);
+	void LoadLevel( ID3D11Device* _pDevice );
+	void SaveLevel( ID3D11Device* _pDevice );
 	void OnSave();
-	virtual void RefreshBuffers(ID3D11Device* _pDevice);
-	virtual bool HasCollided(D3DXVECTOR2& _rPoint, TButton* _pButton);
-	virtual void ProcessButtonPressed(ID3D11Device* _pDevice, TWindow* _pWindow, TButton* _pButton);
-	
-	virtual void LoadFromXML(ID3D11Device* _pDevice, CResourceManager* _pResourceManager, CEntityManager* _pEntityManager, char* _pcXMLFilename);
-	virtual void AddPrefabCreationButtons(CEntityManager* _pEntityManager, CResourceManager* _pResourceManager, TWindow* _pWindow, TButton* _pNewPrefabButton);
-	virtual TPointSpriteVertex* CreatePointSprite(ID3D11Device* _pDevice, D3DXVECTOR3& _rPosition, D3DXVECTOR2& _rScale, D3DXCOLOR& _rColour, float _fRotation, int _iTextureID);
+	virtual void RefreshBuffers( ID3D11Device* _pDevice );
+	virtual bool HasCollided( Math::Vector2& _rPoint, TButton* _pButton );
+	virtual void ProcessButtonPressed( ID3D11Device* _pDevice, TWindow* _pWindow, TButton* _pButton );
+
+	virtual void LoadFromXML( ID3D11Device* _pDevice, CResourceManager* _pResourceManager, CEntityManager* _pEntityManager, char* _pcXMLFilename );
+	virtual void AddPrefabCreationButtons( CEntityManager* _pEntityManager, CResourceManager* _pResourceManager, TWindow* _pWindow, TButton* _pNewPrefabButton );
+	virtual TPointSpriteVertex* CreatePointSprite( ID3D11Device* _pDevice, Math::Vector3& _rPosition, Math::Vector2& _rScale, Math::Colour& _rColour, float _fRotation, int _iTextureID );
 
 private:
-	CEditorInterface(const CEditorInterface& _krInstanceToCopy);
-	const CEditorInterface& operator =(const CEditorInterface& _krInstanceToCopy);
+	CEditorInterface( const CEditorInterface& _krInstanceToCopy );
+	const CEditorInterface& operator =( const CEditorInterface& _krInstanceToCopy );
 
 	//Member variables
 protected:
 	EEditorState m_eEditorState;
 	std::vector<TWindow*> m_vecWindows;
 
-	D3DXCOLOR* m_pWindowColours;
+	Math::Colour* m_pWindowColours;
 	bool m_bHasChanged;
 	bool m_bIsActive;
 
 	TWindow* m_pDraggedWindow;
-	D3DXVECTOR3 m_vecInitialDraggedWindowOffset;
+	Math::Vector3 m_vecInitialDraggedWindowOffset;
 
 	std::string m_pcNextObjectCreated;
 	bool m_bCreateObject;

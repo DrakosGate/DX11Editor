@@ -12,8 +12,6 @@
 
 // Library Includes
 #include <vector>
-#include <D3DX10.h>
-
 // Local Includes
 #include "openclkernel.h"
 
@@ -25,7 +23,7 @@
 class CGrass;
 class COpenCLContext;
 class CAIHiveMind;
-class CRenderEntity;
+class RenderEntity;
 
 class CGrassCLKernel : public COpenCLKernel
 {
@@ -34,8 +32,8 @@ public:
 	CGrassCLKernel();
 	virtual ~CGrassCLKernel();
 	 
-	virtual void CreateBuffers(COpenCLContext* _pOpenCL, CGrass* _pGrass, std::vector<CRenderEntity*>* _pCollisionObjects);
-	virtual void SendDataToGPU(COpenCLContext* _pOpenCL, CGrass* _pGrass, std::vector<CRenderEntity*>* _pCollisionObjects, float _fDeltaTime);
+	virtual void CreateBuffers(COpenCLContext* _pOpenCL, CGrass* _pGrass, std::vector<RenderEntity*>* _pCollisionObjects);
+	virtual void SendDataToGPU(COpenCLContext* _pOpenCL, CGrass* _pGrass, std::vector<RenderEntity*>* _pCollisionObjects, float _fDeltaTime);
 	void RetrieveOpenCLResults(COpenCLContext* _pOpenCL, CGrass* _pGrass);
 
 //Member variables
@@ -46,10 +44,10 @@ protected:
 	cl_mem m_clInObjects;
 	cl_mem m_clOutDir;
 
-	D3DXVECTOR4* m_pPositions;
-	D3DXVECTOR4* m_pDirections;
-	D3DXVECTOR4* m_pObjectData;
-	D3DXVECTOR4* m_pOutDirections;
+	Math::Vector4* m_pPositions;
+	Math::Vector4* m_pDirections;
+	Math::Vector4* m_pObjectData;
+	Math::Vector4* m_pOutDirections;
 
 	int m_iNumObstacles;
 };

@@ -21,18 +21,18 @@
 struct TLetterCoordinates
 {
 	TLetterCoordinates(){}
-	TLetterCoordinates(D3DXVECTOR2& _rTopLeft, D3DXVECTOR2& _rBottomRight)
+	TLetterCoordinates(Math::Vector2& _rTopLeft, Math::Vector2& _rBottomRight)
 	{
 		uvTopLeft = _rTopLeft;
 		uvBottomRight = _rBottomRight;
 	}
-	D3DXVECTOR2 uvTopLeft;
-	D3DXVECTOR2 uvBottomRight;
+	Math::Vector2 uvTopLeft;
+	Math::Vector2 uvBottomRight;
 };
 struct TLetter
 {
 	TLetter(){}
-	TLetter(unsigned char _cLetter, D3DXVECTOR3& _rPos, D3DXVECTOR2& _rScale, TLetterCoordinates& _rCoordinates)
+	TLetter(unsigned char _cLetter, Math::Vector3& _rPos, Math::Vector2& _rScale, TLetterCoordinates& _rCoordinates)
 	{
 		cLetter = _cLetter;
 		vecPosition = _rPos;
@@ -41,8 +41,8 @@ struct TLetter
 	}
 
 	unsigned char cLetter;
-	D3DXVECTOR3 vecPosition;
-	D3DXVECTOR2 vecScale;
+	Math::Vector3 vecPosition;
+	Math::Vector2 vecScale;
 	TLetterCoordinates tCoordinates;
 };
 
@@ -50,14 +50,14 @@ struct TLetter
 
 // Prototypes
 
-class CFontRenderer : public CModel
+class CFontRenderer : public Model
 {
 	//Member functions
 public:
 	CFontRenderer();
 	virtual ~CFontRenderer();
 
-	virtual bool Initialise(char* _pcFontFilename, int _iFileWidth, int _iFileHeight, D3DXVECTOR3& _rPosition, D3DXVECTOR2& _rCharacterSize, D3DXCOLOR& _rFontColour);
+	virtual bool Initialise(char* _pcFontFilename, int _iFileWidth, int _iFileHeight, Math::Vector3& _rPosition, Math::Vector2& _rCharacterSize, Math::Colour& _rFontColour);
 	void Draw(ID3D11DeviceContext* _pDevice);
 	void ProcessFont(ID3D11Device* _pDevice);
 	void Write(std::string& _pcMessage, int _iIndex);
@@ -75,9 +75,9 @@ protected:
 
 	TLetterCoordinates* m_pLetterCoordinates;
 	TFontVertex* m_pFontVerts;
-	D3DXVECTOR3 m_vecPosition;
-	D3DXVECTOR2 m_vecCharacterSize;
-	D3DXCOLOR m_fontColour;
+	Math::Vector3 m_vecPosition;
+	Math::Vector2 m_vecCharacterSize;
+	Math::Colour m_fontColour;
 
 	int m_iNumFontLetters;
 	bool m_bHasChanged;
