@@ -1,6 +1,6 @@
 //
-//  File Name   :   CRenderToTexture.cpp
-//  Description :   Code for Class CRenderToTexture
+//  File Name   :   RenderToTexture.cpp
+//  Description :   Code for Class RenderToTexture
 //  Author      :   Christopher Howlett
 //  Mail        :   drakos_gate@yahoo.com
 //
@@ -12,7 +12,7 @@
 #include "defines.h"
 
 // This Include
-#include "rendertotexture.h"
+#include "RenderToTexture.h"
 
 // Static Variables
 
@@ -20,36 +20,22 @@
 
 // Implementation
 
-/**
-*
-* CRenderToTexture class constructor
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-*
-*/
-CRenderToTexture::CRenderToTexture()
-:	m_pRenderTexture(0)
-,	m_pRenderTargetView(0)
-,	m_pShaderResourceView(0)
+
+RenderToTexture::RenderToTexture()
+:	m_pRenderTexture( nullptr )
+,	m_pRenderTargetView( nullptr )
+,	m_pShaderResourceView( nullptr )
 ,	m_bHasRenderTarget(false)
 ,	m_bHasDepthStencil(false)
-,	m_pDepthStencilView(0)
-,	m_pDepthStencilBuffer(0)
-,	m_pAddDepthState(0)
-,	m_pSubDepthState(0)
+,	m_pDepthStencilView( nullptr )
+,	m_pDepthStencilBuffer( nullptr )
+,	m_pAddDepthState( nullptr )
+,	m_pSubDepthState( nullptr )
 {
 
 }
-/**
-*
-* CRenderToTexture class destructor
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-*
-*/
-CRenderToTexture::~CRenderToTexture()
+
+RenderToTexture::~RenderToTexture()
 {
 	if(m_bHasRenderTarget)
 	{
@@ -67,22 +53,9 @@ CRenderToTexture::~CRenderToTexture()
 		ReleaseCOM(m_pSubDepthState);
 	}
 }
-/**
-*
-* CRenderToTexture class initialise
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-* @param _pDevice Directx 10 Device
-* @param _bHasRenderTarget Specifies whether this has a colour texture
-* @param _bHasDepthStencil Specifies whether this has a depth stencil 
-* @param _iWidth Viewport width
-* @param _iHeight Viewport height
-* @return Returns success of initialisation
-*
-*/
+
 bool 
-CRenderToTexture::Initialise(ID3D11Device* _pDevice, bool _bHasRenderTarget, bool _bHasDepthStencil, int _iWidth, int _iHeight)
+RenderToTexture::Initialise(ID3D11Device* _pDevice, bool _bHasRenderTarget, bool _bHasDepthStencil, int _iWidth, int _iHeight)
 {
 	m_bHasRenderTarget = _bHasRenderTarget;
 	m_bHasDepthStencil = _bHasDepthStencil;
@@ -99,19 +72,9 @@ CRenderToTexture::Initialise(ID3D11Device* _pDevice, bool _bHasRenderTarget, boo
 	
 	return true;
 }
-/**
-*
-* CRenderToTexture class initialise
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-* @param _pDevice Directx 10 Device
-* @param _iWidth Viewport width
-* @param _iHeight Viewport height
-*
-*/
+
 void 
-CRenderToTexture::CreateRenderTarget(ID3D11Device* _pDevice, int _iWidth, int _iHeight)
+RenderToTexture::CreateRenderTarget(ID3D11Device* _pDevice, int _iWidth, int _iHeight)
 {
 	// Zero memory of all structures needed
 	D3D11_TEXTURE2D_DESC tTextureDesc;
@@ -153,19 +116,9 @@ CRenderToTexture::CreateRenderTarget(ID3D11Device* _pDevice, int _iWidth, int _i
 	HRCheck(_pDevice->CreateShaderResourceView(	m_pRenderTexture, &tShaderResourceDesc,	&m_pShaderResourceView),
 			L"Could not create shader resource view");
 }
-/**
-*
-* CRenderToTexture class initialise
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-* @param _pDevice Directx 10 Device
-* @param _iWidth Viewport width
-* @param _iHeight Viewport height
-*
-*/
+
 void 
-CRenderToTexture::CreateDepthStencil(ID3D11Device* _pDevice, int _iWidth, int _iHeight)
+RenderToTexture::CreateDepthStencil(ID3D11Device* _pDevice, int _iWidth, int _iHeight)
 {
 	D3D11_TEXTURE2D_DESC depthStencilDesc;
 	ZeroMemory(&depthStencilDesc, sizeof(D3D11_TEXTURE2D_DESC));
@@ -248,18 +201,9 @@ CRenderToTexture::CreateDepthStencil(ID3D11Device* _pDevice, int _iWidth, int _i
 												&m_pDepthResourceView),
 			L"Could not create Shader Resource View for depth stencil buffer");
 }
-/**
-*
-* CRenderToTexture class SetRenderTarget
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-* @param _pDevice Directx 10 Device
-* @param _pDepthStencilView Depth stencil view
-*
-*/
+
 void 
-CRenderToTexture::SetRenderTarget(ID3D11DeviceContext* _pDevice, int _iIndex, ID3D11DepthStencilView* _pDepthStencilView)
+RenderToTexture::SetRenderTarget(ID3D11DeviceContext* _pDevice, int _iIndex, ID3D11DepthStencilView* _pDepthStencilView)
 {
 	if(m_bHasDepthStencil)
 	{
@@ -270,19 +214,9 @@ CRenderToTexture::SetRenderTarget(ID3D11DeviceContext* _pDevice, int _iIndex, ID
 		_pDevice->OMSetRenderTargets(1, &m_pRenderTargetView, _pDepthStencilView);
 	}
 }
-/**
-*
-* CRenderToTexture class ClearRenderTarget
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-* @param _pDevice Directx 10 Device
-* @param _pDepthStencilView Depth stencil view
-* @param _pClearColour Colour to clear
-*
-*/
+
 void 
-CRenderToTexture::ClearRenderTarget(ID3D11DeviceContext* _pDevice, ID3D11DepthStencilView* _pDepthStencilView, float* _pClearColour)
+RenderToTexture::ClearRenderTarget(ID3D11DeviceContext* _pDevice, ID3D11DepthStencilView* _pDepthStencilView, float* _pClearColour)
 {
 	if(m_bHasRenderTarget)
 	{
@@ -300,92 +234,45 @@ CRenderToTexture::ClearRenderTarget(ID3D11DeviceContext* _pDevice, ID3D11DepthSt
 		}
 	}
 }
-/**
-*
-* CRenderToTexture class GetShaderResourceView
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-* @return Returns Shader resource view
-*
-*/
+
 ID3D11ShaderResourceView* 
-CRenderToTexture::GetRenderShaderResource()
+RenderToTexture::GetRenderShaderResource()
 {
 	return m_pShaderResourceView;
 }
-/**
-*
-* CRenderToTexture class GetDepthShaderResource
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-* @return Returns Depth shader resource view
-*
-*/
+
 ID3D11ShaderResourceView* 
-CRenderToTexture::GetDepthShaderResource()
+RenderToTexture::GetDepthShaderResource()
 {
 	return m_pDepthResourceView;
 }
+
 ID3D11DepthStencilView* 
-CRenderToTexture::GetDepthStencilView()
+RenderToTexture::GetDepthStencilView()
 {
 	return m_pDepthStencilView;
 }
-/**
-*
-* CRenderToTexture class GetStencilBuffer
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-* @return Returns stencil buffer
-*
-*/
+
 ID3D11Texture2D*  
-CRenderToTexture::GetDepthStencilTexture()
+RenderToTexture::GetDepthStencilTexture()
 {
 	return m_pDepthStencilBuffer;
 }
-/**
-*
-* CRenderToTexture class GetRenderTarget
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-* @return Returns pointer to render target view
-*
-*/
+
 ID3D11RenderTargetView*  
-CRenderToTexture::GetRenderTarget()
+RenderToTexture::GetRenderTarget()
 {
 	return m_pRenderTargetView;
 }
-/**
-*
-* CRenderToTexture class GetAddDepthState
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-* @return Returns add stencil state
-*
-*/
+
 ID3D11DepthStencilState* 
-CRenderToTexture::GetAddDepthState()
+RenderToTexture::GetAddDepthState()
 {
 	return m_pAddDepthState;
 }
-/**
-*
-* CRenderToTexture class GetSubDepthState
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-* @return Returns add stencil state
-*
-*/
+
 ID3D11DepthStencilState* 
-CRenderToTexture::GetSubDepthState()
+RenderToTexture::GetSubDepthState()
 {
 	return m_pSubDepthState;
 }

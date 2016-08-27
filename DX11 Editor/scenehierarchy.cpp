@@ -1,5 +1,5 @@
-//  File Name   :   CSceneHierarchy.cpp
-//  Description :   Code for Class CSceneHierarchy
+//  File Name   :   SceneHierarchy.cpp
+//  Description :   Code for Class SceneHierarchy
 //  Author      :   Christopher Howlett
 //  Mail        :   drakos_gate@yahoo.com
 //
@@ -18,24 +18,24 @@
 // Implementation
 /*
 *
-* CSceneHierarchy constructor
+* SceneHierarchy constructor
 * @author Christopher Howlett
 *
 */
-CSceneHierarchy::CSceneHierarchy()
-: m_pRootNode(0)
-, m_pResourceFilenames(0)
-, m_pResourceIndexMap(0)
+SceneHierarchy::SceneHierarchy()
+: m_pRootNode( nullptr )
+, m_pResourceFilenames( nullptr )
+, m_pResourceIndexMap( nullptr )
 {
 	
 }
 /*
 *
-* CSceneHierarchy destructor
+* SceneHierarchy destructor
 * @author Christopher Howlett
 *
 */
-CSceneHierarchy::~CSceneHierarchy()
+SceneHierarchy::~SceneHierarchy()
 {
 	//Clear maps
 	if (m_pResourceFilenames)
@@ -77,12 +77,12 @@ CSceneHierarchy::~CSceneHierarchy()
 }
 /*
 *
-* KEY AREA: CSceneHierarchy Initialise reads in all resource information from file
+* KEY AREA: SceneHierarchy Initialise reads in all resource information from file
 * @author Christopher Howlett
 *
 */
 bool 
-CSceneHierarchy::Initialise(char* _pcResourceFilename)
+SceneHierarchy::Initialise(char* _pcResourceFilename)
 {
 	m_pRootNode = new TSceneNode();
 	//Initialise scene buffers
@@ -107,14 +107,14 @@ CSceneHierarchy::Initialise(char* _pcResourceFilename)
 }
 /*
 *
-* CSceneHierarchy LoadResources
+* SceneHierarchy LoadResources
 * @author Christopher Howlett
 *
 * @param _pResourceNode Node containing resource information
 *
 */
 void
-CSceneHierarchy::LoadResources(rapidxml::xml_node<>* _pResourceNode)
+SceneHierarchy::LoadResources(rapidxml::xml_node<>* _pResourceNode)
 {
 	//Find root nodes
 	rapidxml::xml_node<>* pModels = _pResourceNode->first_node("models");
@@ -154,14 +154,14 @@ CSceneHierarchy::LoadResources(rapidxml::xml_node<>* _pResourceNode)
 }
 /*
 *
-* CSceneHierarchy LoadPrefabDefinitions
+* SceneHierarchy LoadPrefabDefinitions
 * @author Christopher Howlett
 *
 * @param _pPrefabNode Node containing prefab definitions
 *
 */
 void
-CSceneHierarchy::LoadPrefabDefinitions(rapidxml::xml_node<>* _pPrefabNode)
+SceneHierarchy::LoadPrefabDefinitions(rapidxml::xml_node<>* _pPrefabNode)
 {
 	//Loop through models
 	for (rapidxml::xml_node<>* pCurrentPrefab = _pPrefabNode->first_node("prefab"); pCurrentPrefab; pCurrentPrefab = pCurrentPrefab->next_sibling())
@@ -240,12 +240,12 @@ CSceneHierarchy::LoadPrefabDefinitions(rapidxml::xml_node<>* _pPrefabNode)
 }
 /*
 *
-* KEY AREA: CSceneHierarchy Reads in scene hierarchy information from level XML file
+* KEY AREA: SceneHierarchy Reads in scene hierarchy information from level XML file
 * @author Christopher Howlett
 *
 */
 void
-CSceneHierarchy::LoadSceneFromXML(char* _pcXMLFilename)
+SceneHierarchy::LoadSceneFromXML(char* _pcXMLFilename)
 {
 	//Clear node hierarchy
 	m_pRootNode->Clear();
@@ -267,7 +267,7 @@ CSceneHierarchy::LoadSceneFromXML(char* _pcXMLFilename)
 }
 /*
 *
-* KEY AREA: CSceneHierarchy Adds an object to the node hierarchy
+* KEY AREA: SceneHierarchy Adds an object to the node hierarchy
 * @author Christopher Howlett
 *
 * @param _pNode Current XML node to interpret
@@ -275,7 +275,7 @@ CSceneHierarchy::LoadSceneFromXML(char* _pcXMLFilename)
 *
 */
 void
-CSceneHierarchy::AddObject(rapidxml::xml_node<>* _pNode, TSceneNode* _pParentNode)
+SceneHierarchy::AddObject(rapidxml::xml_node<>* _pNode, TSceneNode* _pParentNode)
 {
 	TSceneNode* pNewEntity = new TSceneNode();
 
@@ -344,20 +344,20 @@ CSceneHierarchy::AddObject(rapidxml::xml_node<>* _pNode, TSceneNode* _pParentNod
 }
 /*
 *
-* KEY AREA: CSceneHierarchy Returns the root node of the hierarchy
+* KEY AREA: SceneHierarchy Returns the root node of the hierarchy
 * @author Christopher Howlett
 *
 * @return Returns root node of the hierarchy
 *
 */
 TSceneNode*
-CSceneHierarchy::GetRootNode() const
+SceneHierarchy::GetRootNode() const
 {
 	return m_pRootNode;
 }
 /*
 *
-* CSceneHierarchy Adds an object to the node hierarchy
+* SceneHierarchy Adds an object to the node hierarchy
 * @author Christopher Howlett
 *
 * @param _eResourceType Type of resource requested
@@ -366,13 +366,13 @@ CSceneHierarchy::GetRootNode() const
 *
 */
 std::string&
-CSceneHierarchy::GetResourceFilename(EResourceType _eResourceType, int _iIndex)
+SceneHierarchy::GetResourceFilename(EResourceType _eResourceType, int _iIndex)
 {
 	return (m_pResourceFilenames[_eResourceType][_iIndex]);
 }
 /*
 *
-* CSceneHierarchy Adds an object to the node hierarchy
+* SceneHierarchy Adds an object to the node hierarchy
 * @author Christopher Howlett
 *
 * @param _eResourceType Type of resource requested
@@ -381,13 +381,13 @@ CSceneHierarchy::GetResourceFilename(EResourceType _eResourceType, int _iIndex)
 *
 */
 std::string&
-CSceneHierarchy::GetResourceFilename(EResourceType _eResourceType, std::string& _sResourceName)
+SceneHierarchy::GetResourceFilename(EResourceType _eResourceType, std::string& _sResourceName)
 {
 	return (m_pResourceFilenames[_eResourceType][ m_pResourceIndexMap[_eResourceType][_sResourceName] ]);
 }
 /*
 *
-* CSceneHierarchy Adds an object to the node hierarchy
+* SceneHierarchy Adds an object to the node hierarchy
 * @author Christopher Howlett
 *
 * @param _eResourceType Type of resource requested
@@ -395,7 +395,7 @@ CSceneHierarchy::GetResourceFilename(EResourceType _eResourceType, std::string& 
 *
 */
 const std::string&
-CSceneHierarchy::GetResourceName(EResourceType _eResourceType, int _iIndex)
+SceneHierarchy::GetResourceName(EResourceType _eResourceType, int _iIndex)
 {
 	std::map<std::string, int>::iterator resourceIterator;
 	resourceIterator = m_pResourceIndexMap[_eResourceType].begin();
@@ -407,7 +407,7 @@ CSceneHierarchy::GetResourceName(EResourceType _eResourceType, int _iIndex)
 }
 /*
 *
-* CSceneHierarchy Adds an object to the node hierarchy
+* SceneHierarchy Adds an object to the node hierarchy
 * @author Christopher Howlett
 *
 * @param _pNode Current XML node to interpret
@@ -415,13 +415,13 @@ CSceneHierarchy::GetResourceName(EResourceType _eResourceType, int _iIndex)
 *
 */
 unsigned int
-CSceneHierarchy::GetResourceCount(EResourceType _eResourceType)
+SceneHierarchy::GetResourceCount(EResourceType _eResourceType)
 {
 	return m_pResourceFilenames[_eResourceType].size();
 }
 /*
 *
-* CSceneHierarchy Gets the Prefab Definition for the specified prefab name
+* SceneHierarchy Gets the Prefab Definition for the specified prefab name
 * @author Christopher Howlett
 *
 * @param _rPrefabName Name of the prefab
@@ -429,13 +429,13 @@ CSceneHierarchy::GetResourceCount(EResourceType _eResourceType)
 *
 */
 TPrefabDefinition*
-CSceneHierarchy::GetPrefabDefinition(std::string& _rPrefabName)
+SceneHierarchy::GetPrefabDefinition(std::string& _rPrefabName)
 {
 	return (m_mapPrefabs[_rPrefabName]);
 }
 /*
 *
-* CSceneHierarchy Gets the Prefab Definition for the specified prefab index
+* SceneHierarchy Gets the Prefab Definition for the specified prefab index
 * @author Christopher Howlett
 *
 * @param _iIndex Index of the prefab
@@ -443,7 +443,7 @@ CSceneHierarchy::GetPrefabDefinition(std::string& _rPrefabName)
 *
 */
 TPrefabDefinition*
-CSceneHierarchy::GetPrefabDefinition(int _iIndex)
+SceneHierarchy::GetPrefabDefinition(int _iIndex)
 {
 	std::map<std::string, TPrefabDefinition*>::iterator prefabIter;
 	prefabIter = m_mapPrefabs.begin();
@@ -455,14 +455,14 @@ CSceneHierarchy::GetPrefabDefinition(int _iIndex)
 }
 /*
 *
-* CSceneHierarchy Gets the number of prefabs defined
+* SceneHierarchy Gets the number of prefabs defined
 * @author Christopher Howlett
 *
 * @return Returns the number of defined prefabs
 *
 */
 unsigned int 
-CSceneHierarchy::GetPrefabCount() const
+SceneHierarchy::GetPrefabCount() const
 {
 	return m_mapPrefabs.size();
 }

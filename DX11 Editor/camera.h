@@ -4,7 +4,7 @@
 // Library Includes
 
 // Local Includes
-#include "defines.h"
+#include "mathlibrary.h"
 
 // Types
 

@@ -7,12 +7,12 @@
 
 #include <CL\opencl.h>
 
-class COpenCLContext
+class OpenCLContext
 {
 //Member functions
 public:
-	COpenCLContext();
-	~COpenCLContext();
+	OpenCLContext();
+	~OpenCLContext();
 
 	virtual void InitialiseOpenCL();
 	virtual void LoadProgram(cl_program& _rProgram, cl_kernel& _rKernel, char* _pcCLProgram, char* _pcFunctionName);

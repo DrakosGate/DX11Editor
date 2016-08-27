@@ -16,21 +16,21 @@
 
 /**
 *
-* CPerformanceGraph class constructor
+* PerformanceGraph class constructor
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
 *
 */
-CPerformanceGraph::CPerformanceGraph()
-: m_pNodeValues(0)
+PerformanceGraph::PerformanceGraph()
+: m_pNodeValues( nullptr )
 , m_fMinRange(0.0f)
 , m_fMaxRange(0.000001f)
 , m_fScaleOffset(0.0f)
-, m_iNumNodes(0)
-, m_pcLogFilename(0)
-, m_pcLogDescription(0)
-, m_iLogCount(0)
+, m_iNumNodes( 0 )
+, m_pcLogFilename( nullptr )
+, m_pcLogDescription( nullptr )
+, m_iLogCount( 0 )
 , m_bDoLogPerformance(false)
 {
 
@@ -38,19 +38,19 @@ CPerformanceGraph::CPerformanceGraph()
 
 /**
 *
-* CPerformanceGraph class destructor
+* PerformanceGraph class destructor
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
 *
 */
-CPerformanceGraph::~CPerformanceGraph()
+PerformanceGraph::~PerformanceGraph()
 {
 	SAFEDELETEARRAY(m_pNodeValues);
 }
 /**
 *
-* CPerformanceGraph class Initialise
+* PerformanceGraph class Initialise
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -60,7 +60,7 @@ CPerformanceGraph::~CPerformanceGraph()
 *
 */
 bool 
-CPerformanceGraph::Initialise(ID3D11Device* _pDevice, Math::Vector3& _rPosition, Math::Vector3& _rScale, int _iNumNodes)
+PerformanceGraph::Initialise(ID3D11Device* _pDevice, Math::Vector3& _rPosition, Math::Vector3& _rScale, int _iNumNodes)
 {
 	m_fScaleOffset = _rScale.x / static_cast<float>(_iNumNodes);
 	m_iNumNodes = _iNumNodes;
@@ -79,7 +79,7 @@ CPerformanceGraph::Initialise(ID3D11Device* _pDevice, Math::Vector3& _rPosition,
 	return true;
 }
 void
-CPerformanceGraph::LogPerformance(char* _pcLogFilename, char* _pcLogDescription, int _iLogAfterFrames)
+PerformanceGraph::LogPerformance(char* _pcLogFilename, char* _pcLogDescription, int _iLogAfterFrames)
 {
 	m_bDoLogPerformance = true;
 	m_pcLogFilename = _pcLogFilename;
@@ -88,7 +88,7 @@ CPerformanceGraph::LogPerformance(char* _pcLogFilename, char* _pcLogDescription,
 	m_iLogCount = _iLogAfterFrames;
 }
 void
-CPerformanceGraph::OutputLog()
+PerformanceGraph::OutputLog()
 {
 	if (m_bDoLogPerformance)
 	{
@@ -122,14 +122,14 @@ CPerformanceGraph::OutputLog()
 }
 /**
 *
-* CPointSprite class Draw
+* PointSprite class Draw
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
 *
 */
 void
-CPerformanceGraph::Draw(ID3D11DeviceContext* _pDevice)
+PerformanceGraph::Draw(ID3D11DeviceContext* _pDevice)
 {
 	UINT stride = sizeof(TPointSpriteVertex);
 	UINT offset = 0;
@@ -139,14 +139,14 @@ CPerformanceGraph::Draw(ID3D11DeviceContext* _pDevice)
 }
 /**
 *
-* CPerformanceGraph class Set the vertical range of the graph
+* PerformanceGraph class Set the vertical range of the graph
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
 *
 */
 void
-CPerformanceGraph::SetGraphRange(float _fMinRange, float _fMaxRange)
+PerformanceGraph::SetGraphRange(float _fMinRange, float _fMaxRange)
 {
 	if (m_fMinRange > _fMinRange)
 	{
@@ -160,14 +160,14 @@ CPerformanceGraph::SetGraphRange(float _fMinRange, float _fMaxRange)
 }
 /**
 *
-* CPerformanceGraph class Adds a node to the graph
+* PerformanceGraph class Adds a node to the graph
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
 *
 */
 void
-CPerformanceGraph::AddNode(ID3D11Device* _pDevice, float _fValue)
+PerformanceGraph::AddNode(ID3D11Device* _pDevice, float _fValue)
 {
 	//Add this value to the log file
 	if (m_bDoLogPerformance)
@@ -212,12 +212,12 @@ CPerformanceGraph::AddNode(ID3D11Device* _pDevice, float _fValue)
 	}
 }
 float
-CPerformanceGraph::GetMin() const
+PerformanceGraph::GetMin() const
 {
 	return m_fMinRange;
 }
 float
-CPerformanceGraph::GetMax() const
+PerformanceGraph::GetMax() const
 {
 	return m_fMaxRange;
 }

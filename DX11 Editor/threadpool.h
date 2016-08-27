@@ -1,6 +1,6 @@
 //
-//  File Name   :   CThreadPool.h
-//  Description :   Definition of the CThreadPool class
+//  File Name   :   ThreadPool.h
+//  Description :   Definition of the ThreadPool class
 //  Author      :   Christopher Howlett
 //  Mail        :   drakos_gate@yahoo.com
 //
@@ -42,18 +42,18 @@ struct TSetupJob
 	}
 	int iData;
 };
-class CGrass;
-class CAIHiveMind;
+class Grass;
+class AIHiveMind;
 struct TGrassThread
 {
 	TGrassThread(){}
-	TGrassThread(CGrass* _pGrass, int _iGrassSection, float _fDeltaTime)
+	TGrassThread(Grass* _pGrass, int _iGrassSection, float _fDeltaTime)
 	{
 		pGrass = _pGrass;
 		iGrassSection = _iGrassSection;
 		fDeltaTime = _fDeltaTime;
 	}
-	CGrass* pGrass;
+	Grass* pGrass;
 	int iGrassSection;
 	float fDeltaTime;
 };
@@ -68,12 +68,12 @@ void AIProcessingThread(PARAMETER_TYPE _pData, int _iThreadID);
 
 class CThread;
 
-class CThreadPool
+class ThreadPool
 {
 //Member functions
 public:
-	CThreadPool();
-	~CThreadPool();
+	ThreadPool();
+	~ThreadPool();
 
 	void Initialise(int _iThreadCount);
 	void AddJobToPool(JOB_TYPE _JobType, PARAMETER_TYPE _rParameters);

@@ -1,6 +1,6 @@
 //
 //  File Name   :   AIHiveMind.h
-//  Description :   Class of CAIHiveMind
+//  Description :   Class of AIHiveMind
 //  Author      :   Christopher Howlett
 //  Mail        :   drakos_gate@yahoo.com
 //
@@ -21,15 +21,15 @@
 
 // Prototypes
 class RenderEntity;
-class CAIHiveMind;
+class AIHiveMind;
 
-class CAIController
+class AIController
 {
 public:
-	CAIController();
-	virtual ~CAIController();
+	AIController();
+	virtual ~AIController();
 
-	virtual bool Initialise(CAIHiveMind* _pHivemind, RenderEntity* _pEntity, float _fMovementSpeed, float _fRotationSpeed);
+	virtual bool Initialise(AIHiveMind* _pHivemind, RenderEntity* _pEntity, float _fMovementSpeed, float _fRotationSpeed);
 	void Process(float _fDeltaTime, Math::Vector3& _rAvoidance);
 	void ProcessWaypointMovement(float _fDeltaTime);
 	void ProcessAStarMovement(int _iPathLength, float _fDeltaTime);
@@ -42,11 +42,11 @@ public:
 	EAIType GetAIType() const;
 
 private:
-	CAIController(const CAIController& _krInstanceToCopy);
-	const CAIController& operator =(const CAIController& _krInstanceToCopy);
+	AIController(const AIController& _krInstanceToCopy);
+	const AIController& operator =(const AIController& _krInstanceToCopy);
 
 private:
-	CAIHiveMind* m_pHivemind;
+	AIHiveMind* m_pHivemind;
 	RenderEntity* m_pEntity;
 	Math::Vector3 m_vecWaypoint;
 

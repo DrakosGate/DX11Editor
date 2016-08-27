@@ -16,17 +16,17 @@ namespace Math
 #pragma region Matrix
 	Matrix Translate( const Matrix& input, const Vector3& position )
 	{
-		return Matrix( input.data * DirectX::XMMatrixTranslation( position.data.x, position.data.y, position.data.z ) );
+		return Matrix( input.GetMatrix() * DirectX::XMMatrixTranslation( position.data.x, position.data.y, position.data.z ) );
 	}
 
 	Matrix Rotate( const Matrix& input, const float angle, const Vector3& axis )
 	{
-		return Matrix( input.data * DirectX::XMMatrixRotationAxis( DirectX::XMLoadFloat3( &axis.data ), angle ) );
+		return Matrix( input.GetMatrix() * DirectX::XMMatrixRotationAxis( DirectX::XMLoadFloat3( &axis.data ), angle ) );
 	}
 
 	Matrix Scale( const Matrix& input, const Vector3& scale )
 	{
-		return input.data * DirectX::XMMatrixScaling( scale.data.x, scale.data.y, scale.data.z );
+		return input.GetMatrix() * DirectX::XMMatrixScaling( scale.data.x, scale.data.y, scale.data.z );
 	}
 
 	Matrix MatrixIdentity()
@@ -41,7 +41,7 @@ namespace Math
 
 	Matrix MatrixInverse( const float* pDeterminant, const Matrix& matrix )
 	{
-		return Matrix( DirectX::XMMatrixInverse( nullptr, matrix.data ) );
+		return Matrix( DirectX::XMMatrixInverse( nullptr, matrix.GetMatrix() ) );
 	}
 
 	Matrix MatrixPerspectiveFovLH( const float _fov, const float _aspect, const float _nearPlane, const float _farPlane )
@@ -54,9 +54,24 @@ namespace Math
 		return Matrix( DirectX::XMMatrixOrthographicLH( _WindowWidth, _WindowHeight, _nearPlane, _farPlane ) );
 	}
 
-	Matrix Transpose( const Matrix& source )
+	Matrix MatrixTranspose( const Matrix& source )
 	{
-		return Matrix( DirectX::XMMatrixTranspose( source.data ) );
+		return Matrix( DirectX::XMMatrixTranspose( source.GetMatrix() ) );
+	}
+
+	Matrix MatrixTransformation(	const Math::Vector3*    _ScalingOrigin, 
+									const Math::Quaternion* _ScalingOrientation, 
+									const Math::Vector3*    _Scaling, 
+									const Math::Vector3*    _RotationOrigin, 
+									const Math::Quaternion* _RotationQuaternion, 
+									const Math::Vector4*    _Translation )
+	{
+		return Matrix( DirectX::XMMatrixTransformation( DirectX::XMLoadFloat3( ( _ScalingOrigin		 != nullptr ) ? &_ScalingOrigin->data		: &DirectX::XMFLOAT3( 0.0f, 0.0f, 0.0f ) ), 
+														DirectX::XMLoadFloat4( ( _ScalingOrientation != nullptr ) ? &_ScalingOrientation->data	: &DirectX::XMFLOAT4( 0.0f, 0.0f, 0.0f, 0.0f ) ),
+														DirectX::XMLoadFloat3( ( _Scaling			 != nullptr ) ? &_Scaling->data				: &DirectX::XMFLOAT3( 0.0f, 0.0f, 0.0f ) ), 
+														DirectX::XMLoadFloat3( ( _RotationOrigin	 != nullptr ) ? &_RotationOrigin->data		: &DirectX::XMFLOAT3( 0.0f, 0.0f, 0.0f ) ), 
+														DirectX::XMLoadFloat4( ( _RotationQuaternion != nullptr ) ? &_RotationQuaternion->data	: &DirectX::XMFLOAT4( 0.0f, 0.0f, 0.0f, 0.0f ) ), 
+														DirectX::XMLoadFloat4( ( _Translation		 != nullptr ) ? &_Translation->data			: &DirectX::XMFLOAT4( 0.0f, 0.0f, 0.0f, 0.0f ) ) ) );
 	}
 
 #pragma endregion
@@ -100,6 +115,17 @@ namespace Math
 		return Vector4( DirectX::XMFLOAT4( input.data.x, input.data.y, input.data.z, 1.0f ) );
 	}
 #pragma endregion
+
+
+#pragma region Quaternion
+	Math::Quaternion QuaternionRotationYawPitchRoll( const float yaw, const float pitch, const float roll )
+	{
+		Math::Quaternion result;
+		DirectX::XMStoreFloat4( &result.data, DirectX::XMQuaternionRotationRollPitchYaw( pitch, yaw, roll ) );
+		return result;
+	}
+#pragma endregion
+
 
 #pragma region Plane
 	float PlaneDotCoord( const Plane& plane, const Vector3& vector )

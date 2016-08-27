@@ -5,11 +5,11 @@
 
 #include "openclcontext.h"
 
-COpenCLContext::COpenCLContext()
+OpenCLContext::OpenCLContext()
 {
 
 }
-COpenCLContext::~COpenCLContext()
+OpenCLContext::~OpenCLContext()
 {
 	printf("==== Cleaning Up OpenCL ====\n");
 	if (m_clCommandQueue)
@@ -21,7 +21,7 @@ COpenCLContext::~COpenCLContext()
 	}
 }
 void
-COpenCLContext::InitialiseOpenCL()
+OpenCLContext::InitialiseOpenCL()
 {
 	cl_int iError;
 	printf("==== Initialising OpenCL ====\n");
@@ -39,7 +39,7 @@ COpenCLContext::InitialiseOpenCL()
 	m_clCommandQueue = clCreateCommandQueue(m_clContext, m_pDevices[m_iDeviceUsed], 0, &iError);
 }
 void
-COpenCLContext::LoadProgram(cl_program& _rProgram, cl_kernel& _rKernel, char* _pcCLProgram, char* _pcFunctionName)
+OpenCLContext::LoadProgram(cl_program& _rProgram, cl_kernel& _rKernel, char* _pcCLProgram, char* _pcFunctionName)
 {
 	cl_int iError = 0;
 	printf("-\tLoading OpenCL Program: %s\n", _pcCLProgram);
@@ -61,7 +61,7 @@ COpenCLContext::LoadProgram(cl_program& _rProgram, cl_kernel& _rKernel, char* _p
 	pCLSource = 0;
 }
 void
-COpenCLContext::Run(cl_kernel& _rKernel)
+OpenCLContext::Run(cl_kernel& _rKernel)
 {
 	//Run Kernel
 	cl_int iError = 0;
@@ -95,35 +95,35 @@ COpenCLContext::Run(cl_kernel& _rKernel)
 	*/
 }
 void
-COpenCLContext::WaitForFinish()
+OpenCLContext::WaitForFinish()
 {
 	//Wait for this to finish
 	clFinish(m_clCommandQueue);
 }
 cl_context&
-COpenCLContext::GetCLContext()
+OpenCLContext::GetCLContext()
 {
 	return m_clContext;
 }
 cl_command_queue&
-COpenCLContext::GetCLCommandQueue()
+OpenCLContext::GetCLCommandQueue()
 {
 	return m_clCommandQueue;
 }
 cl_event& 
-COpenCLContext::GetCLEvent()
+OpenCLContext::GetCLEvent()
 {
 	return m_clEvent;
 }
 void
-COpenCLContext::SetCLWorkGroupSize(size_t* _pWorkGroupSize, size_t* _pGlobalWorkSize, int _iNumDimensions)
+OpenCLContext::SetCLWorkGroupSize(size_t* _pWorkGroupSize, size_t* _pGlobalWorkSize, int _iNumDimensions)
 {
 	m_pWorkGroupSize = _pWorkGroupSize;
 	m_pGlodalWorkSize = _pGlobalWorkSize;
 	m_iNumDimensions = _iNumDimensions;
 }
 void 
-COpenCLContext::BuildExecutable(cl_program& _rProgram)
+OpenCLContext::BuildExecutable(cl_program& _rProgram)
 {
 	cl_int iError = 0;
 	iError = clBuildProgram(_rProgram, 0, NULL, NULL, NULL, NULL);
@@ -145,7 +145,7 @@ COpenCLContext::BuildExecutable(cl_program& _rProgram)
 	pBuildLog = 0;
 }
 cl_int 
-COpenCLContext::GetPlatformID(cl_platform_id* _pPlatformID)
+OpenCLContext::GetPlatformID(cl_platform_id* _pPlatformID)
 {
 	char cBuffer[1024];
 	cl_uint iNumPlatforms;
@@ -197,7 +197,7 @@ COpenCLContext::GetPlatformID(cl_platform_id* _pPlatformID)
 	return CL_SUCCESS;
 }
 char*
-COpenCLContext::GetCLFileContents(const char* _pcFilename, int& _iLength)
+OpenCLContext::GetCLFileContents(const char* _pcFilename, int& _iLength)
 {
 	std::ifstream fileIn;
 	fileIn.open(_pcFilename);
@@ -233,7 +233,7 @@ COpenCLContext::GetCLFileContents(const char* _pcFilename, int& _iLength)
 	return pcBuffer;
 }
 const char* 
-COpenCLContext::GetErrorString(cl_int _iError)
+OpenCLContext::GetErrorString(cl_int _iError)
 {
 	static const char* errorString[] = {
 		"CL_SUCCESS",

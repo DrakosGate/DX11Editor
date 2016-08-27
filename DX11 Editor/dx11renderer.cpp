@@ -7,7 +7,8 @@
 #include <D3Dcommon.h>
 
 // Local Includes
-#include "../clock.h"
+#include "clock.h"
+#include "datastructures.h"
 
 // This Include
 #include "dx11renderer.h"
@@ -19,67 +20,66 @@
 // Implementation
 
 DX11Renderer::DX11Renderer()
-: m_pDevice( nullptr )
-, m_pDeviceContext( nullptr )
-, m_pSwapChain( nullptr )
-, m_pRenderTargetView( nullptr )
-, m_pSetupData( nullptr )
-, m_hWindow( NULL )
-, m_pDepthStencilBuffer( nullptr )
-, m_pDepthStencilState( nullptr )
-, m_pDepthStencilView( nullptr )
-, m_pDepthShaderResource( nullptr )
-, m_pBlendStates( nullptr )
-, m_pRasterState( nullptr )
-, m_iVideoCardMemory( 0 )
-, m_bIsFullscreen( false )
-, m_bVSyncEnabled( false )
+	: m_pDevice( nullptr )
+	, m_pDeviceContext( nullptr )
+	, m_pSwapChain( nullptr )
+	, m_pRenderTargetView( nullptr )
+	, m_pSetupData( nullptr )
+	, m_hWindow( NULL )
+	, m_pDepthStencilBuffer( nullptr )
+	, m_pDepthStencilState( nullptr )
+	, m_pDepthStencilView( nullptr )
+	, m_pDepthShaderResource( nullptr )
+	, m_pBlendStates( nullptr )
+	, m_pRasterState( nullptr )
+	, m_iVideoCardMemory( 0 )
+	, m_bIsFullscreen( false )
+	, m_bVSyncEnabled( false )
 {
-	//Math::MatrixIdentity(&m_matWorld);
-	//Math::MatrixIdentity(&m_matProjection);
+
 }
 
 DX11Renderer::~DX11Renderer()
 {
-	SAFEDELETE(m_pSetupData);
-	
+	SAFEDELETE( m_pSetupData );
+
 	//Shutdown DX11
 	CleanUp();
 }
 
-bool 
+bool
 DX11Renderer::Initialise( HWND _hWnd, TSetupStruct* _pSetupData, int _iWindowWidth, int _iWindowHeight )
 {
 	m_pSetupData = _pSetupData;
-	printf("Initialising DirectX11\n");
+	printf( "Initialising DirectX11\n" );
 
-	SetupDirectX11(_hWnd, _iWindowWidth, _iWindowHeight );
-	
-	float fAspectRatio = static_cast<float>(_iWindowWidth) / static_cast<float>(_iWindowHeight);
-	
-	m_pClearColour[0] = 0.01f;
-	m_pClearColour[1] = 0.01f;
-	m_pClearColour[2] = 0.1f;
-	m_pClearColour[3] = 1.0f;
+	SetupDirectX11( _hWnd, _iWindowWidth, _iWindowHeight );
+
+	float fAspectRatio = static_cast<float>( _iWindowWidth ) / static_cast<float>( _iWindowHeight );
+
+	m_pClearColour[ 0 ] = 0.01f;
+	m_pClearColour[ 1 ] = 0.01f;
+	m_pClearColour[ 2 ] = 0.1f;
+	m_pClearColour[ 3 ] = 1.0f;
 
 	return true;
 }
 
-void 
-DX11Renderer::ExecuteOneFrame(Clock* _pClock, float _fDeltaTick)
-{	
-	m_pSwapChain->Present(m_bVSyncEnabled, 0);
+void
+DX11Renderer::ExecuteOneFrame( Clock* _pClock, float _fDeltaTick )
+{
+	m_pSwapChain->Present( m_bVSyncEnabled, 0 );
 }
 
-void 
-DX11Renderer::SetupDirectX11(HWND _hWnd, int _iWindowWidth, int _iWindowHeight )
+void
+DX11Renderer::SetupDirectX11( HWND _hWnd, int _iWindowWidth, int _iWindowHeight )
 {
 	const auto displayFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 
 	IDXGIFactory* factory;
 	IDXGIAdapter* adapter;
 	IDXGIOutput* adapterOutput;
-	
+
 	DXGI_MODE_DESC* displayModeList;
 	DXGI_ADAPTER_DESC adapterDesc;
 
@@ -90,18 +90,18 @@ DX11Renderer::SetupDirectX11(HWND _hWnd, int _iWindowWidth, int _iWindowHeight )
 	D3D11_DEPTH_STENCIL_DESC depthStencilDesc;
 	D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc;
 	D3D11_RASTERIZER_DESC rasterDesc;
-	
+
 	D3D11_VIEWPORT viewport;
 
 	HR( CreateDXGIFactory( __uuidof( IDXGIFactory ), (void**)&factory ) );
 	HR( factory->EnumAdapters( 0, &adapter ) );
 	HR( adapter->EnumOutputs( 0, &adapterOutput ) );
-	
+
 	unsigned numModes;
 	HR( adapterOutput->GetDisplayModeList( displayFormat, DXGI_ENUM_MODES_INTERLACED, &numModes, NULL ) );
-	displayModeList = new DXGI_MODE_DESC[numModes];
+	displayModeList = new DXGI_MODE_DESC[ numModes ];
 	assert( displayModeList );
-	HR( adapterOutput->GetDisplayModeList( displayFormat, DXGI_ENUM_MODES_INTERLACED, &numModes, displayModeList ) );	
+	HR( adapterOutput->GetDisplayModeList( displayFormat, DXGI_ENUM_MODES_INTERLACED, &numModes, displayModeList ) );
 	unsigned numerator;
 	unsigned denominator;
 	for( unsigned i = 0; i < numModes; ++i )
@@ -121,19 +121,19 @@ DX11Renderer::SetupDirectX11(HWND _hWnd, int _iWindowWidth, int _iWindowHeight )
 
 	unsigned stringLength;
 	wcstombs_s( &stringLength, m_videoCardDesc, 128, adapterDesc.Description, 128 );
-	
+
 	SAFEDELETEARRAY( displayModeList );
-	
+
 	adapterOutput->Release();
 	adapter->Release();
 	factory->Release();
-	
+
 	adapterOutput = 0;
 	adapter = 0;
 	factory = 0;
 
 	// Initialise Swap Chain
-	ZeroMemory( &swapChainDesc, sizeof( swapChainDesc) );
+	ZeroMemory( &swapChainDesc, sizeof( swapChainDesc ) );
 	swapChainDesc.BufferCount = 1;
 	swapChainDesc.BufferDesc.Width = _iWindowWidth;
 	swapChainDesc.BufferDesc.Height = _iWindowHeight;
@@ -158,10 +158,16 @@ DX11Renderer::SetupDirectX11(HWND _hWnd, int _iWindowWidth, int _iWindowHeight )
 	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
 	swapChainDesc.Flags = 0;
 
+	// Create device with debug layer for Debug builds
+	UINT creationFlags = 0;
+#ifdef _DEBUG
+	creationFlags |= D3D11_CREATE_DEVICE_DEBUG;
+#endif
+
 	// DEVICE AND SWAP CHAIN
 	featureLevel = D3D_FEATURE_LEVEL_11_0;
-	HR( D3D11CreateDeviceAndSwapChain(	NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, 0, &featureLevel, 1,
-										D3D11_SDK_VERSION, &swapChainDesc, &m_pSwapChain, &m_pDevice, NULL, &m_pDeviceContext ) );
+	HR( D3D11CreateDeviceAndSwapChain( NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, creationFlags, &featureLevel, 1,
+		D3D11_SDK_VERSION, &swapChainDesc, &m_pSwapChain, &m_pDevice, NULL, &m_pDeviceContext ) );
 
 	// Get back buffer texture
 	HR( m_pSwapChain->GetBuffer( 0, __uuidof( ID3D11Texture2D ), (LPVOID*)&backBufferPtr ) );
@@ -234,6 +240,29 @@ DX11Renderer::SetupDirectX11(HWND _hWnd, int _iWindowWidth, int _iWindowHeight )
 	rasterDesc.ScissorEnable = false;
 	rasterDesc.SlopeScaledDepthBias = 0.0f;
 
+	// BLEND STATES
+	m_pBlendStates = new ID3D11BlendState*[ BLEND_MAX ];
+
+	D3D11_BLEND_DESC tBlendState;
+	ZeroMemory( &tBlendState, sizeof( D3D11_BLEND_DESC ) );
+	tBlendState.RenderTarget[ 0 ].BlendEnable = FALSE;
+	tBlendState.RenderTarget[ 0 ].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+	tBlendState.RenderTarget[ 0 ].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+	tBlendState.RenderTarget[ 0 ].BlendOp = D3D11_BLEND_OP_ADD;
+	tBlendState.RenderTarget[ 0 ].SrcBlendAlpha = D3D11_BLEND_ONE;
+	tBlendState.RenderTarget[ 0 ].DestBlendAlpha = D3D11_BLEND_ZERO;
+	tBlendState.RenderTarget[ 0 ].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+	tBlendState.RenderTarget[ 0 ].RenderTargetWriteMask = 0x0f;
+	tBlendState.AlphaToCoverageEnable = FALSE;
+
+	m_pDevice->CreateBlendState( &tBlendState, &m_pBlendStates[ BLEND_SOLID ] );
+	tBlendState.RenderTarget[ 0 ].BlendEnable = TRUE;
+	m_pDevice->CreateBlendState( &tBlendState, &m_pBlendStates[ BLEND_TRANSPARENT ] );
+	tBlendState.AlphaToCoverageEnable = TRUE;
+	m_pDevice->CreateBlendState( &tBlendState, &m_pBlendStates[ BLEND_ALPHATOCOVERAGE ] );
+
+	SetBlendState( BLEND_TRANSPARENT );
+
 	// Create the rasterizer state from the description we just filled out.
 	HR( m_pDevice->CreateRasterizerState( &rasterDesc, &m_pRasterState ) );
 
@@ -254,57 +283,64 @@ DX11Renderer::SetupDirectX11(HWND _hWnd, int _iWindowWidth, int _iWindowHeight )
 
 }
 
-void 
+void
 DX11Renderer::CleanUp()
 {
-	if (m_pSwapChain)
+	if( m_pSwapChain )
 	{
-		m_pSwapChain->SetFullscreenState(false, NULL);
+		m_pSwapChain->SetFullscreenState( false, NULL );
 	}
 
 	//Release DX11 stuff
-	//for (int iBlendState = 0; iBlendState < BLEND_MAX; ++iBlendState)
-	//{
-	//	ReleaseCOM(m_pBlendStates[0]);
-	//}
-	//SAFEDELETEARRAY(m_pBlendStates);
+	if( m_pBlendStates != nullptr )
+	{
+		for( int iBlendState = 0; iBlendState < BLEND_MAX; ++iBlendState )
+		{
+			ReleaseCOM( m_pBlendStates[ 0 ] );
+		}
+		SAFEDELETEARRAY( m_pBlendStates );
+	}
 
-	ReleaseCOM(m_pDepthShaderResource);
-	ReleaseCOM(m_pDepthStencilView);
-	ReleaseCOM(m_pDepthStencilState);
-	ReleaseCOM(m_pDepthStencilBuffer);
-	ReleaseCOM(m_pRenderTargetView);
-	ReleaseCOM(m_pDeviceContext);
-	ReleaseCOM(m_pDevice);
-	ReleaseCOM(m_pSwapChain);
+	ReleaseCOM( m_pDepthShaderResource );
+	ReleaseCOM( m_pDepthStencilView );
+	ReleaseCOM( m_pDepthStencilState );
+	ReleaseCOM( m_pDepthStencilBuffer );
+	ReleaseCOM( m_pRenderTargetView );
+	ReleaseCOM( m_pDeviceContext );
+	ReleaseCOM( m_pDevice );
+	ReleaseCOM( m_pSwapChain );
 }
 
-//void
-//CDirectXRenderer::PrepareLastScene()
-//{
-//	m_pDeviceContext->ClearRenderTargetView(m_pRenderTargetView, m_pClearColour);
-//	m_pDeviceContext->ClearDepthStencilView(m_pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
-//
-//	m_pDeviceContext->OMSetRenderTargets(1, &m_pRenderTargetView, m_pDepthStencilView);
-//}
-//ID3D11RenderTargetView*
-//CDirectXRenderer::GetRenderTargetView()
-//{
-//	return m_pRenderTargetView;
-//}
-//ID3D11DepthStencilView*
-//CDirectXRenderer::GetDepthStencilView()
-//{
-//	return m_pDepthStencilView;
-//}
-//ID3D11ShaderResourceView*
-//CDirectXRenderer::GetDepthSRV()
-//{
-//	return m_pDepthShaderResource;
-//}
-void 
-DX11Renderer::SetBlendState(EBlendTypes _eBlendType)
+void
+DX11Renderer::PrepareLastScene()
 {
-	float fBlendFactor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-	m_pDeviceContext->OMSetBlendState(m_pBlendStates[_eBlendType], fBlendFactor, 0xffffffff);
+	m_pDeviceContext->ClearRenderTargetView( m_pRenderTargetView, m_pClearColour );
+	m_pDeviceContext->ClearDepthStencilView( m_pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0 );
+
+	m_pDeviceContext->OMSetRenderTargets( 1, &m_pRenderTargetView, m_pDepthStencilView );
+}
+
+ID3D11RenderTargetView*
+DX11Renderer::GetRenderTargetView()
+{
+	return m_pRenderTargetView;
+}
+
+ID3D11DepthStencilView*
+DX11Renderer::GetDepthStencilView()
+{
+	return m_pDepthStencilView;
+}
+
+ID3D11ShaderResourceView*
+DX11Renderer::GetDepthSRV()
+{
+	return m_pDepthShaderResource;
+}
+
+void
+DX11Renderer::SetBlendState( EBlendTypes _eBlendType )
+{
+	float fBlendFactor[ 4 ] = {0.0f, 0.0f, 0.0f, 0.0f};
+	m_pDeviceContext->OMSetBlendState( m_pBlendStates[ _eBlendType ], fBlendFactor, 0xffffffff );
 }

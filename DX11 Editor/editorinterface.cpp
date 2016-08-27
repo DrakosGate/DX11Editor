@@ -22,32 +22,32 @@
 
 /**
 *
-* CEditorInterface class constructor
+* EditorInterface class constructor
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
 *
 */
-CEditorInterface::CEditorInterface()
+EditorInterface::EditorInterface()
 : m_bIsActive(false)
-, m_pWindowColours(0)
-, m_pDraggedWindow(0)
-, m_pFileOpenDialog(0)
-, m_pFileSaveDialog(0)
-, m_pCurrentLevel(0)
+, m_pWindowColours( nullptr )
+, m_pDraggedWindow( nullptr )
+, m_pFileOpenDialog( nullptr )
+, m_pFileSaveDialog( nullptr )
+, m_pCurrentLevel( nullptr )
 {
 
 }
 
 /**
 *
-* CEditorInterface class destructor
+* EditorInterface class destructor
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
 *
 */
-CEditorInterface::~CEditorInterface()
+EditorInterface::~EditorInterface()
 {
 	if (m_pWindowColours)
 	{
@@ -70,7 +70,7 @@ CEditorInterface::~CEditorInterface()
 }
 /**
 *
-* CEditorInterface class Initialise
+* EditorInterface class Initialise
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -79,7 +79,7 @@ CEditorInterface::~CEditorInterface()
 *
 */
 bool 
-CEditorInterface::Initialise(HWND _hWindow, CLevel* _pLevel)
+EditorInterface::Initialise(HWND _hWindow, Level* _pLevel)
 {
 	m_pWindowColours = new Math::Colour[WINDOWSTATE_MAX];
 	m_pWindowColours[WINDOWSTATE_OPEN] = Math::Colour(1.0f, 1.0f, 1.0f, 0.8f);
@@ -94,20 +94,20 @@ CEditorInterface::Initialise(HWND _hWindow, CLevel* _pLevel)
 }
 /**
 *
-* CEditorInterface class Process function
+* EditorInterface class Process function
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
 *
 */
 void 
-CEditorInterface::Process(float _fDeltaTime)
+EditorInterface::Process(float _fDeltaTime)
 {
 	
 }
 /**
 *
-* CEditorInterface class Get the state of the Editor
+* EditorInterface class Get the state of the Editor
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -115,13 +115,13 @@ CEditorInterface::Process(float _fDeltaTime)
 *
 */
 EEditorState
-CEditorInterface::GetEditorState() const
+EditorInterface::GetEditorState() const
 {
 	return m_eEditorState;
 }
 /**
 *
-* CEditorInterface class Gets the selected prefab
+* EditorInterface class Gets the selected prefab
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -129,13 +129,13 @@ CEditorInterface::GetEditorState() const
 *
 */
 std::string&
-CEditorInterface::GetSelectedPrefab()
+EditorInterface::GetSelectedPrefab()
 {
 	return m_pcNextObjectCreated;
 }
 /**
 *
-* CEditorInterface class Switches the editor interface on and off
+* EditorInterface class Switches the editor interface on and off
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -143,7 +143,7 @@ CEditorInterface::GetSelectedPrefab()
 *
 */
 void
-CEditorInterface::ToggleEditor(bool _bIsActive)
+EditorInterface::ToggleEditor(bool _bIsActive)
 {
 	m_bIsActive = _bIsActive;
 	//Set activity of all windows
@@ -161,27 +161,27 @@ CEditorInterface::ToggleEditor(bool _bIsActive)
 }
 /**
 *
-* CEditorInterface class Returns whether the editor is active or not
+* EditorInterface class Returns whether the editor is active or not
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
 *
 */
 bool 
-CEditorInterface::IsActive() const
+EditorInterface::IsActive() const
 {
 	return m_bIsActive;
 }
 /**
 *
-* KEY AREA: CEditorInterface class Opens the "Load level" dialog box and tells the Level class to load the selected level from file
+* KEY AREA: EditorInterface class Opens the "Load level" dialog box and tells the Level class to load the selected level from file
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
 *
 */
 void
-CEditorInterface::LoadLevel(ID3D11Device* _pDevice)
+EditorInterface::LoadLevel(ID3D11Device* _pDevice)
 {
 	HRCheck( CoCreateInstance(	CLSID_FileOpenDialog,
 								NULL,
@@ -207,7 +207,7 @@ CEditorInterface::LoadLevel(ID3D11Device* _pDevice)
 		size_t iReturnSize = 0;
 		char* pcName = new char[iStrLength + 1];
 		const wchar_t* pwName = pName;
-		wcsrtombs_s(&iReturnSize, pcName, sizeof(char) * (iStrLength + 1), &pwName, iStrLength, std::mbstate_t());
+		wcsrtombs_s(&iReturnSize, pcName, sizeof(char) * (iStrLength + 1), &pwName, iStrLength, &std::mbstate_t());
 		pcName[iStrLength] = '\0';
 		MessageBox(NULL, pName, L"File Chosen:", MB_OK);
 		m_pCurrentLevel->LoadLevel(_pDevice, pcName);
@@ -218,14 +218,14 @@ CEditorInterface::LoadLevel(ID3D11Device* _pDevice)
 }
 /**
 *
-* KEY AREA: CEditorInterface class Opens the "Save level" dialog box and tells the Level class to save the current level to file
+* KEY AREA: EditorInterface class Opens the "Save level" dialog box and tells the Level class to save the current level to file
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
 *
 */
 void
-CEditorInterface::SaveLevel(ID3D11Device* _pDevice)
+EditorInterface::SaveLevel(ID3D11Device* _pDevice)
 {
 	//Specify file types
 	COMDLG_FILTERSPEC tFileType[] =
@@ -254,7 +254,7 @@ CEditorInterface::SaveLevel(ID3D11Device* _pDevice)
 		size_t iReturnSize = 0;
 		char* pcName = new char[iStrLength + 1];
 		const wchar_t* pwName = pName;
-		wcsrtombs_s(&iReturnSize, pcName, sizeof(char) * (iStrLength + 1), &pwName, iStrLength, std::mbstate_t());
+		wcsrtombs_s(&iReturnSize, pcName, sizeof(char) * (iStrLength + 1), &pwName, iStrLength, &std::mbstate_t());
 		pcName[iStrLength] = '\0';
 		MessageBox(NULL, pName, L"File Chosen:", MB_OK);
 		m_pCurrentLevel->SaveLevel(_pDevice, pcName);
@@ -265,14 +265,14 @@ CEditorInterface::SaveLevel(ID3D11Device* _pDevice)
 }
 /**
 *
-* CEditorInterface class Recreates the vertex and index buffers of the editor interface
+* EditorInterface class Recreates the vertex and index buffers of the editor interface
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
 *
 */
 void 
-CEditorInterface::RefreshBuffers(ID3D11Device* _pDevice)
+EditorInterface::RefreshBuffers(ID3D11Device* _pDevice)
 {
 	if (m_bHasChanged)
 	{
@@ -285,14 +285,14 @@ CEditorInterface::RefreshBuffers(ID3D11Device* _pDevice)
 }
 /**
 *
-* CEditorInterface class Returns true if the mouse position is within the bounds of a button (or window)
+* EditorInterface class Returns true if the mouse position is within the bounds of a button (or window)
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
 *
 */
 bool
-CEditorInterface::HasCollided(Math::Vector2& _rPoint, TButton* _pButton)
+EditorInterface::HasCollided(Math::Vector2& _rPoint, TButton* _pButton)
 {
 	_pButton->vecPosition = _pButton->pForegroundVertex->pos;
 	return (_rPoint.x > _pButton->vecPosition.x &&
@@ -302,16 +302,16 @@ CEditorInterface::HasCollided(Math::Vector2& _rPoint, TButton* _pButton)
 }
 /**
 *
-* KEY AREA: CEditorInterface class Processes a button pressed according to the buttons name
+* KEY AREA: EditorInterface class Processes a button pressed according to the buttons name
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
 *
 */
 void
-CEditorInterface::ProcessButtonPressed(ID3D11Device* _pDevice, TWindow* _pWindow, TButton* _pButton)
+EditorInterface::ProcessButtonPressed(ID3D11Device* _pDevice, TWindow* _pWindow, TButton* _pButton)
 {
-	CAudioPlayer::GetInstance().Play3DSound(SOUND_BUTTONPRESS, Math::Vector3(0.0f, 0.0f, 0.0f));
+	AudioPlayer::GetInstance().Play3DSound(SOUND_BUTTONPRESS, Math::Vector3(0.0f, 0.0f, 0.0f));
 	if (strcmp(_pButton->sName.c_str(), "Close") == 0)
 	{
 		m_eEditorState = EDITOR_CLOSED;
@@ -348,14 +348,14 @@ CEditorInterface::ProcessButtonPressed(ID3D11Device* _pDevice, TWindow* _pWindow
 }
 /**
 *
-* KEY AREA: CEditorInterface class Loads editor data from an XML file
+* KEY AREA: EditorInterface class Loads editor data from an XML file
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
 *
 */
 void 
-CEditorInterface::LoadFromXML(ID3D11Device* _pDevice, CResourceManager* _pResourceManager, CEntityManager* _pEntityManager, char* _pcXMLFilename)
+EditorInterface::LoadFromXML(ID3D11Device* _pDevice, ResourceManager* _pResourceManager, EntityManager* _pEntityManager, char* _pcXMLFilename)
 {
 	int iMaxMessageSize = 128;
 	char* pcBuffer = new char[iMaxMessageSize];
@@ -462,14 +462,14 @@ CEditorInterface::LoadFromXML(ID3D11Device* _pDevice, CResourceManager* _pResour
 }
 /**
 *
-* KEY AREA: CEditorInterface class Adds Prefab Creation Buttons to the current window
+* KEY AREA: EditorInterface class Adds Prefab Creation Buttons to the current window
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
 *
 */
 void
-CEditorInterface::AddPrefabCreationButtons(CEntityManager* _pEntityManager, CResourceManager* _pResourceManager, TWindow* _pWindow, TButton* _pNewPrefabButton)
+EditorInterface::AddPrefabCreationButtons(EntityManager* _pEntityManager, ResourceManager* _pResourceManager, TWindow* _pWindow, TButton* _pNewPrefabButton)
 {
 	int iNumPrefabs = _pEntityManager->GetPrefabCount();
 	TPrefabOptions* pCurrentPrefab = 0;
@@ -503,14 +503,14 @@ CEditorInterface::AddPrefabCreationButtons(CEntityManager* _pEntityManager, CRes
 }
 /**
 *
-* CEditorInterface class AddPointSprite
+* EditorInterface class AddPointSprite
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
 *
 */
 TPointSpriteVertex*
-CEditorInterface::CreatePointSprite(ID3D11Device* _pDevice, Math::Vector3& _rPosition, Math::Vector2& _rScale, Math::Colour& _rColour, float _fRotation, int _iTextureID)
+EditorInterface::CreatePointSprite(ID3D11Device* _pDevice, Math::Vector3& _rPosition, Math::Vector2& _rScale, Math::Colour& _rColour, float _fRotation, int _iTextureID)
 {
 	++m_iVertexCount;
 	++m_iIndexCount;

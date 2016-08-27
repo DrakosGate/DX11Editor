@@ -1,6 +1,7 @@
 
 // Library Includes
 #include <D3D11.h>
+#include <d3dcompiler.h>
 //#include <D3DX11.h>
 
 // Local Includes
@@ -23,13 +24,13 @@
 
 /**
 *
-* CShader class constructor
+* Shader class constructor
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
 *
 */
-CShader::CShader()
+Shader::Shader()
 	: m_pVertexShader( 0 )
 	, m_pPixelShader( 0 )
 	, m_pGeometryShader( 0 )
@@ -39,13 +40,13 @@ CShader::CShader()
 
 /**
 *
-* CShader class destructor
+* Shader class destructor
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
 *
 */
-CShader::~CShader()
+Shader::~Shader()
 {
 	ReleaseCOM( pVertexShaderBuffer );
 	ReleaseCOM( pPixelShaderBuffer );
@@ -61,7 +62,7 @@ CShader::~CShader()
 }
 /**
 *
-* CShader class Initialise
+* Shader class Initialise
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -70,7 +71,7 @@ CShader::~CShader()
 *
 */
 bool
-CShader::Initialise( ID3D11Device* _pDevice )
+Shader::Initialise( ID3D11Device* _pDevice )
 {
 	bool bResult = true;
 
@@ -90,6 +91,8 @@ CShader::Initialise( ID3D11Device* _pDevice )
 	HRCheck( _pDevice->CreateBuffer( &matBufferDesc, NULL, &m_pShaderBuffers[ BUFFER_MATRICES ] ),
 		L"Failed to create Matrix CBUFFER" );
 
+	const auto a = sizeof( Math::Vector3 );
+
 	//Create buffer for lighting
 	lightBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
 	lightBufferDesc.ByteWidth = sizeof( TLightBuffer );
@@ -103,7 +106,7 @@ CShader::Initialise( ID3D11Device* _pDevice )
 	return bResult;
 }
 void
-CShader::CompileVertexShader( ID3D11Device* _pDevice, wchar_t* _pcVSFilename, char* _pcVSFunction )
+Shader::CompileVertexShader( ID3D11Device* _pDevice, wchar_t* _pcVSFilename, char* _pcVSFunction )
 {
 	ID3D10Blob* pErrorMessage;
 	unsigned int iShaderFlags = D3D10_SHADER_ENABLE_STRICTNESS;
@@ -115,17 +118,15 @@ CShader::CompileVertexShader( ID3D11Device* _pDevice, wchar_t* _pcVSFilename, ch
 	if( _pcVSFilename && _pcVSFunction )
 	{
 		//Compile Vertex Shader
-		HRESULT hVSResult = D3DX11CompileFromFile( _pcVSFilename,
+		HRESULT hVSResult = D3DCompileFromFile( _pcVSFilename,
 			NULL,
-			NULL,
+			D3D_COMPILE_STANDARD_FILE_INCLUDE,
 			_pcVSFunction,
 			"vs_5_0",
 			iShaderFlags,
 			0,
-			NULL,
 			&pVertexShaderBuffer,
-			&pErrorMessage,
-			NULL );
+			&pErrorMessage );
 		BlobCheck( hVSResult, pErrorMessage );
 		//Populate buffers
 		HRCheck( _pDevice->CreateVertexShader( pVertexShaderBuffer->GetBufferPointer(), pVertexShaderBuffer->GetBufferSize(), NULL, &m_pVertexShader ),
@@ -133,7 +134,7 @@ CShader::CompileVertexShader( ID3D11Device* _pDevice, wchar_t* _pcVSFilename, ch
 	}
 }
 void
-CShader::CompilePixelShader( ID3D11Device* _pDevice, wchar_t* _pcPSFilename, char* _pcPSFunction )
+Shader::CompilePixelShader( ID3D11Device* _pDevice, wchar_t* _pcPSFilename, char* _pcPSFunction )
 {
 	ID3D10Blob* pErrorMessage;
 	unsigned int iShaderFlags = D3D10_SHADER_ENABLE_STRICTNESS;
@@ -145,17 +146,15 @@ CShader::CompilePixelShader( ID3D11Device* _pDevice, wchar_t* _pcPSFilename, cha
 	if( _pcPSFilename && _pcPSFunction )
 	{
 		//Compile Pixel Shader
-		HRESULT hPSResult = D3DX11CompileFromFile( _pcPSFilename,
+		HRESULT hPSResult = D3DCompileFromFile( _pcPSFilename,
 			NULL,
-			NULL,
+			D3D_COMPILE_STANDARD_FILE_INCLUDE,
 			_pcPSFunction,
 			"ps_5_0",
 			iShaderFlags,
 			0,
-			NULL,
 			&pPixelShaderBuffer,
-			&pErrorMessage,
-			NULL );
+			&pErrorMessage );
 		BlobCheck( hPSResult, pErrorMessage );
 
 		//Populate buffers
@@ -164,7 +163,7 @@ CShader::CompilePixelShader( ID3D11Device* _pDevice, wchar_t* _pcPSFilename, cha
 	}
 }
 void
-CShader::CompileGeometryShader( ID3D11Device* _pDevice, wchar_t* _pcGSFilename, char* _pcGSFunction )
+Shader::CompileGeometryShader( ID3D11Device* _pDevice, wchar_t* _pcGSFilename, char* _pcGSFunction )
 {
 	ID3D10Blob* pErrorMessage;
 	unsigned int iShaderFlags = D3D10_SHADER_ENABLE_STRICTNESS;
@@ -176,17 +175,15 @@ CShader::CompileGeometryShader( ID3D11Device* _pDevice, wchar_t* _pcGSFilename, 
 	if( _pcGSFilename && _pcGSFunction )
 	{
 		//Compile Pixel Shader
-		HRESULT hPSResult = D3DX11CompileFromFile( _pcGSFilename,
+		HRESULT hPSResult = D3DCompileFromFile( _pcGSFilename,
 			NULL,
-			NULL,
+			D3D_COMPILE_STANDARD_FILE_INCLUDE,
 			_pcGSFunction,
 			"gs_5_0",
 			iShaderFlags,
 			0,
-			NULL,
 			&pGeometryShaderBuffer,
-			&pErrorMessage,
-			NULL );
+			&pErrorMessage );
 		BlobCheck( hPSResult, pErrorMessage );
 
 		//Populate buffers
@@ -195,7 +192,7 @@ CShader::CompileGeometryShader( ID3D11Device* _pDevice, wchar_t* _pcGSFilename, 
 	}
 }
 void
-CShader::SendWVPMatrixData( ID3D11DeviceContext* _pDeviceContext, Math::Matrix* _pWorld, Math::Matrix* _pView, Math::Matrix* _pProjection )
+Shader::SendWVPMatrixData( ID3D11DeviceContext* _pDeviceContext, Math::Matrix* _pWorld, Math::Matrix* _pView, Math::Matrix* _pProjection )
 {
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 	TMatBuffer* pMatrixBuffer;
@@ -206,9 +203,9 @@ CShader::SendWVPMatrixData( ID3D11DeviceContext* _pDeviceContext, Math::Matrix* 
 		L"Failed to map Matrix Buffer" );
 
 	pMatrixBuffer = reinterpret_cast<TMatBuffer*>( mappedResource.pData );
-	pMatrixBuffer->matWorld = Math::Transpose( *_pWorld );
-	pMatrixBuffer->matView = Math::Transpose( *_pView );
-	pMatrixBuffer->matProj = Math::Transpose( *_pProjection );
+	pMatrixBuffer->matWorld = Math::MatrixTranspose( *_pWorld ).GetMatrix();
+	pMatrixBuffer->matView  = Math::MatrixTranspose( *_pView ).GetMatrix();
+	pMatrixBuffer->matProj  = Math::MatrixTranspose( *_pProjection ).GetMatrix();
 
 	//Unmap matrix buffer
 	_pDeviceContext->Unmap( m_pShaderBuffers[ BUFFER_MATRICES ], 0 );
@@ -222,7 +219,7 @@ CShader::SendWVPMatrixData( ID3D11DeviceContext* _pDeviceContext, Math::Matrix* 
 	}
 }
 void
-CShader::SendLightInformation( ID3D11DeviceContext* _pDeviceContext, CLightManager* _pLightManager, Camera* _pActiveCamera )
+Shader::SendLightInformation( ID3D11DeviceContext* _pDeviceContext, LightManager* _pLightManager, Camera* _pActiveCamera )
 {
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 	TLightBuffer* pLightData;
@@ -262,22 +259,22 @@ CShader::SendLightInformation( ID3D11DeviceContext* _pDeviceContext, CLightManag
 	_pDeviceContext->PSSetConstantBuffers( 0, 1, &m_pShaderBuffers[ BUFFER_LIGHTING ] );
 }
 ID3D11VertexShader*
-CShader::GetVertexShader() const
+Shader::GetVertexShader() const
 {
 	return m_pVertexShader;
 }
 ID3D11GeometryShader*
-CShader::GetGeometryShader() const
+Shader::GetGeometryShader() const
 {
 	return m_pGeometryShader;
 }
 ID3D11PixelShader*
-CShader::GetPixelShader() const
+Shader::GetPixelShader() const
 {
 	return m_pPixelShader;
 }
 ID3D10Blob*
-CShader::GetShaderBlob() const
+Shader::GetShaderBlob() const
 {
 	return pVertexShaderBuffer;
 }

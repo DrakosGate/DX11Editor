@@ -1,16 +1,15 @@
 
 #pragma once
 
-// WINDOWS DEFINES
-#define WIN32_LEAN_AND_MEAN
-
-// Includes
-#include <Windows.h>
-
 // Local includes
 #include "inputmanager.h"
+#include "datastructures.h"
 
 class IRenderer;
+class DX11Renderer;
+class Clock;
+class Level;
+class ConsoleWindow;
 
 class Engine
 {
@@ -29,13 +28,20 @@ private:
 	void InitialiseWindows( const int _iWidth, const int _iHeight );
 	void ShutdownWindows();
 
+	virtual void ReadProgramSetupFile(char* _pcFilename);
+
 	wchar_t* m_pApplicationName;
 	HINSTANCE m_hInstance;
 	HWND m_hWnd;
 
-	IRenderer* m_pRenderer;
+	DX11Renderer* m_pRenderer;
+	Level* m_pLevel;
 	InputManager* m_inputManager;
 
+	ConsoleWindow* m_pConsoleWindow;
+	TSetupStruct* m_pSetupData;
+	Clock* m_pClock;
+	
 	bool m_bFullscreen;
 	int m_iWindowWidth;
 	int m_iWindowHeight;

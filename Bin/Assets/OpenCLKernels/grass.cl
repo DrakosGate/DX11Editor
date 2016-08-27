@@ -4,11 +4,11 @@ __kernel void ProcessGrass(	__global float4* _pGrassPositions,
 
 							__global float4* _pOutDirections)
 {
-	unsigned int iWidth = get_local_id(0);
+	unsigned int iWidth = get_local_id( nullptr );
 	unsigned int iHeight = get_global_id(1);
 
-	unsigned int iIndex = (iHeight * get_local_size(0)) + iWidth;
-	unsigned int iObstacle = get_group_id(0);
+	unsigned int iIndex = (iHeight * get_local_size( nullptr )) + iWidth;
+	unsigned int iObstacle = get_group_id( nullptr );
 	_pOutDirections[iIndex] = _pGrassDirections[iIndex];
 
 	float fDeltaTime = _pGrassPositions[0].w;

@@ -1,6 +1,6 @@
 //
 //  File Name   :   AIHiveMind.cpp
-//  Description :   Code for CAIHiveMind 
+//  Description :   Code for AIHiveMind 
 //  Author      :   Christopher Howlett
 //  Mail        :   drakos_gate@yahoo.com
 //
@@ -14,7 +14,7 @@
 #include "pointsprite.h"
 #include "entitymanager.h"
 #include "threadpool.h"
-#include "aiclkernel.h"
+//#include "aiclkernel.h"
 #include "openclcontext.h"
 
 // This Include
@@ -25,15 +25,7 @@
 // Static Function Prototypes
 
 // Implementation
-/**
-*
-* CAIHiveMind class constructor
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-*
-*/
-CAIHiveMind::CAIHiveMind()
+AIHiveMind::AIHiveMind()
 	: m_eProcessingMethod( PROCESSING_SEQUENTIAL )
 	, m_pAI( 0 )
 	, m_iNumAI( 0 )
@@ -45,15 +37,8 @@ CAIHiveMind::CAIHiveMind()
 {
 
 }
-/**
-*
-* CAIHiveMind class destructor
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-*
-*/
-CAIHiveMind::~CAIHiveMind()
+
+AIHiveMind::~AIHiveMind()
 {
 	//Delete thread data
 	for( unsigned int iThread = 0; iThread < m_vecThreadData.size(); ++iThread )
@@ -63,11 +48,11 @@ CAIHiveMind::~CAIHiveMind()
 	}
 	m_vecThreadData.clear();
 	m_vecStaticObstacles.clear();
-	if( m_pCLKernel )
-	{
-		delete m_pCLKernel;
-		m_pCLKernel = 0;
-	}
+	//if( m_pCLKernel )
+	//{
+	//	delete m_pCLKernel;
+	//	m_pCLKernel = 0;
+	//}
 	if( m_pNavigationGrid )
 	{
 		delete[] m_pNavigationGrid;
@@ -91,17 +76,9 @@ CAIHiveMind::~CAIHiveMind()
 		m_pAI = 0;
 	}
 }
-/**
-*
-* CAIHiveMind class Initialise
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-* @return Returns true
-*
-*/
+
 bool
-CAIHiveMind::Initialise( COpenCLContext* _pCLKernel, int _iAStarDepth )
+AIHiveMind::Initialise( int _iAStarDepth )
 {
 	bool bResult = false;
 	m_iAStarDepth = _iAStarDepth;
@@ -111,23 +88,15 @@ CAIHiveMind::Initialise( COpenCLContext* _pCLKernel, int _iAStarDepth )
 	m_pAIDescriptions[ AI_HUMAN ] = TAIDescription( 1.5f, 2.0f );
 	m_pAIDescriptions[ AI_CHICKEN ] = TAIDescription( 1.0f, 10.5f );
 
-	//KEY AREA: AI pathfinding OpenCL Kernel setup
-	m_pCLKernel = new CAICLKernel();
-	_pCLKernel->LoadProgram( m_pCLKernel->GetCLProgram(), m_pCLKernel->GetCLKernel(), "Assets/OpenCLKernels/ai.cl", "ProcessAI" );
+	// AI pathfinding OpenCL Kernel setup
+	//m_pCLKernel = new AICLKernel();
+	//_pCLKernel->LoadProgram( m_pCLKernel->GetCLProgram(), m_pCLKernel->GetCLKernel(), "Assets/OpenCLKernels/ai.cl", "ProcessAI" );
 
 	return true;
 }
-/**
-*
-* CAIHiveMind class Process
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-* @param _fDeltaTime Game time elapsed
-*
-*/
+
 void
-CAIHiveMind::Process( COpenCLContext* _pCLKernel, CThreadPool* _pThreadPool, float _fDeltaTime )
+AIHiveMind::Process( ThreadPool* _pThreadPool, float _fDeltaTime )
 {
 	switch( m_eProcessingMethod )
 	{
@@ -141,15 +110,15 @@ CAIHiveMind::Process( COpenCLContext* _pCLKernel, CThreadPool* _pThreadPool, flo
 		}
 		break;
 	}
-	case PROCESSING_OPENCL:
-	{
-		ProcessOpenCLKernel( _pCLKernel, _fDeltaTime );
-		for( int iAI = 0; iAI < m_iNumAI; ++iAI )
-		{
-			ProcessIndividualAIController( iAI, _fDeltaTime );
-		}
-		break;
-	}
+	//case PROCESSING_OPENCL:
+	//{
+	//	ProcessOpenCLKernel( _pCLKernel, _fDeltaTime );
+	//	for( int iAI = 0; iAI < m_iNumAI; ++iAI )
+	//	{
+	//		ProcessIndividualAIController( iAI, _fDeltaTime );
+	//	}
+	//	break;
+	//}
 	case PROCESSING_THREADPOOL:
 	{
 		for( int iAI = 0; iAI < m_iNumAI; ++iAI )
@@ -164,7 +133,7 @@ CAIHiveMind::Process( COpenCLContext* _pCLKernel, CThreadPool* _pThreadPool, flo
 	};
 	//std::function<void(void*)> aiFunction = ThreadedAI;
 	//ProcessOpenCLKernel(_fDeltaTime);
-	////	std::function<void(CAIHiveMind&, int, float)> aiFunction = &CAIHiveMind::ProcessIndividualAIController;
+	////	std::function<void(AIHiveMind&, int, float)> aiFunction = &AIHiveMind::ProcessIndividualAIController;
 	//for (int iAI = 0; iAI < m_iNumAI; ++iAI)
 	//{
 	//	//	//aiFunction = std::function<void(int, float)>(ProcessIndividualAIController(iAI, _fDeltaTime));
@@ -173,31 +142,15 @@ CAIHiveMind::Process( COpenCLContext* _pCLKernel, CThreadPool* _pThreadPool, flo
 	//	//	//_pThreadPool->AddJobToPool(aiFunction, &TAIThreadData(this, iAI, _fDeltaTime));
 	//}
 }
-/**
-*
-* CAIHiveMind class Processes an individual AI controller based on the Index given
-* (Task ID : n / a)
-*
-* @author Christopher Howlett
-* @param _fDeltaTime Game time elapsed
-*
-*/
+
 void
-CAIHiveMind::ProcessIndividualAIMovement( int _iAIIndex, float _fDeltaTime )
+AIHiveMind::ProcessIndividualAIMovement( int _iAIIndex, float _fDeltaTime )
 {
 	m_pAI[ _iAIIndex ]->ProcessWaypointMovement( _fDeltaTime );
 }
-/**
-*
-* CAIHiveMind class Processes an individual AI controller based on the Index given
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-* @param _fDeltaTime Game time elapsed
-*
-*/
+
 void
-CAIHiveMind::ProcessIndividualAIController( int _iAIIndex, float _fDeltaTime )
+AIHiveMind::ProcessIndividualAIController( int _iAIIndex, float _fDeltaTime )
 {
 	Math::Vector3 vecAvoidance;
 	vecAvoidance *= 0.0f;
@@ -218,44 +171,28 @@ CAIHiveMind::ProcessIndividualAIController( int _iAIIndex, float _fDeltaTime )
 	vecAvoidance.y = 0.0f;
 	m_pAI[ _iAIIndex ]->Process( _fDeltaTime, vecAvoidance );
 }
-/**
-*
-* CAIHiveMind class Sends data, processes calculation and receives data from OpenCL
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-* @param _fDeltaTime Game time elapsed since last frame
-*
-*/
+
+//void
+//AIHiveMind::ProcessOpenCLKernel( float _fDeltaTime )
+//{
+//	//m_pCLKernel->SendDataToGPU( _pCLKernel, this, _fDeltaTime );
+//	//_pCLKernel->Run( m_pCLKernel->GetCLKernel() );
+//	//m_pCLKernel->RetrieveOpenCLResults( _pCLKernel, this );
+//}
+
 void
-CAIHiveMind::ProcessOpenCLKernel( COpenCLContext* _pCLKernel, float _fDeltaTime )
-{
-	m_pCLKernel->SendDataToGPU( _pCLKernel, this, _fDeltaTime );
-	_pCLKernel->Run( m_pCLKernel->GetCLKernel() );
-	m_pCLKernel->RetrieveOpenCLResults( _pCLKernel, this );
-}
-/**
-*
-* CAIHiveMind class AddAI
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-* @param _pEntity New AI added
-*
-*/
-void
-CAIHiveMind::AddAI( RenderEntity* _pEntity, EAIType _eAIType )
+AIHiveMind::AddAI( RenderEntity* _pEntity, EAIType _eAIType )
 {
 	++m_iNumAI;
-	CAIController** pOldArray = m_pAI;
-	m_pAI = new CAIController*[ m_iNumAI ];
+	AIController** pOldArray = m_pAI;
+	m_pAI = new AIController*[ m_iNumAI ];
 	for( int iAI = 0; iAI < m_iNumAI - 1; ++iAI )
 	{
 		m_pAI[ iAI ] = pOldArray[ iAI ];
 	}
 	//Add new AI
 	TAIDescription* pThisAI = &m_pAIDescriptions[ _eAIType ];
-	m_pAI[ m_iNumAI - 1 ] = new CAIController();
+	m_pAI[ m_iNumAI - 1 ] = new AIController();
 	m_pAI[ m_iNumAI - 1 ]->Initialise( this, _pEntity, pThisAI->fMovementSpeed, pThisAI->fRotationSpeed );
 	m_pAI[ m_iNumAI - 1 ]->SetAIType( _eAIType );
 
@@ -264,34 +201,18 @@ CAIHiveMind::AddAI( RenderEntity* _pEntity, EAIType _eAIType )
 	delete[] pOldArray;
 	pOldArray = 0;
 }
-/**
-*
-* CAIHiveMind class AddStaticObject Adds a new static object in the scene
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-* @param _rPos Position of static object
-* @param _fRadius Radius of static object
-*
-*/
+
 void
-CAIHiveMind::AddStaticObject( ID3D11Device* _pDevice, RenderEntity* _pObject )
+AIHiveMind::AddStaticObject( ID3D11Device* _pDevice, RenderEntity* _pObject )
 {
 	m_vecStaticObstacles.push_back( _pObject );
 	//Check navigation grid for grid sections in range of this obstacle
 
 	RecalculateNavGrid( _pDevice );
 }
-/**
-*
-* CAIHiveMind class Creates a navigation grid object and model
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-*
-*/
+
 void
-CAIHiveMind::CreateNavigationGrid( ID3D11Device* _pDevice, CEntityManager* _pEntityManager, CShader* _pShader, float _fGridScale, int _iWidth, int _iHeight )
+AIHiveMind::CreateNavigationGrid( ID3D11Device* _pDevice, EntityManager* _pEntityManager, Shader* _pShader, float _fGridScale, int _iWidth, int _iHeight )
 {
 	m_iWidth = _iWidth;
 	m_iHeight = _iHeight;
@@ -299,7 +220,7 @@ CAIHiveMind::CreateNavigationGrid( ID3D11Device* _pDevice, CEntityManager* _pEnt
 
 	m_iGridSize = _iWidth * _iHeight;
 	m_pNavigationGrid = new TGridNode[ m_iGridSize ];
-	m_pNavigationGridMesh = new CPointSprite();
+	m_pNavigationGridMesh = new PointSprite();
 	m_pNavigationGridMesh->SetObjectShader( _pShader );
 	m_pNavigationGridMesh->SetRadius( FLT_MAX );
 
@@ -338,16 +259,9 @@ CAIHiveMind::CreateNavigationGrid( ID3D11Device* _pDevice, CEntityManager* _pEnt
 	}
 	_pEntityManager->AddEntity( m_pNavigationGridMesh, SCENE_DEBUG );
 }
-/**
-*
-* CAIHiveMind class Returns a random waypoint
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-*
-*/
+
 Math::Vector3&
-CAIHiveMind::GetRandomWaypoint() const
+AIHiveMind::GetRandomWaypoint() const
 {
 	bool bActivePositionFound = false;
 	int iRandomIndex = 0;
@@ -358,17 +272,9 @@ CAIHiveMind::GetRandomWaypoint() const
 	}
 	return ( m_pNavigationGrid[ iRandomIndex ].vecPosition );
 }
-/**
-*
-* CAIHiveMind class Returns the next A* waypoint
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-* @return
-*
-*/
+
 Math::Vector3*
-CAIHiveMind::GetNextWaypoint( Math::Vector3& _rVecTarget, int& _iCurrentWaypoint )
+AIHiveMind::GetNextWaypoint( Math::Vector3& _rVecTarget, int& _iCurrentWaypoint )
 {
 	float fBestValue = FLT_MAX;
 	int iBestWaypoint = 0;
@@ -419,16 +325,9 @@ CAIHiveMind::GetNextWaypoint( Math::Vector3& _rVecTarget, int& _iCurrentWaypoint
 	_iCurrentWaypoint = iBestWaypoint;
 	return ( &m_pNavigationGrid[ _iCurrentWaypoint ].vecPosition );
 }
-/**
-*
-* CAIHiveMind class Calculates the value of the current node using A*
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-*
-*/
+
 float
-CAIHiveMind::GetAStarNodeValue( TGridNode* _pCurrentNode, TGridNode* _pPreviousNode, Math::Vector3& _rVecTarget, int _iTreeDepth )
+AIHiveMind::GetAStarNodeValue( TGridNode* _pCurrentNode, TGridNode* _pPreviousNode, Math::Vector3& _rVecTarget, int _iTreeDepth )
 {
 	//KEY AREA: Find A* values for a specific node
 	float fChildValue = 0.0f;
@@ -491,86 +390,39 @@ CAIHiveMind::GetAStarNodeValue( TGridNode* _pCurrentNode, TGridNode* _pPreviousN
 
 	return ( fNodeValue + fChildValue );
 }
-/**
-*
-* CAIHiveMind class Returns a pointer to the navigation grid
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-* @return Returns the navigation grid
-*
-*/
+
 TGridNode*
-CAIHiveMind::GetNavigationGrid()
+AIHiveMind::GetNavigationGrid()
 {
 	return m_pNavigationGrid;
 }
-/**
-*
-* CAIHiveMind class Returns the specified AI controller
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-* @return Returns the AI controller
-*
-*/
-CAIController*
-CAIHiveMind::GetAI( int _iIndex ) const
+
+AIController*
+AIHiveMind::GetAI( int _iIndex ) const
 {
 	return m_pAI[ _iIndex ];
 }
-/**
-*
-* CAIHiveMind class Returns the size of the navigation grid
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-* @return Returns the grid size
-*
-*/
+
 int
-CAIHiveMind::GetNavigationGridSize() const
+AIHiveMind::GetNavigationGridSize() const
 {
 	return m_iGridSize;
 }
-/**
-*
-* CAIHiveMind class Returns the number of AI controllers
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-* @return Returns the AI controller count
-*
-*/
+
 int
-CAIHiveMind::GetAICount() const
+AIHiveMind::GetAICount() const
 {
 	return m_iNumAI;
 }
-/**
-*
-* CAIHiveMind class Returns a struct defining a specific AI
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-* @return Returns the AI description struct
-*
-*/
+
 TAIDescription&
-CAIHiveMind::GetAIDesc( EAIType _eAIType )
+AIHiveMind::GetAIDesc( EAIType _eAIType )
 {
 	return m_pAIDescriptions[ _eAIType ];
 }
-/**
-*
-* CAIHiveMind class Clears the hivemind of all controllers and obstacles
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-*
-*/
+
 void
-CAIHiveMind::ClearHivemind()
+AIHiveMind::ClearHivemind()
 {
 	if( m_pAI )
 	{
@@ -585,31 +437,15 @@ CAIHiveMind::ClearHivemind()
 	}
 	m_vecStaticObstacles.clear();
 }
-/**
-*
-* CAIHiveMind class Change the processing method used for AI calculation
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-* @param _eProcessingMethod Processing method
-*
-*/
+
 void
-CAIHiveMind::ChangeProcessingMethod( EProcessingMethod _eProcessingMethod )
+AIHiveMind::ChangeProcessingMethod( EProcessingMethod _eProcessingMethod )
 {
 	m_eProcessingMethod = _eProcessingMethod;
 }
-/**
-*
-* CAIHiveMind class Recalculates the navigation grid (usually called after changes have been made)
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-* @param _pDevice DX11 Device
-*
-*/
+
 void
-CAIHiveMind::RecalculateNavGrid( ID3D11Device* _pDevice )
+AIHiveMind::RecalculateNavGrid( ID3D11Device* _pDevice )
 {
 	Math::Colour deactiveColour( 1.5f, 0.1f, 0.1f, 0.5f );
 	Math::Colour lineColour( 0.2f, 0.2f, 0.8f, 0.2f );

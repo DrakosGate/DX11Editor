@@ -1,5 +1,5 @@
 //
-//  File Name   :   CAudioPlayer.h
+//  File Name   :   AudioPlayer.h
 //  Description :   Class of CParticleSystem
 //  Author      :   Christopher Howlett
 //  Mail        :   drakos_gate@yahoo.com
@@ -30,11 +30,11 @@ enum E3DSoundType
 
 // Prototypes
 
-class CAudioPlayer	//			SINGLETON
+class AudioPlayer	//			SINGLETON
 {
 	//Member functions
 public:
-	virtual ~CAudioPlayer();
+	virtual ~AudioPlayer();
 
 	virtual bool Initialise( bool _bLoadSounds = true );
 	virtual void LoadSounds();
@@ -44,17 +44,17 @@ public:
 	virtual void SetListenerPosition( Math::Vector3& _rVecListenerPos, Math::Vector3& _rVecForward, Math::Vector3& _rVecUp );
 
 	//Singleton Methods
-	static CAudioPlayer& GetInstance();
+	static AudioPlayer& GetInstance();
 	static void DestroyInstance();
 
 private:
-	CAudioPlayer();
-	CAudioPlayer( const CAudioPlayer& _krInstanceToCopy );
-	const CAudioPlayer& operator =( const CAudioPlayer& _krInstanceToCopy );
+	AudioPlayer();
+	AudioPlayer( const AudioPlayer& _krInstanceToCopy );
+	const AudioPlayer& operator =( const AudioPlayer& _krInstanceToCopy );
 
 	//Member variables
 protected:
-	static CAudioPlayer* s_pAudio;
+	static AudioPlayer* s_pAudio;
 
 	FMOD::System* m_pFMod;
 	FMOD::Channel* m_pChannel;

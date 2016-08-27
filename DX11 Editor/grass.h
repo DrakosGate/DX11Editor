@@ -22,21 +22,21 @@
 // Constants
 
 // Prototypes
-class CGrassCLKernel;
-class COpenCLContext;
-class CResourceManager;
-class CNetwork;
+//class CGrassCLKernel;
+class OpenCLContext;
+class ResourceManager;
+class Network;
 
-class CGrass : public Model
+class Grass : public Model
 {
 	//Member functions
 public:
-	CGrass();
-	virtual ~CGrass();
-	bool Initialise(ID3D11Device* _pDevice, COpenCLContext* _pCLKernel, CResourceManager* _pResourceManager, int _iGrassDimensions, float _fScale, Math::Vector2& _rVecTiling, Math::Colour& _rColour, int _iProcessingDivisionSize);
+	Grass();
+	virtual ~Grass();
+	bool Initialise(ID3D11Device* _pDevice, ResourceManager* _pResourceManager, int _iGrassDimensions, float _fScale, Math::Vector2& _rVecTiling, Math::Colour& _rColour, int _iProcessingDivisionSize);
 	
 	void ProcessDistrubuted(float _fDeltaTime);
-	void ProcessOpenCL(COpenCLContext* _pCLKernel, float _fDeltaTime);
+	void ProcessOpenCL(float _fDeltaTime);
 	void SendCollisionData(std::vector<RenderEntity*>* _pCollisionObjects);
 	void ProcessGrassSection(int _iSection, float _fDeltaTime);
 	void RecreateGrassMesh(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDeviceContext, Math::Vector3& _rCameraPos, std::vector<RenderEntity*>& _pEntities, float _fDeltaTime);
@@ -45,10 +45,10 @@ public:
 
 	//Member variables
 protected:
-	CNetwork* m_pNetwork;
+	Network* m_pNetwork;
 
 	std::vector<RenderEntity*>* m_pCollisionObjects;
-	CGrassCLKernel* m_pGrassCLKernel;
+	//CGrassCLKernel* m_pGrassCLKernel;
 	Math::Vector3* m_pGrassVelocities;
 
 	float m_fGrassSpeed;

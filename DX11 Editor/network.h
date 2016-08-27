@@ -1,6 +1,6 @@
 //
 //  File Name   :   network.h
-//  Description :   Class of CNetwork
+//  Description :   Class of Network
 //  Author      :   Christopher Howlett
 //  Mail        :   drakos_gate@yahoo.com
 //
@@ -17,6 +17,7 @@
 
 // Local Includes
 #include "defines.h"
+#include "renderentity.h"
 #include "networkdefines.h"
 
 // Types
@@ -24,43 +25,43 @@
 // Constants
 
 // Prototypes
-class CGrass;
-class CAIHiveMind;
+class Grass;
+class AIHiveMind;
 
-class CNetwork	//			SINGLETON
+class Network	//			SINGLETON
 {
 	//Member functions
 public:
-	virtual ~CNetwork();
+	virtual ~Network();
 
-	bool Initialise(CGrass* _pGrass, CAIHiveMind* _pHivemind);
+	bool Initialise( Grass* _pGrass, AIHiveMind* _pHivemind );
 	void CreateServer();
 
-	void Process(float _fDeltaTime);
+	void Process( float _fDeltaTime );
 	void Listen();
-	void SendData(void* _pData, EMessageType _eMessageType, size_t _iSize, sockaddr_in* _pClient);
+	void SendData( void* _pData, EMessageType _eMessageType, size_t _iSize, sockaddr_in* _pClient );
 
 	//Distributed functions
-	void ProcessNetMessage(TMessage* _pMessage, sockaddr_in* _pSourceClient);
-	void ProcessGrass(float _fDeltaTime);
-	void ProcessAI(float _fDeltaTime);
-	void SendGrassData(CGrass* _pGrass, std::vector<RenderEntity*>* _pCollisionObjects);
+	void ProcessNetMessage( TMessage* _pMessage, sockaddr_in* _pSourceClient );
+	void ProcessGrass( float _fDeltaTime );
+	void ProcessAI( float _fDeltaTime );
+	void SendGrassData( Grass* _pGrass, std::vector< RenderEntity* >* _pCollisionObjects );
 
 	//Singleton Methods
-	static CNetwork* GetInstance();
+	static Network* GetInstance();
 	static void DestroyInstance();
 
 private:
-	CNetwork();
-	CNetwork(const CNetwork& _krInstanceToCopy);
-	const CNetwork& operator =(const CNetwork& _krInstanceToCopy);
+	Network();
+	Network( const Network& _krInstanceToCopy );
+	const Network& operator =( const Network& _krInstanceToCopy );
 
 	//Member variables
 protected:
-	static CNetwork* s_pNetInstance;
+	static Network* s_pNetInstance;
 	std::vector<TClientData*> m_vecClients;
 	TNetGrassData* m_pGrassData;
-	
+
 	SOCKET m_sServerSocket;
 	struct sockaddr_in m_tServer;
 	struct sockaddr_in m_tClient;
@@ -69,8 +70,8 @@ protected:
 
 	std::thread* m_pListenThread;
 
-	CGrass* m_pGrass;
-	CAIHiveMind* m_pHivemind;
+	Grass* m_pGrass;
+	AIHiveMind* m_pHivemind;
 	bool m_bIsRunning;
 };
 

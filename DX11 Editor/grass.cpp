@@ -1,6 +1,6 @@
 //
 //  File Name   :   grass.cpp
-//  Description :   Code for class CGrass
+//  Description :   Code for class Grass
 //  Author      :   Christopher Howlett
 //  Mail        :   drakos_gate@yahoo.com
 //
@@ -22,17 +22,9 @@
 // Static Function Prototypes
 
 // Implementation
-/**
-*
-* CGrass class constructor
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-*
-*/
-CGrass::CGrass()
+Grass::Grass()
 	: m_pCollisionObjects( 0 )
-	, m_pGrassCLKernel( 0 )
+	//, m_pGrassCLKernel( 0 )
 	, m_pGrassVelocities( 0 )
 	, m_pNetwork( 0 )
 {
@@ -40,32 +32,14 @@ CGrass::CGrass()
 	m_fGrassStiffness = 1.0f;
 }
 
-/**
-*
-* CGrass class destructor
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-*
-*/
-CGrass::~CGrass()
+Grass::~Grass()
 {
-	SAFEDELETE( m_pGrassCLKernel );
+	//SAFEDELETE( m_pGrassCLKernel );
 	SAFEDELETEARRAY( m_pGrassVelocities );
 }
-/**
-*
-* CGrass class Initialise
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-* @param _pDevice DirectX 10 device
-* @param _pResourceManager Resource manager
-* @return Returns true
-*
-*/
+
 bool
-CGrass::Initialise( ID3D11Device* _pDevice, COpenCLContext* _pCLKernel, CResourceManager* _pResourceManager, int _iGrassDimensions, float _fScale, Math::Vector2& _rVecTiling, Math::Colour& _rColour, int _iProcessingDivisionSize )
+Grass::Initialise( ID3D11Device* _pDevice, ResourceManager* _pResourceManager, int _iGrassDimensions, float _fScale, Math::Vector2& _rVecTiling, Math::Colour& _rColour, int _iProcessingDivisionSize )
 {
 	m_iGrassDimensions = _iGrassDimensions;
 	LoadTerrain( _pDevice, _iGrassDimensions, _iGrassDimensions, _fScale, _rVecTiling, _rColour );
@@ -96,71 +70,37 @@ CGrass::Initialise( ID3D11Device* _pDevice, COpenCLContext* _pCLKernel, CResourc
 	//KEY AREA: Grass OpenCL Kernel setup
 	m_fGrassSpeed = 30.0f;
 	m_fGrassStiffness = 2.0f;
-	m_pGrassCLKernel = new CGrassCLKernel();
-	m_pGrassCLKernel->CreateBuffers( _pCLKernel, this, m_pCollisionObjects );
-	_pCLKernel->LoadProgram( m_pGrassCLKernel->GetCLProgram(), m_pGrassCLKernel->GetCLKernel(), "Assets/OpenCLKernels/grass.cl", "ProcessGrass" );
+	//m_pGrassCLKernel = new CGrassCLKernel();
+	//m_pGrassCLKernel->CreateBuffers( _pCLKernel, this, m_pCollisionObjects );
+	//_pCLKernel->LoadProgram( m_pGrassCLKernel->GetCLProgram(), m_pGrassCLKernel->GetCLKernel(), "Assets/OpenCLKernels/grass.cl", "ProcessGrass" );
 
-	m_pNetwork = CNetwork::GetInstance();
+	m_pNetwork = Network::GetInstance();
 
 	return true;
 }
-/**
-*
-* CGrass class Process the Distributed pipeline for the grass
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-* @param _fDeltaTime Game time elapsed
-*
-*/
+
 void
-CGrass::ProcessDistrubuted( float _fDeltaTime )
+Grass::ProcessDistrubuted( float _fDeltaTime )
 {
 	m_pNetwork->ProcessGrass( _fDeltaTime );
 }
-/**
-*
-* CGrass class Process the OpenCL pipeline for the grass
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-* @param _pCLKernel OpenCL context
-* @param _fDeltaTime Game time elapsed
-*
-*/
+
 void
-CGrass::ProcessOpenCL( COpenCLContext* _pCLKernel, float _fDeltaTime )
+Grass::ProcessOpenCL( float _fDeltaTime )
 {
-	m_pGrassCLKernel->SendDataToGPU( _pCLKernel, this, m_pCollisionObjects, _fDeltaTime );
-	_pCLKernel->Run( m_pGrassCLKernel->GetCLKernel() );
-	m_pGrassCLKernel->RetrieveOpenCLResults( _pCLKernel, this );
+	//m_pGrassCLKernel->SendDataToGPU( _pCLKernel, this, m_pCollisionObjects, _fDeltaTime );
+	//_pCLKernel->Run( m_pGrassCLKernel->GetCLKernel() );
+	//m_pGrassCLKernel->RetrieveOpenCLResults( _pCLKernel, this );
 }
-/**
-*
-* CGrass class Send the collision data to the grass
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-* @param _pCollisionObjects Vector of collidable objects for the grass
-*
-*/
+
 void
-CGrass::SendCollisionData( std::vector<RenderEntity*>* _pCollisionObjects )
+Grass::SendCollisionData( std::vector<RenderEntity*>* _pCollisionObjects )
 {
 	m_pCollisionObjects = _pCollisionObjects;
 }
-/**
-*
-* CGrass class Processes a section of grass
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-* @param _iSection Section index for the grass
-* @param _fDeltaTime Game time elapsed
-*
-*/
+
 void
-CGrass::ProcessGrassSection( int _iSection, float _fDeltaTime )
+Grass::ProcessGrassSection( int _iSection, float _fDeltaTime )
 {
 	//KEY AREA: Multithreaded grass processing function
 	if( m_pCollisionObjects )
@@ -197,16 +137,9 @@ CGrass::ProcessGrassSection( int _iSection, float _fDeltaTime )
 		}
 	}
 }
-/**
-*
-* CGrass class RecreateGrassMesh offsets grass mesh based on camera position
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-*
-*/
+
 void
-CGrass::RecreateGrassMesh( ID3D11Device* _pDevice, ID3D11DeviceContext* _pDeviceContext, Math::Vector3& _rCameraPos, std::vector<RenderEntity*>& _pEntities, float _fDeltaTime )
+Grass::RecreateGrassMesh( ID3D11Device* _pDevice, ID3D11DeviceContext* _pDeviceContext, Math::Vector3& _rCameraPos, std::vector<RenderEntity*>& _pEntities, float _fDeltaTime )
 {
 	float fHalfScale = m_fModelScale * 0.5f;
 	float fGrassSpringiness = 1.5f;
@@ -262,17 +195,9 @@ CGrass::RecreateGrassMesh( ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevice
 
 	CreateVertexBuffer( _pDevice );
 }
-/**
-*
-* CGrass class Gets the grass DimensionSize
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-* @return Returns dimension size
-*
-*/
+
 int
-CGrass::GetDimensionSize() const
+Grass::GetDimensionSize() const
 {
 	return m_iGrassDimensions;
 }

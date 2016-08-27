@@ -1,5 +1,5 @@
 //
-//  File Name   :   CWindow.h
+//  File Name   :   Window.h
 //  Description :   Class of Window App
 //  Author      :   Christopher Howlett
 //  Mail        :   drakos_gate@yahoo.com
@@ -30,13 +30,13 @@ enum ERendererType
 // Prototypes
 class IRenderer;
 class Clock;
-class CConsoleWindow;
+class ConsoleWindow;
 
-class CWindow
+class Window
 {
 public:
-	CWindow();
-	virtual ~CWindow();
+	Window();
+	virtual ~Window();
 
 	virtual bool Initialise(HINSTANCE _hInstance, ERendererType _eRenderer);
 	void Run();
@@ -52,12 +52,12 @@ public:
 protected:
 	void InitialiseMainWindow();
 private:
-	CWindow(const CWindow& _kr);
-	CWindow& operator= (const CWindow& _rhs);
+	Window(const Window& _kr);
+	Window& operator= (const Window& _rhs);
 
 protected:
 	IRenderer* m_pRenderer;
-	CConsoleWindow* m_pConsoleWindow;
+	ConsoleWindow* m_pConsoleWindow;
 	TSetupStruct* m_pSetupData;
 
 	HINSTANCE m_hInstance;

@@ -1,6 +1,6 @@
 //
 //  File Name   :   threadpool.cpp
-//  Description :   Code for CThreadPool
+//  Description :   Code for ThreadPool
 //  Author      :   Christopher Howlett
 //  Mail        :   drakos_gate@yahoo.com
 //
@@ -39,26 +39,26 @@ void AIProcessingThread(PARAMETER_TYPE _pData, int _iThreadID)
 }
 /**
 *
-* CThreadPool class Constructor
+* ThreadPool class Constructor
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
 *
 */
-CThreadPool::CThreadPool()
+ThreadPool::ThreadPool()
 : m_bKillThreads(false)
 {
 
 }
 /**
 *
-* CThreadPool class Destructor
+* ThreadPool class Destructor
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
 *
 */
-CThreadPool::~CThreadPool()
+ThreadPool::~ThreadPool()
 {
 	{//Lock mutex
 		std::unique_lock<std::mutex> lockMutex(m_jobMutex);
@@ -74,7 +74,7 @@ CThreadPool::~CThreadPool()
 }
 /**
 *
-* CThreadPool class Initialises the thread pool with a number of threads
+* ThreadPool class Initialises the thread pool with a number of threads
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -82,17 +82,17 @@ CThreadPool::~CThreadPool()
 *
 */
 void
-CThreadPool::Initialise(int _iThreadCount)
+ThreadPool::Initialise(int _iThreadCount)
 {
 	//Add initial threads to the thread pool
 	for (int iThread = 0; iThread < _iThreadCount; ++iThread)
 	{
-		m_vecThreadPool.push_back(std::thread(&CThreadPool::ThreadLoop, this, iThread));
+		m_vecThreadPool.push_back(std::thread(&ThreadPool::ThreadLoop, this, iThread));
 	}
 }
 /**
 *
-* CThreadPool class Main thread loop function
+* ThreadPool class Main thread loop function
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -100,7 +100,7 @@ CThreadPool::Initialise(int _iThreadCount)
 *
 */
 void
-CThreadPool::ThreadLoop(int _iThreadIndex)
+ThreadPool::ThreadLoop(int _iThreadIndex)
 {
 	printf("Thread %i Loop started\n", _iThreadIndex);
 	TQueuedJob currentJob;
@@ -129,7 +129,7 @@ CThreadPool::ThreadLoop(int _iThreadIndex)
 }
 /**
 *
-* CThreadPool class Adds a job to the list of thread jobs
+* ThreadPool class Adds a job to the list of thread jobs
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -138,7 +138,7 @@ CThreadPool::ThreadLoop(int _iThreadIndex)
 *
 */
 void
-CThreadPool::AddJobToPool(JOB_TYPE _JobType, PARAMETER_TYPE _rParameters)
+ThreadPool::AddJobToPool(JOB_TYPE _JobType, PARAMETER_TYPE _rParameters)
 {
 	{//Lock mutex
 		std::unique_lock<std::mutex> threadLock(m_jobMutex);
@@ -148,7 +148,7 @@ CThreadPool::AddJobToPool(JOB_TYPE _JobType, PARAMETER_TYPE _rParameters)
 	m_condition.notify_one();
 }
 void
-CThreadPool::JoinWithMainThread()
+ThreadPool::JoinWithMainThread()
 {
 	for (unsigned int iThread = 0; iThread < m_vecThreadPool.size(); ++iThread)
 	{

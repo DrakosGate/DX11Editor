@@ -124,14 +124,13 @@ RenderEntity::Process( float _fDeltaTime, Math::Matrix* _pParentMatrix )
 		if( m_bIsBillboarded == false )
 		{
 			//Calculate world matrix
-			D3DXQuaternionRotationYawPitchRoll( &m_quatRot, m_vecRotation.y, m_vecRotation.x, m_vecRotation.z );
-			D3DXMatrixTransformation( &m_matWorld,
-				NULL,
-				NULL,
-				&m_vecScale,
-				NULL,
-				&m_quatRot,
-				&m_vecPosition );
+			m_quatRot = Math::QuaternionRotationYawPitchRoll( m_vecRotation.y, m_vecRotation.x, m_vecRotation.z );
+			m_matWorld = Math::MatrixTransformation(	nullptr,
+														nullptr,
+														&m_vecScale,
+														nullptr,
+														&m_quatRot,
+														&Math::Vector4( m_vecPosition.x, m_vecPosition.y, m_vecPosition.z, 1.0f ) );
 			//Check if this matrix must be multiplied by the parent matrix
 			if( _pParentMatrix )
 			{
@@ -170,7 +169,7 @@ RenderEntity::Process( float _fDeltaTime, Math::Matrix* _pParentMatrix )
 void
 RenderEntity::Draw( ID3D11DeviceContext* _pDevice )
 {
-	UINT stride = sizeof( TVertex );
+	UINT stride = sizeof( TVertex::SourceType );
 	UINT offset = 0;
 	_pDevice->IASetVertexBuffers( 0, 1, &m_pVertexBuffer, &stride, &offset );
 	_pDevice->IASetIndexBuffer( m_pIndexBuffer, DXGI_FORMAT_R32_UINT, 0 );
@@ -189,18 +188,24 @@ RenderEntity::CreateVertexBuffer( ID3D11Device* _pDevice )
 {
 	D3D11_BUFFER_DESC tVertexBufferDesc;
 	tVertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	tVertexBufferDesc.ByteWidth = sizeof( TVertex )* m_iVertexCount;
+	tVertexBufferDesc.ByteWidth = sizeof( TVertex::SourceType )* m_iVertexCount;
 	tVertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	tVertexBufferDesc.CPUAccessFlags = 0;
 	tVertexBufferDesc.MiscFlags = 0;
 	tVertexBufferDesc.StructureByteStride = 0;
 
+	auto sourceData = new TVertex::SourceType[ m_iVertexCount ];
+	for( int index = 0; index < m_iVertexCount; ++index )
+		sourceData[ index ] = m_pVertices[ index ].GetSourceType();
+	
 	D3D11_SUBRESOURCE_DATA tVertexData;
-	tVertexData.pSysMem = m_pVertices;
+	tVertexData.pSysMem = sourceData;
 	tVertexData.SysMemPitch = 0;
 	tVertexData.SysMemSlicePitch = 0;
 
 	_pDevice->CreateBuffer( &tVertexBufferDesc, &tVertexData, &m_pVertexBuffer );
+
+	SAFEDELETEARRAY( sourceData );
 }
 /**
 *
@@ -542,7 +547,7 @@ RenderEntity::GetVertexCount() const
 *
 */
 void
-RenderEntity::SetObjectShader( CShader* _pObjectShader )
+RenderEntity::SetObjectShader( Shader* _pObjectShader )
 {
 	m_pObjectShader = _pObjectShader;
 }
@@ -555,7 +560,7 @@ RenderEntity::SetObjectShader( CShader* _pObjectShader )
 * @return Returns rendering technique
 *
 */
-CShader*
+Shader*
 RenderEntity::GetObjectShader()
 {
 	return m_pObjectShader;
@@ -589,9 +594,9 @@ RenderEntity::ProcessBillboard( Camera* _pCurrentCamera, Math::Matrix& _rBillboa
 	scaleMat = Math::Scale( Math::MatrixIdentity(), m_vecScale );
 
 	Math::Matrix billboardMat = _rBillboardMat * scaleMat;
-	billboardMat._41 = m_vecPosition.x;
-	billboardMat._42 = m_vecPosition.y;
-	billboardMat._43 = m_vecPosition.z;
+	billboardMat.data._41 = m_vecPosition.x;
+	billboardMat.data._42 = m_vecPosition.y;
+	billboardMat.data._43 = m_vecPosition.z;
 
 	m_matWorld = billboardMat;
 }

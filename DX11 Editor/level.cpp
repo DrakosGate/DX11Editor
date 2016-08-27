@@ -1,6 +1,6 @@
 //
 //  File Name   :   level.cpp
-//  Description :   Code for CLevel
+//  Description :   Code for Level
 //  Author      :   Christopher Howlett
 //  Mail        :   drakos_gate@yahoo.com
 //
@@ -33,7 +33,7 @@
 #include "resourcemanager.h"
 #include "editorinterface.h"
 #include "threadpool.h"
-#include "openclcontext.h"
+//#include "openclcontext.h"
 #include "fontrenderer.h"
 #include "network.h"
 #include "performancegraph.h"
@@ -48,21 +48,14 @@
 // Static Function Prototypes
 
 // Implementation
-/**
-*
-* CLevel class constructor
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-*
-*/
-CLevel::CLevel()
+
+Level::Level()
 	: m_pRenderer( 0 )
 	, m_eGameScene( SCENE_3DSCENE )
 	, m_eGrassProcessingMethod( PROCESSING_SEQUENTIAL )
 	, m_eAIProcessingMethod( PROCESSING_SEQUENTIAL )
 	, m_pEntityManager( 0 )
-	//, m_pPlayer(0)
+	//, m_pPlayer( nullptr )
 	, m_pCursor( 0 )
 	, m_pTerrain( 0 )
 	, m_pGrass( 0 )
@@ -88,7 +81,7 @@ CLevel::CLevel()
 	, m_iScreenHeight( 0 )
 	, m_pResourceManager( 0 )
 	, m_pThreadPool( 0 )
-	, m_pCLKernel( 0 )
+	//, m_pCLKernel( 0 )
 	, m_pSelectedObject( 0 )
 	, m_pFont( 0 )
 	, m_pGraph( 0 )
@@ -104,24 +97,17 @@ CLevel::CLevel()
 {
 	m_matWorldViewProjection = Math::MatrixIdentity();
 }
-/**
-*
-* CLevel class destructor
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-*
-*/
-CLevel::~CLevel()
+
+Level::~Level()
 {
-	CNetwork::DestroyInstance();
+	Network::DestroyInstance();
 
 	//Wait for parallel processes to finish
 	SAFEDELETE( m_pThreadPool );
-	SAFEDELETE( m_pCLKernel );
+	//SAFEDELETE( m_pCLKernel );
 
 	//Cleanup singletons
-	CAudioPlayer::GetInstance().DestroyInstance();
+	AudioPlayer::GetInstance().DestroyInstance();
 
 	for( unsigned int iEntity = 0; iEntity < m_pLevelEntities.size(); ++iEntity )
 	{
@@ -170,17 +156,9 @@ CLevel::~CLevel()
 	}
 	SAFEDELETEARRAY( m_pVertexLayout );
 }
-/**
-*
-* CLevel class Initialise
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-* @return Returns initialisation success
-*
-*/
+
 bool
-CLevel::Initialise( ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext, DX11Renderer* _pRenderer, TSetupStruct* _pSetupData, HWND _hWindow, int _iScreenWidth, int _iScreenHeight )
+Level::Initialise( DX11Renderer* _pRenderer, TSetupStruct* _pSetupData, HWND _hWindow, int _iScreenWidth, int _iScreenHeight )
 {
 	SetFocus( GetConsoleWindow() );
 	m_pSetupData = _pSetupData;
@@ -206,8 +184,8 @@ CLevel::Initialise( ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext, D
 	m_pClearColour[ 2 ] = 0.1f;
 	m_pClearColour[ 3 ] = 1.0f;
 
-	LoadShaderData( _pDevice, _pDevContext );
-	BuildLevelVertexLayouts( _pDevice, _pDevContext );
+	LoadShaderData( m_pRenderer->GetDevice(), m_pRenderer->GetDeviceContext() );
+	BuildLevelVertexLayouts( m_pRenderer->GetDevice(), m_pRenderer->GetDeviceContext() );
 
 	//Create Perspective camera
 	float fAspectRatio = static_cast<float>( m_iScreenWidth ) / static_cast<float>( m_iScreenHeight );
@@ -232,13 +210,13 @@ CLevel::Initialise( ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext, D
 	m_pOrthoCamera->CreateProjectionMatrix( fAspectRatio );
 
 	//Create render targets and screen monitors
-	CreateRenderTargets( _pDevice );
+	CreateRenderTargets( m_pRenderer->GetDevice() );
 
 	//Create renderable entities and add to entitymanager
-	CreateEntities( _pDevice, _pDevContext, _hWindow );
+	CreateEntities( m_pRenderer->GetDevice(), m_pRenderer->GetDeviceContext(), _hWindow );
 
-	CAudioPlayer::GetInstance().Initialise( m_pSetupData->bPlaySound );
-	CAudioPlayer::GetInstance().Play3DSound( SOUND_BIRDCHIRP, Math::Vector3( -1.0f, 0.0f, 0.0f ) );
+	AudioPlayer::GetInstance().Initialise( m_pSetupData->bPlaySound );
+	AudioPlayer::GetInstance().Play3DSound( SOUND_BIRDCHIRP, Math::Vector3( -1.0f, 0.0f, 0.0f ) );
 
 	float fFieldOfView = static_cast<float>( PI )* 0.25f;
 	float fScreenAspect = static_cast<float>( _iScreenWidth ) / static_cast<float>( _iScreenHeight );
@@ -250,59 +228,52 @@ CLevel::Initialise( ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext, D
 	m_pcProcessingMethodName[ PROCESSING_SEQUENTIAL ] = "Sequential";
 	sprintf_s( cBuffer, 64, "Thread Pool (%i Threads)", m_iThreadCount );
 	m_pcProcessingMethodName[ PROCESSING_THREADPOOL ] = cBuffer;
-	m_pcProcessingMethodName[ PROCESSING_OPENCL ] = "GPU [OpenCL]";
+	//	m_pcProcessingMethodName[ PROCESSING_OPENCL ] = "GPU [OpenCL]";
 	m_pcProcessingMethodName[ PROCESSING_DISTRIBUTED ] = "Distributed";
 
 	SetFocus( _hWindow );
 
 	return true;
 }
-/**
-*
-* CLevel class CreateEntities
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-*
-*/
+
 void
-CLevel::CreateEntities( ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext, HWND _hWindow )
+Level::CreateEntities( ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext, HWND _hWindow )
 {
 	printf( "================= Creating Entities =================\n" );
 	//Create entity manager to contain all objects
-	m_pEntityManager = new CEntityManager();
+	m_pEntityManager = new EntityManager();
 	m_pEntityManager->Initialise( _pDevice );
 
 	//Read level resources
-	m_pSceneHierarchy = new CSceneHierarchy();
+	m_pSceneHierarchy = new SceneHierarchy();
 	m_pSceneHierarchy->Initialise( "Data/Resources.xml" );
 
 	//Load scene resources
-	m_pResourceManager = new CResourceManager();
-	m_pResourceManager->Initialise( _pDevice, m_pEntityManager, m_pSceneHierarchy );
+	m_pResourceManager = new ResourceManager();
+	m_pResourceManager->Initialise( _pDevice, _pDevContext, m_pEntityManager, m_pSceneHierarchy );
 
 	//Initialise lighting
-	m_pLightManager = new CLightManager();
+	m_pLightManager = new LightManager();
 	m_pLightManager->Initialise();
 
 	//KEY AREA: Setup OpenCL
-	m_pCLKernel = new COpenCLContext();
-	m_pCLKernel->InitialiseOpenCL();
+	//m_pCLKernel = new OpenCLContext();
+	//m_pCLKernel->InitialiseOpenCL();
 
 	//KEY AREA: Setup Thread Pool
-	m_pThreadPool = new CThreadPool();
+	m_pThreadPool = new ThreadPool();
 	m_iThreadCount = std::thread::hardware_concurrency();
 	//std::thread::hardware_concurrency() is the recommended thread usage for this system
 	m_pThreadPool->Initialise( m_iThreadCount );
 
 	//Setup AI Hivemind
-	m_pHivemind = new CAIHiveMind();
-	m_pHivemind->Initialise( m_pCLKernel, m_pSetupData->iAStarSearchDepth );
+	m_pHivemind = new AIHiveMind();
+	m_pHivemind->Initialise( m_pSetupData->iAStarSearchDepth );
 	m_pHivemind->CreateNavigationGrid( _pDevice, m_pEntityManager, &m_pShaderCollection[ SHADER_POINTSPRITE ], 20.0f, 40, 40 );
 	m_pEntityManager->SetLevelInformation( m_pHivemind, m_pLightManager );
 
 	//Load font
-	m_pFont = new CFontRenderer[ FONT_MAX ];
+	m_pFont = new FontRenderer[ FONT_MAX ];
 	m_pFont[ FONT_DEBUG ].Initialise( "Something", 16, 6, Math::Vector3( 10.0f, WINDOW_HEIGHT * 0.1f, 2.0f ), Math::Vector2( 12.0f, 15.0f ), Math::Colour( 0.5f, 0.5f, 1.0f, 1.0f ) );
 	m_pFont[ FONT_SCENEGRAPH ].Initialise( "Something", 16, 6, Math::Vector3( WINDOW_WIDTH * 0.81f, WINDOW_HEIGHT * 0.11f, 0.0f ), Math::Vector2( 12.0f, 15.0f ), Math::Colour( 1.0f, 0.0f, 0.0f, 1.0f ) );
 	m_pFont[ FONT_PERFORMANCE ].Initialise( "Something", 16, 6, Math::Vector3( WINDOW_WIDTH * 0.01f, WINDOW_HEIGHT * 0.41f, 0.6f ), Math::Vector2( 10.0f, 12.0f ), Math::Colour( 0.7f, 0.9f, 0.7f, 1.0f ) );
@@ -335,8 +306,8 @@ CLevel::CreateEntities( ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContex
 
 	//Create grass object
 	m_fGrassScale = 20.0f;
-	m_pGrass = new CGrass();
-	m_pGrass->Initialise( _pDevice, m_pCLKernel, m_pResourceManager, m_pSetupData->iGrassDimensions, m_fGrassScale, Math::Vector2( 10.0f, 10.0f ), Math::Colour( 1.0f, 1.0f, 1.0f, 1.0f ), m_iThreadCount );
+	m_pGrass = new Grass();
+	m_pGrass->Initialise( _pDevice, m_pResourceManager, m_pSetupData->iGrassDimensions, m_fGrassScale, Math::Vector2( 10.0f, 10.0f ), Math::Colour( 1.0f, 1.0f, 1.0f, 1.0f ), m_iThreadCount );
 	m_pGrass->SetObjectShader( &m_pShaderCollection[ SHADER_GRASS ] );
 	m_pGrass->SetDiffuseMap( m_pResourceManager->GetTexture( std::string( "grassblades" ) ) );
 	m_pGrass->SetRadius( FLT_MAX );
@@ -350,7 +321,7 @@ CLevel::CreateEntities( ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContex
 	//Load Default level data
 	LoadLevel( _pDevice, m_pSetupData->pcDefaultLevel );
 
-	m_pCursor = new CPrefab();
+	m_pCursor = new Prefab();
 	m_pCursor->Initialise( _pDevice, 1.0f );
 	m_pCursor->SetModel( m_pResourceManager->GetModel( std::string( "cursor" ) ) );
 	m_pCursor->SetDiffuseMap( m_pResourceManager->GetTexture( std::string( "cursor" ) ) );
@@ -364,14 +335,14 @@ CLevel::CreateEntities( ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContex
 	m_pEntityManager->AddEntity( m_pCursor, SCENE_PERMANENTSCENE );
 
 	//KEY AREA: Create the level editor interface
-	m_pEditor = new CEditorInterface();
+	m_pEditor = new EditorInterface();
 	m_pEditor->Initialise( _hWindow, this );
 	m_pEditor->LoadFromXML( _pDevice, m_pResourceManager, m_pEntityManager, "Data/EditorLayout.xml" );
 	m_pEditor->SetObjectShader( &m_pShaderCollection[ SHADER_POINTSPRITE ] );
 	m_pEntityManager->AddEntity( m_pEditor, SCENE_UI );
 
 	//KEY AREA: Create performance graph
-	m_pGraph = new CPerformanceGraph();
+	m_pGraph = new PerformanceGraph();
 	m_pGraph->Initialise( _pDevice,
 		Math::Vector3( WINDOW_WIDTH * 0.01f, WINDOW_HEIGHT * 0.21f, 0.0f ),
 		Math::Vector3( WINDOW_WIDTH * 0.3f, WINDOW_HEIGHT * 0.2f, 1.0f ),
@@ -402,25 +373,16 @@ CLevel::CreateEntities( ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContex
 
 
 	//KEY AREA: Setup network for distributed processing
-	m_pNetwork = CNetwork::GetInstance();
-	m_pNetwork->Initialise( m_pGrass, m_pHivemind );
-
+	//m_pNetwork = Network::GetInstance();
+	//m_pNetwork->Initialise( m_pGrass, m_pHivemind );
 
 	_pDevContext->IASetPrimitiveTopology( D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
 	_pDevContext->IASetInputLayout( m_pVertexLayout[ VERTEX_STATIC ] );
 	_pDevContext->PSSetSamplers( 0, 1, &m_pSamplerState );
 }
-/**
-*
-* KEY AREA: CLevel class Process
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-* @param _fDeltaTime Game time elapsed
-*
-*/
+
 void
-CLevel::Process( ID3D11Device* _pDevice, ID3D11DeviceContext* _pDeviceContext, Clock* _pClock, float _fDeltaTime )
+Level::Process( ID3D11Device* _pDevice, ID3D11DeviceContext* _pDeviceContext, Clock* _pClock, float _fDeltaTime )
 {
 	_pClock->StartTimer();
 
@@ -436,8 +398,8 @@ CLevel::Process( ID3D11Device* _pDevice, ID3D11DeviceContext* _pDeviceContext, C
 	//Process entities
 	if( m_pEditor->IsActive() == false )
 	{
-		//	m_pHivemind->GetAI(0)->SetAStarTarget(m_pCursor->GetPosition());
-		m_pHivemind->Process( m_pCLKernel, m_pThreadPool, _fDeltaTime );
+		//	m_pHivemind->GetAI( nullptr )->SetAStarTarget(m_pCursor->GetPosition());
+		m_pHivemind->Process( m_pThreadPool, _fDeltaTime );
 	}
 
 	//m_pResourceManager->GetAnimatedModel("chicken")->Process(_fDeltaTime);
@@ -484,11 +446,11 @@ CLevel::Process( ID3D11Device* _pDevice, ID3D11DeviceContext* _pDeviceContext, C
 				}
 				break;
 			}
-			case PROCESSING_OPENCL:
-			{
-				m_pGrass->ProcessOpenCL( m_pCLKernel, _fDeltaTime );
-				break;
-			}
+			//case PROCESSING_OPENCL:
+			//{
+			//	m_pGrass->ProcessOpenCL( m_pCLKernel, _fDeltaTime );
+			//	break;
+			//}
 			case PROCESSING_DISTRIBUTED:
 			{
 				m_pNetwork->SendGrassData( m_pGrass, &m_vecGrassEntities );
@@ -520,8 +482,8 @@ CLevel::Process( ID3D11Device* _pDevice, ID3D11DeviceContext* _pDeviceContext, C
 		}
 	}
 	//Process audio
-	CAudioPlayer::GetInstance().SetListenerPosition( Math::Vector3( 0.0f, 0.0f, 0.0f ), m_pCamera->GetLook(), Math::Vector3( 0.0f, 1.0f, 0.0f ) );
-	CAudioPlayer::GetInstance().Process();
+	AudioPlayer::GetInstance().SetListenerPosition( Math::Vector3( 0.0f, 0.0f, 0.0f ), m_pCamera->GetLook(), Math::Vector3( 0.0f, 1.0f, 0.0f ) );
+	AudioPlayer::GetInstance().Process();
 
 	//Print FPS
 	char cBuffer[ 64 ];
@@ -563,17 +525,9 @@ CLevel::Process( ID3D11Device* _pDevice, ID3D11DeviceContext* _pDeviceContext, C
 		m_pFont[ FONT_PERFORMANCE ].Write( std::string( cBuffer ), 2 );
 	}
 }
-///**
-//*
-//* CLevel class Processes input for all entities in this level
-//* (Task ID: n/a)
-//*
-//* @author Christopher Howlett
-//* @param _fDeltaTime Game time elapsed
-//*
-//*/
+
 //bool
-//CLevel::ProcessInput( ID3D11Device* _pDevice, float _fDeltaTime )
+//Level::ProcessInput( ID3D11Device* _pDevice, float _fDeltaTime )
 //{
 //	//Disable input while logging to file
 //	if( m_bInputIsEnabled )
@@ -736,16 +690,9 @@ CLevel::Process( ID3D11Device* _pDevice, ID3D11DeviceContext* _pDeviceContext, C
 //
 //	return true;
 //}
-/*
-*
-* CLevel class Draw
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-*
-*/
+
 void
-CLevel::ProcessEntitySelection( ID3D11Device* _pDevice, float _fDeltaTime )
+Level::ProcessEntitySelection( ID3D11Device* _pDevice, float _fDeltaTime )
 {
 	if( m_bHasSelectedObject )
 	{
@@ -811,16 +758,9 @@ CLevel::ProcessEntitySelection( ID3D11Device* _pDevice, float _fDeltaTime )
 		//m_pHivemind->RecalculateNavGrid( _pDevice );
 	}
 }
-/*
-*
-* KEY AREA: CLevel class Draw
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-*
-*/
+
 void
-CLevel::Draw( ID3D11DeviceContext* _pDevice )
+Level::Draw( ID3D11DeviceContext* _pDevice )
 {
 	//Send lighting info to shader
 	m_pShaderCollection[ SHADER_OBJECT ].SendLightInformation( _pDevice, m_pLightManager, m_pCamera );
@@ -913,16 +853,8 @@ CLevel::Draw( ID3D11DeviceContext* _pDevice )
 	_pDevice->PSSetShaderResources( 0, 3, blankTexture );
 	_pDevice->OMSetRenderTargets( 0, 0, NULL );
 }
-/**
-*
-* CLevel class DrawScene Draws the entire scene from perspective on given camera
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-* @param _pCurrentCamera Camera to render from
-*
-*/
-void CLevel::DrawScene( ID3D11DeviceContext* _pDevice, CShader* _pSceneShader, Camera* _pCurrentCamera, EGameScene _EGameScene )
+
+void Level::DrawScene( ID3D11DeviceContext* _pDevice, Shader* _pSceneShader, Camera* _pCurrentCamera, EGameScene _EGameScene )
 {
 	//Set shaders for this scene
 	_pDevice->VSSetShader( _pSceneShader->GetVertexShader(), NULL, 0 );
@@ -932,16 +864,9 @@ void CLevel::DrawScene( ID3D11DeviceContext* _pDevice, CShader* _pSceneShader, C
 	//Draw all entities in scene
 	m_pEntityManager->Draw( _pDevice, _pCurrentCamera, _EGameScene );
 }
-/**
-*
-* CLevel class Sets the scene graph to draw to screen
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-*
-*/
+
 void
-CLevel::AddTextToSceneGraph( TEntityNode* _pEntityNode, int& _iTextOffset, int _iTabCount )
+Level::AddTextToSceneGraph( TEntityNode* _pEntityNode, int& _iTextOffset, int _iTabCount )
 {
 	std::string sText = "";
 	for( int iSpaceCount = 0; iSpaceCount < _iTabCount; ++iSpaceCount )
@@ -956,30 +881,23 @@ CLevel::AddTextToSceneGraph( TEntityNode* _pEntityNode, int& _iTextOffset, int _
 		AddTextToSceneGraph( _pEntityNode->vecChildren[ iChild ], _iTextOffset, _iTabCount + 1 );
 	}
 }
-/**
-*
-* CLevel class CreateRenderTargets
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-*
-*/
+
 void
-CLevel::CreateRenderTargets( ID3D11Device* _pDevice )
+Level::CreateRenderTargets( ID3D11Device* _pDevice )
 {
-	m_pRenderTargets = new CRenderToTexture[ RENDER_MAX ];
+	m_pRenderTargets = new RenderToTexture[ RENDER_MAX ];
 	m_pRenderTargets[ RENDER_MRT ].Initialise( _pDevice, true, false, static_cast<int>( WINDOW_WIDTH ), static_cast<int>( WINDOW_HEIGHT ) );
 	m_pRenderTargets[ RENDER_DEFERRED ].Initialise( _pDevice, true, false, static_cast<int>( WINDOW_WIDTH ), static_cast<int>( WINDOW_HEIGHT ) );
 	m_pRenderTargets[ RENDER_POST ].Initialise( _pDevice, true, false, static_cast<int>( WINDOW_WIDTH ), static_cast<int>( WINDOW_HEIGHT ) );
 	m_pRenderTargets[ RENDER_FINAL ].Initialise( _pDevice, true, false, static_cast<int>( WINDOW_WIDTH ), static_cast<int>( WINDOW_HEIGHT ) );
 
-	m_pDiffuseMRT = new CRenderToTexture();
+	m_pDiffuseMRT = new RenderToTexture();
 	m_pDiffuseMRT->Initialise( _pDevice, true, false, static_cast<int>( WINDOW_WIDTH ), static_cast<int>( WINDOW_HEIGHT ) );
-	m_pNormalsMRT = new CRenderToTexture();
+	m_pNormalsMRT = new RenderToTexture();
 	m_pNormalsMRT->Initialise( _pDevice, true, false, static_cast<int>( WINDOW_WIDTH ), static_cast<int>( WINDOW_HEIGHT ) );
-	m_pPositionMRT = new CRenderToTexture();
+	m_pPositionMRT = new RenderToTexture();
 	m_pPositionMRT->Initialise( _pDevice, true, false, static_cast<int>( WINDOW_WIDTH ), static_cast<int>( WINDOW_HEIGHT ) );
-	m_pDepthMRT = new CRenderToTexture();
+	m_pDepthMRT = new RenderToTexture();
 	m_pDepthMRT->Initialise( _pDevice, true, false, static_cast<int>( WINDOW_WIDTH ), static_cast<int>( WINDOW_HEIGHT ) );
 	m_pMRT = new ID3D11RenderTargetView*[ 4 ];
 	m_pMRT[ 0 ] = m_pDiffuseMRT->GetRenderTarget();
@@ -987,18 +905,11 @@ CLevel::CreateRenderTargets( ID3D11Device* _pDevice )
 	m_pMRT[ 2 ] = m_pPositionMRT->GetRenderTarget();
 	m_pMRT[ 3 ] = m_pDepthMRT->GetRenderTarget();
 }
-/**
-*
-* CLevel class LoadShaderData
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-*
-*/
+
 void
-CLevel::LoadShaderData( ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext )
+Level::LoadShaderData( ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext )
 {
-	m_pShaderCollection = new CShader[ SHADER_MAX ];
+	m_pShaderCollection = new Shader[ SHADER_MAX ];
 	m_pShaderCollection[ SHADER_POINTSPRITE ].Initialise( _pDevice );
 	m_pShaderCollection[ SHADER_POINTSPRITE ].CompileVertexShader( _pDevice, L"Assets/Shaders/pointsprite_vs.hlsl", "PointVS" );
 	m_pShaderCollection[ SHADER_POINTSPRITE ].CompileGeometryShader( _pDevice, L"Assets/Shaders/pointsprite_gs.hlsl", "PointGS" );
@@ -1051,16 +962,9 @@ CLevel::LoadShaderData( ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContex
 	m_pShaderCollection[ SHADER_FONT ].CompileGeometryShader( _pDevice, L"Assets/Shaders/fontshader_gs.hlsl", "FontGS" );
 	m_pShaderCollection[ SHADER_FONT ].CompilePixelShader( _pDevice, L"Assets/Shaders/fontshader_ps.hlsl", "FontPS" );
 }
-/**
-*
-* CLevel class buildVertexLayouts
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-*
-*/
+
 void
-CLevel::BuildLevelVertexLayouts( ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext )
+Level::BuildLevelVertexLayouts( ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext )
 {
 	m_pVertexLayout = new ID3D11InputLayout*[ VERTEX_MAX ];
 	for( int iLayout = 0; iLayout < VERTEX_MAX; ++iLayout )
@@ -1072,9 +976,9 @@ CLevel::BuildLevelVertexLayouts( ID3D11Device* _pDevice, ID3D11DeviceContext* _p
 	D3D11_INPUT_ELEMENT_DESC vertexDesc[] =
 	{
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "COLOR", 0,    DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "NORMAL", 0,   DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TANGENT", 0,  DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "BINORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 	};
@@ -1090,13 +994,13 @@ CLevel::BuildLevelVertexLayouts( ID3D11Device* _pDevice, ID3D11DeviceContext* _p
 	// Create the animated vertex input layout.
 	D3D11_INPUT_ELEMENT_DESC animDesc[] =
 	{
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "BINORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "BONEID", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "POSITION", 0,   DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "COLOR", 0,      DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "NORMAL", 0,     DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TANGENT", 0,    DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "BINORMAL", 0,   DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0,   DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "BONEID", 0,     DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "BONEWEIGHT", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 	};
 	iNumElements = 8;
@@ -1111,12 +1015,12 @@ CLevel::BuildLevelVertexLayouts( ID3D11Device* _pDevice, ID3D11DeviceContext* _p
 
 	D3D11_INPUT_ELEMENT_DESC pointDesc[] =
 	{
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "POSITION", 0,  DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "DIRECTION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "SCALE", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "ROTATION", 0, DXGI_FORMAT_R32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXID", 0, DXGI_FORMAT_R32_SINT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+		{ "SCALE", 0,     DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "COLOR", 0,     DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "ROTATION", 0,  DXGI_FORMAT_R32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXID", 0,     DXGI_FORMAT_R32_SINT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 	};
 	iNumElements = 6;
 
@@ -1130,10 +1034,10 @@ CLevel::BuildLevelVertexLayouts( ID3D11Device* _pDevice, ID3D11DeviceContext* _p
 
 	D3D11_INPUT_ELEMENT_DESC fontDesc[] =
 	{
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "SCALE", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "UVTOPLEFT", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "POSITION", 0,      DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "SCALE", 0,         DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "COLOR", 0,         DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "UVTOPLEFT", 0,     DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "UVBOTTOMRIGHT", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 	};
 	iNumElements = 5;
@@ -1184,16 +1088,9 @@ CLevel::BuildLevelVertexLayouts( ID3D11Device* _pDevice, ID3D11DeviceContext* _p
 	HRCheck( _pDevice->CreateSamplerState( &samplerDesc, &m_pSamplerState ),
 		L"Failed to create sampler state" );
 }
-/**
-*
-* CLevel class onResize Resizes the window and buffers
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-*
-*/
+
 void
-CLevel::OnResize( int _iWidth, int _iHeight )
+Level::OnResize( int _iWidth, int _iHeight )
 {
 	float fAspectRatio = static_cast<float>( _iWidth ) / static_cast<float>( _iHeight );
 	if( m_pCamera )
@@ -1202,18 +1099,9 @@ CLevel::OnResize( int _iWidth, int _iHeight )
 		m_pOrthoCamera->CreateProjectionMatrix( fAspectRatio );
 	}
 }
-/**
-*
-* KEY AREA: CLevel class Creates an object from an XML node
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-* @param _pNode XML Node containing object information
-* @return Returns the new prefab object
-*
-*/
-CPrefab*
-CLevel::CreateObject( ID3D11Device* _pDevice, rapidxml::xml_node<>* _pNode, TEntityNode* _pParentNode )
+
+Prefab*
+Level::CreateObject( ID3D11Device* _pDevice, rapidxml::xml_node<>* _pNode, TEntityNode* _pParentNode )
 {
 	//Get prefab type
 	std::string sType = _pNode->first_node( "type" )->value();
@@ -1235,7 +1123,7 @@ CLevel::CreateObject( ID3D11Device* _pDevice, rapidxml::xml_node<>* _pNode, TEnt
 		ReadFromString<float>( _pNode->first_node( "colour" )->first_attribute( "a" )->value() ) );
 
 	//Create an instance of this prefab
-	CPrefab* pNewPrefab = m_pEntityManager->InstantiatePrefab( _pDevice,
+	Prefab* pNewPrefab = m_pEntityManager->InstantiatePrefab( _pDevice,
 		_pParentNode,
 		sType,
 		&m_pShaderCollection[ SHADER_MRT ],
@@ -1251,7 +1139,7 @@ CLevel::CreateObject( ID3D11Device* _pDevice, rapidxml::xml_node<>* _pNode, TEnt
 	{
 		for( rapidxml::xml_node<>* pCurrentChild = _pNode->first_node( "child" ); pCurrentChild; pCurrentChild = pCurrentChild->next_sibling( "child" ) )
 		{
-			CPrefab* pNewChild = CreateObject( _pDevice, pCurrentChild, pNewPrefab->GetNode() );
+			Prefab* pNewChild = CreateObject( _pDevice, pCurrentChild, pNewPrefab->GetNode() );
 		}
 	}
 	//Check if this object has any lights attached
@@ -1269,18 +1157,9 @@ CLevel::CreateObject( ID3D11Device* _pDevice, rapidxml::xml_node<>* _pNode, TEnt
 
 	return pNewPrefab;
 }
-/**
-*
-* KEY AREA: CLevel class Creates an object from a Scene node structure
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-* @param _pNode XML Node containing object information
-* @return Returns the new prefab object
-*
-*/
-CPrefab*
-CLevel::CreateObject( ID3D11Device* _pDevice, TSceneNode* _pNode, TEntityNode* _pParentNode )
+
+Prefab*
+Level::CreateObject( ID3D11Device* _pDevice, TSceneNode* _pNode, TEntityNode* _pParentNode )
 {
 	//Get prefab type
 	std::string sType = _pNode->tEntity.sPrefabName;
@@ -1302,7 +1181,7 @@ CLevel::CreateObject( ID3D11Device* _pDevice, TSceneNode* _pNode, TEntityNode* _
 		_pNode->tEntity.colour[ 3 ] );
 
 	//Create an instance of this prefab
-	CPrefab* pNewPrefab = m_pEntityManager->InstantiatePrefab( _pDevice,
+	Prefab* pNewPrefab = m_pEntityManager->InstantiatePrefab( _pDevice,
 		_pParentNode,
 		sType,
 		&m_pShaderCollection[ SHADER_MRT ],
@@ -1319,7 +1198,7 @@ CLevel::CreateObject( ID3D11Device* _pDevice, TSceneNode* _pNode, TEntityNode* _
 	{
 		for( unsigned int iChild = 0; iChild < pPrefabOptions->vecChildren.size(); ++iChild )
 		{
-			CPrefab* pNewChild = CreateObject( _pDevice, pPrefabOptions->vecChildren[ iChild ], pNewPrefab->GetNode() );
+			Prefab* pNewChild = CreateObject( _pDevice, pPrefabOptions->vecChildren[ iChild ], pNewPrefab->GetNode() );
 		}
 	}
 	//Check if this object has any lights attached
@@ -1337,17 +1216,9 @@ CLevel::CreateObject( ID3D11Device* _pDevice, TSceneNode* _pNode, TEntityNode* _
 
 	return pNewPrefab;
 }
-/**
-*
-* CLevel class Loads level data from file
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-* @param _pcLevelFilename Filename of level file
-*
-*/
+
 void
-CLevel::LoadLevel( ID3D11Device* _pDevice, char* _pcLevelFilename )
+Level::LoadLevel( ID3D11Device* _pDevice, char* _pcLevelFilename )
 {
 	m_pEntityManager->ClearScene( SCENE_3DSCENE );
 	m_pHivemind->ClearHivemind();
@@ -1377,7 +1248,7 @@ CLevel::LoadLevel( ID3D11Device* _pDevice, char* _pcLevelFilename )
 	TSceneNode* pRoot = m_pSceneHierarchy->GetRootNode();
 	for( unsigned int iNode = 0; iNode < pRoot->vecChildren.size(); ++iNode )
 	{
-		CPrefab* pNewPrefab = CreateObject( _pDevice, pRoot->vecChildren[ iNode ], m_pRootNode );
+		Prefab* pNewPrefab = CreateObject( _pDevice, pRoot->vecChildren[ iNode ], m_pRootNode );
 	}
 
 	//Spawn initial testing AI
@@ -1389,7 +1260,7 @@ CLevel::LoadLevel( ID3D11Device* _pDevice, char* _pcLevelFilename )
 		for( int iAI = 0; iAI < iNumDefaultAI; ++iAI )
 		{
 			Math::Vector3 vecPosition = Math::Vector3( sinf( fAIPercentage * iAI * static_cast<float>( PI )* 2.0f ) * fSpawnRadius, 0.0f, cosf( fAIPercentage * iAI * static_cast<float>( PI )* 2.0f ) * fSpawnRadius );
-			CPrefab* pNewPrefab = m_pEntityManager->InstantiatePrefab( _pDevice,
+			Prefab* pNewPrefab = m_pEntityManager->InstantiatePrefab( _pDevice,
 				m_pRootNode,
 				std::string( "chicken" ),
 				&m_pShaderCollection[ SHADER_MRT ],
@@ -1406,17 +1277,9 @@ CLevel::LoadLevel( ID3D11Device* _pDevice, char* _pcLevelFilename )
 		}
 	}
 }
-/**
-*
-* CLevel class SaveLevel Saves level data to file
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-* @param _pcLevelFilename Output level filename
-*
-*/
+
 void
-CLevel::SaveLevel( ID3D11Device* _pDevice, char* _pcLevelFilename )
+Level::SaveLevel( ID3D11Device* _pDevice, char* _pcLevelFilename )
 {
 	rapidxml::xml_document<> xmlDoc;
 	//Add xml header
@@ -1468,16 +1331,9 @@ CLevel::SaveLevel( ID3D11Device* _pDevice, char* _pcLevelFilename )
 	outFile << xmlDoc;
 	outFile.close();
 }
-/**
-*
-* CLevel class Adds a child node to the XML file
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-*
-*/
+
 void
-CLevel::AddChildToXMLNode( rapidxml::xml_document<>* _pDocument, rapidxml::xml_node<>* _pParentNode, TEntityNode* _pChildNode )
+Level::AddChildToXMLNode( rapidxml::xml_document<>* _pDocument, rapidxml::xml_node<>* _pParentNode, TEntityNode* _pChildNode )
 {
 	char cBuffer[ 32 ];
 	RenderEntity* pCurrentEntity = _pChildNode->pEntity;
@@ -1537,31 +1393,15 @@ CLevel::AddChildToXMLNode( rapidxml::xml_document<>* _pDocument, rapidxml::xml_n
 		_pParentNode->append_node( pChild );
 	}
 }
-/**
-*
-* CLevel class Swaps between different processing methods for the grass
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-* @param _eProcessingMethod Processing method selected
-*
-*/
+
 void
-CLevel::ChangeGrassProcessingMethod( EProcessingMethod _eProcessingMethod )
+Level::ChangeGrassProcessingMethod( EProcessingMethod _eProcessingMethod )
 {
 	m_eGrassProcessingMethod = _eProcessingMethod;
 }
-/**
-*
-* CLevel class Swaps between different processing methods for the AI
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-* @param _eProcessingMethod Processing method selected
-*
-*/
+
 void
-CLevel::ChangeAIProcessingMethod( EProcessingMethod _eProcessingMethod )
+Level::ChangeAIProcessingMethod( EProcessingMethod _eProcessingMethod )
 {
 	m_eAIProcessingMethod = _eProcessingMethod;
 	m_pHivemind->ChangeProcessingMethod( _eProcessingMethod );

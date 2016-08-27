@@ -1,6 +1,6 @@
 //
 //  File Name   :   lightmanager.h
-//  Description :   Declaration of CLightManager class
+//  Description :   Declaration of LightManager class
 //  Author      :   Christopher Howlett
 //  Mail        :   drakos_gate@yahoo.com
 //
@@ -26,12 +26,12 @@ class CSpotLight;
 class CPointLight;
 class CDirectionalLight;
 
-class CLightManager
+class LightManager
 {
 // Member functions
 public:
-	CLightManager();
-	~CLightManager();
+	LightManager();
+	~LightManager();
 	
 	bool Initialise();
 	void DestroyLights();
@@ -50,8 +50,8 @@ public:
 	int GetLightCount() const;
 
 protected:
-	CLightManager(const CLightManager& _kr);
-	CLightManager& operator= (const CLightManager& _rhs);
+	LightManager(const LightManager& _kr);
+	LightManager& operator= (const LightManager& _rhs);
 
 // Member variables
 protected:

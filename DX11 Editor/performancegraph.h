@@ -1,6 +1,6 @@
 //
 //  File Name   :   performancegraph.h
-//  Description :   Class of CPerformanceGraph
+//  Description :   Class of PerformanceGraph
 //  Author      :   Christopher Howlett
 //  Mail        :   drakos_gate@yahoo.com
 //
@@ -18,12 +18,12 @@
 
 // Types
 
-class CPerformanceGraph : public CPointSprite
+class PerformanceGraph : public PointSprite
 {
 //Member functions
 public:
-	CPerformanceGraph();
-	virtual ~CPerformanceGraph();
+	PerformanceGraph();
+	virtual ~PerformanceGraph();
 
 	virtual bool Initialise(ID3D11Device* _pDevice, Math::Vector3& _rPosition, Math::Vector3& _rScale, int _iNumNodes);
 	void LogPerformance(char* _pcLogFilename, char* _pcLogDescription, int _iLogAfterFrames);

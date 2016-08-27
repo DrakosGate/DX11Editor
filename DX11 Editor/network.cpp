@@ -10,7 +10,7 @@
 #include "network.h"
 
 // Static Variables
-CNetwork* CNetwork::s_pNetInstance = 0;
+Network* Network::s_pNetInstance = 0;
 
 // Static Function Prototypes
 
@@ -21,29 +21,14 @@ ProcessGrass( LPVOID _pParameter )
 	int x = 0;
 	return 0;
 }
-/**
-*
-* CNetwork class constructor
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-*
-*/
-CNetwork::CNetwork()
+
+Network::Network()
 	: bHasSentMessage( false )
 {
 
 }
 
-/**
-*
-* CNetwork class destructor
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-*
-*/
-CNetwork::~CNetwork()
+Network::~Network()
 {
 	m_bIsRunning = false;
 	m_pListenThread->join();
@@ -53,22 +38,13 @@ CNetwork::~CNetwork()
 	SAFEDELETE( m_pGrassData );
 }
 
-/**
-*
-* CNetwork class Initialise
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-* @return Returns true
-*
-*/
 bool
-CNetwork::Initialise( CGrass* _pGrass, CAIHiveMind* _pHivemind )
+Network::Initialise( Grass* _pGrass, AIHiveMind* _pHivemind )
 {
 	printf( "\n============== STARTING NETWORK CONNECTION ==============\n" );
 
 	CreateServer();
-	m_pListenThread = new std::thread( &CNetwork::Listen, this );
+	m_pListenThread = new std::thread( &Network::Listen, this );
 
 	m_pGrass = _pGrass;
 	m_pHivemind = _pHivemind;
@@ -88,8 +64,9 @@ CNetwork::Initialise( CGrass* _pGrass, CAIHiveMind* _pHivemind )
 
 	return true;
 }
+
 void
-CNetwork::CreateServer()
+Network::CreateServer()
 {
 	WSADATA wsaData;
 	//Start WSA
@@ -145,16 +122,18 @@ CNetwork::CreateServer()
 	printf( "============== NETWORK CONNECTION SUCCESSFUL ==============\n\n" );
 	SAFEDELETEARRAY( pcHostName );
 }
+
 void
-CNetwork::Process( float _fDeltaTime )
+Network::Process( float _fDeltaTime )
 {
 
 }
+
 //==================================================================
 //		SERVER LISTENING LOOP - this runs on m_pListenThread
 //==================================================================
 void
-CNetwork::Listen()
+Network::Listen()
 {
 	int iBytesReceived = 0;
 	char cMessageBuffer[ sizeof( TMessage ) ];
@@ -178,8 +157,9 @@ CNetwork::Listen()
 		}
 	}
 }
+
 void
-CNetwork::SendData( void* _pData, EMessageType _eMessageType, size_t _iSize, sockaddr_in* _pClient )
+Network::SendData( void* _pData, EMessageType _eMessageType, size_t _iSize, sockaddr_in* _pClient )
 {
 	TMessage tMessage;
 	tMessage.eMessageType = _eMessageType;
@@ -190,8 +170,9 @@ CNetwork::SendData( void* _pData, EMessageType _eMessageType, size_t _iSize, soc
 		printf( "== Server message failed to send (Error code: %i) ==\n", iError );
 	}
 }
+
 void
-CNetwork::ProcessNetMessage( TMessage* _pMessage, sockaddr_in* _pSourceClient )
+Network::ProcessNetMessage( TMessage* _pMessage, sockaddr_in* _pSourceClient )
 {
 	switch( _pMessage->eMessageType )
 	{
@@ -215,8 +196,9 @@ CNetwork::ProcessNetMessage( TMessage* _pMessage, sockaddr_in* _pSourceClient )
 		break;
 	}
 }
+
 void
-CNetwork::ProcessGrass( float _fDeltaTime )
+Network::ProcessGrass( float _fDeltaTime )
 {
 	if( m_vecClients.size() > 0 )
 	{
@@ -224,13 +206,15 @@ CNetwork::ProcessGrass( float _fDeltaTime )
 		SendData( cMessage, MESSAGE_SENDGRASS, sizeof( m_pGrassData->grassNormal ), m_vecClients[ 0 ]->pAddress );
 	}
 }
+
 void
-CNetwork::ProcessAI( float _fDeltaTime )
+Network::ProcessAI( float _fDeltaTime )
 {
 
 }
+
 void
-CNetwork::SendGrassData( CGrass* _pGrass, std::vector<RenderEntity*>* _pCollisionObjects )
+Network::SendGrassData( Grass* _pGrass, std::vector<RenderEntity*>* _pCollisionObjects )
 {
 	//Pack obstacle data into contiguous blocks
 	m_pGrassData->iNumObstacles = static_cast<int>( _pCollisionObjects->size() );
@@ -253,21 +237,23 @@ CNetwork::SendGrassData( CGrass* _pGrass, std::vector<RenderEntity*>* _pCollisio
 		sizeof( m_pGrassData->grassNormal ) * m_pGrassData->iVertexCount;
 	printf( "Packet size: %i\n", iDataSize );
 }
+
 //==================================================================
 //		SINGLETON METHODS
 //==================================================================
-CNetwork*
-CNetwork::GetInstance()
+Network*
+Network::GetInstance()
 {
 	if( s_pNetInstance == 0 )
 	{
-		s_pNetInstance = new CNetwork();
+		s_pNetInstance = new Network();
 	}
 
 	return ( s_pNetInstance );
 }
+
 void
-CNetwork::DestroyInstance()
+Network::DestroyInstance()
 {
 	delete s_pNetInstance;
 	s_pNetInstance = 0;

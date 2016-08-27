@@ -9,7 +9,7 @@
 #include "audioplayer.h"
 
 // Static Variables
-CAudioPlayer* CAudioPlayer::s_pAudio = 0;
+AudioPlayer* AudioPlayer::s_pAudio = 0;
 
 // Static Function Prototypes
 
@@ -17,29 +17,29 @@ CAudioPlayer* CAudioPlayer::s_pAudio = 0;
 
 /**
 *
-* CAudioPlayer class Constructor
+* AudioPlayer class Constructor
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
 *
 */
-CAudioPlayer::CAudioPlayer()
-: m_pFMod(0)
-, m_pChannel(0)
-, m_pSound(0)
+AudioPlayer::AudioPlayer()
+: m_pFMod( nullptr )
+, m_pChannel( nullptr )
+, m_pSound( nullptr )
 , m_bSoundsAreLoaded(false)
 {
 	
 }
 /**
 *
-* CAudioPlayer class Destructor
+* AudioPlayer class Destructor
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
 *
 */
-CAudioPlayer::~CAudioPlayer()
+AudioPlayer::~AudioPlayer()
 {
 	if (m_bSoundsAreLoaded)
 	{
@@ -59,7 +59,7 @@ CAudioPlayer::~CAudioPlayer()
 
 /**
 *
-* CAudioPlayer class Initialise
+* AudioPlayer class Initialise
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -67,7 +67,7 @@ CAudioPlayer::~CAudioPlayer()
 *
 */
 bool 
-CAudioPlayer::Initialise(bool _bLoadSounds)
+AudioPlayer::Initialise(bool _bLoadSounds)
 {
 	if (_bLoadSounds)
 	{
@@ -89,7 +89,7 @@ CAudioPlayer::Initialise(bool _bLoadSounds)
 	return true;
 }
 void 
-CAudioPlayer::LoadSounds()
+AudioPlayer::LoadSounds()
 {
 	m_bSoundsAreLoaded = true;
 	m_pSound = new FMOD::Sound*[SOUND_MAX];
@@ -109,13 +109,13 @@ CAudioPlayer::LoadSounds()
 	delete[] pFilenames;
 }
 void 
-CAudioPlayer::Process()
+AudioPlayer::Process()
 {
 	m_pFMod->update();
 }
 
 void 
-CAudioPlayer::Play3DSound(E3DSoundType _eSound, Math::Vector3& _vecPosition)
+AudioPlayer::Play3DSound(E3DSoundType _eSound, Math::Vector3& _vecPosition)
 {
 	if (m_bSoundsAreLoaded)
 	{
@@ -132,7 +132,7 @@ CAudioPlayer::Play3DSound(E3DSoundType _eSound, Math::Vector3& _vecPosition)
 	}
 }
 void 
-CAudioPlayer::SetListenerPosition(Math::Vector3& _rVecListenerPos, Math::Vector3& _rVecForward, Math::Vector3& _rVecUp)
+AudioPlayer::SetListenerPosition(Math::Vector3& _rVecListenerPos, Math::Vector3& _rVecForward, Math::Vector3& _rVecUp)
 {
 	if (m_bSoundsAreLoaded)
 	{
@@ -159,18 +159,18 @@ CAudioPlayer::SetListenerPosition(Math::Vector3& _rVecListenerPos, Math::Vector3
 		m_pFMod->set3DListenerAttributes(0, &vecListenerPos, &vecVelocity, &vecForward, &vecUp);
 	}
 }
-CAudioPlayer&
-CAudioPlayer::GetInstance()
+AudioPlayer&
+AudioPlayer::GetInstance()
 {
 	if (s_pAudio == 0)
 	{
-		s_pAudio = new CAudioPlayer();
+		s_pAudio = new AudioPlayer();
 	}
 
 	return (*s_pAudio);
 }
 void
-CAudioPlayer::DestroyInstance()
+AudioPlayer::DestroyInstance()
 {
 	delete s_pAudio;
 	s_pAudio = 0;

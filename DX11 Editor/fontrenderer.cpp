@@ -1,6 +1,6 @@
 //
 //  File Name   :   fontrenderer.cpp
-//  Description :   Code for class CFontRenderer
+//  Description :   Code for class FontRenderer
 //  Author      :   Christopher Howlett
 //  Mail        :   drakos_gate@yahoo.com
 //
@@ -21,30 +21,30 @@
 
 /**
 *
-* CFontRenderer class constructor
+* FontRenderer class constructor
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
 *
 */
-CFontRenderer::CFontRenderer()
+FontRenderer::FontRenderer()
 : m_bHasChanged(false)
-, m_pLetterCoordinates(0)
-, m_iNumFontLetters(0)
-, m_pFontVerts(0)
+, m_pLetterCoordinates( nullptr )
+, m_iNumFontLetters( 0 )
+, m_pFontVerts( nullptr )
 {
 
 }
 
 /**
 *
-* CFontRenderer class destructor
+* FontRenderer class destructor
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
 *
 */
-CFontRenderer::~CFontRenderer()
+FontRenderer::~FontRenderer()
 {
 	for (unsigned int iVert = 0; iVert < m_Vertices.size(); ++iVert)
 	{
@@ -67,7 +67,7 @@ CFontRenderer::~CFontRenderer()
 
 /**
 *
-* CFontRenderer class Initialise
+* FontRenderer class Initialise
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -75,7 +75,7 @@ CFontRenderer::~CFontRenderer()
 *
 */
 bool 
-CFontRenderer::Initialise(char* _pcFontFilename, int _iFileWidth, int _iFileHeight, Math::Vector3& _rPosition, Math::Vector2& _rCharacterSize, Math::Colour& _rFontColour)
+FontRenderer::Initialise(char* _pcFontFilename, int _iFileWidth, int _iFileHeight, Math::Vector3& _rPosition, Math::Vector2& _rCharacterSize, Math::Colour& _rFontColour)
 {
 	m_iNumFontLetters = _iFileWidth * _iFileHeight;
 	m_pLetterCoordinates = new TLetterCoordinates[m_iNumFontLetters];
@@ -99,14 +99,14 @@ CFontRenderer::Initialise(char* _pcFontFilename, int _iFileWidth, int _iFileHeig
 }
 /**
 *
-* CFontRenderer class Draw
+* FontRenderer class Draw
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
 *
 */
 void
-CFontRenderer::Draw(ID3D11DeviceContext* _pDevice)
+FontRenderer::Draw(ID3D11DeviceContext* _pDevice)
 {
 	if (m_pVertexBuffer)
 	{
@@ -119,14 +119,14 @@ CFontRenderer::Draw(ID3D11DeviceContext* _pDevice)
 }
 /**
 *
-* CFontRenderer class ProcessFont Rebuilds the font buffer if needed
+* FontRenderer class ProcessFont Rebuilds the font buffer if needed
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
 *
 */
 void
-CFontRenderer::ProcessFont(ID3D11Device* _pDevice)
+FontRenderer::ProcessFont(ID3D11Device* _pDevice)
 {
 	if (m_bHasChanged)
 	{
@@ -188,7 +188,7 @@ CFontRenderer::ProcessFont(ID3D11Device* _pDevice)
 }
 /**
 *
-* CFontRenderer class Write
+* FontRenderer class Write
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -196,7 +196,7 @@ CFontRenderer::ProcessFont(ID3D11Device* _pDevice)
 *
 */
 void
-CFontRenderer::Write(std::string& _pcMessage, int _iIndex)
+FontRenderer::Write(std::string& _pcMessage, int _iIndex)
 {
 	//Adjust message buffer to size of this index
 	while(static_cast<unsigned int>(_iIndex) >= m_Messages.size())
@@ -208,14 +208,14 @@ CFontRenderer::Write(std::string& _pcMessage, int _iIndex)
 }
 /**
 *
-* CFontRenderer class CreateModelBuffers
+* FontRenderer class CreateModelBuffers
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
 *
 */
 void
-CFontRenderer::CreateVertexBuffer(ID3D11Device* _pDevice)
+FontRenderer::CreateVertexBuffer(ID3D11Device* _pDevice)
 {
 	delete[] m_pFontVerts;
 	m_iVertexCount = m_Vertices.size();

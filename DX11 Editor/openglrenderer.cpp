@@ -61,7 +61,7 @@
 //	//m_iWindowHeight = _iWindowHeight;
 //
 //	////Start up console
-//	//m_pConsole = new CConsoleWindow();
+//	//m_pConsole = new ConsoleWindow();
 //	////m_pConsole->InitialiseConsole();
 //	//
 //	////Initialise OpenGL 

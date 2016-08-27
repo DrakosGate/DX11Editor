@@ -6,7 +6,7 @@ __kernel void ProcessAI(__global float4* _pPositions,
 						__global float4* _pOutPositions,
 						__global float4* _pOutDirections)
 {
-	unsigned int iIndex = get_global_id(0);
+	unsigned int iIndex = get_global_id( nullptr );
 
 	float fDeltaTime = _pPositions[0].w;
 	float fMovementSpeed = _pAIData[iIndex].x;

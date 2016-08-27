@@ -1,6 +1,6 @@
 //
 //  File Name   :   menuitem.h
-//  Description :   Class of CPointSprite
+//  Description :   Class of PointSprite
 //  Author      :   Christopher Howlett
 //  Mail        :   drakos_gate@yahoo.com
 //
@@ -99,22 +99,22 @@ enum EEditorState
 // Prototypes
 struct ID3D11DeviceContext;
 
-class CLevel;
-class CShader;
-class CEntityManager;
-class CResourceManager;
-class CEditorInterface;
-class CEntityManager;
+class Level;
+class Shader;
+class EntityManager;
+class ResourceManager;
+class EditorInterface;
+class EntityManager;
 class CDialogEvent;
 
-class CEditorInterface : public CPointSprite
+class EditorInterface : public PointSprite
 {
 	//Member functions
 public:
-	CEditorInterface();
-	virtual ~CEditorInterface();
+	EditorInterface();
+	virtual ~EditorInterface();
 
-	virtual bool Initialise( HWND _hWindow, CLevel* _pLevel );
+	virtual bool Initialise( HWND _hWindow, Level* _pLevel );
 	virtual void Process( float _fDeltaTime );
 	virtual EEditorState GetEditorState() const;
 	virtual std::string& GetSelectedPrefab();
@@ -129,13 +129,13 @@ public:
 	virtual bool HasCollided( Math::Vector2& _rPoint, TButton* _pButton );
 	virtual void ProcessButtonPressed( ID3D11Device* _pDevice, TWindow* _pWindow, TButton* _pButton );
 
-	virtual void LoadFromXML( ID3D11Device* _pDevice, CResourceManager* _pResourceManager, CEntityManager* _pEntityManager, char* _pcXMLFilename );
-	virtual void AddPrefabCreationButtons( CEntityManager* _pEntityManager, CResourceManager* _pResourceManager, TWindow* _pWindow, TButton* _pNewPrefabButton );
+	virtual void LoadFromXML( ID3D11Device* _pDevice, ResourceManager* _pResourceManager, EntityManager* _pEntityManager, char* _pcXMLFilename );
+	virtual void AddPrefabCreationButtons( EntityManager* _pEntityManager, ResourceManager* _pResourceManager, TWindow* _pWindow, TButton* _pNewPrefabButton );
 	virtual TPointSpriteVertex* CreatePointSprite( ID3D11Device* _pDevice, Math::Vector3& _rPosition, Math::Vector2& _rScale, Math::Colour& _rColour, float _fRotation, int _iTextureID );
 
 private:
-	CEditorInterface( const CEditorInterface& _krInstanceToCopy );
-	const CEditorInterface& operator =( const CEditorInterface& _krInstanceToCopy );
+	EditorInterface( const EditorInterface& _krInstanceToCopy );
+	const EditorInterface& operator =( const EditorInterface& _krInstanceToCopy );
 
 	//Member variables
 protected:
@@ -154,7 +154,7 @@ protected:
 
 	//Saving and Loading files
 	HWND m_hWindow;
-	CLevel* m_pCurrentLevel;
+	Level* m_pCurrentLevel;
 	IFileOpenDialog* m_pFileOpenDialog;
 	IFileSaveDialog* m_pFileSaveDialog;
 };

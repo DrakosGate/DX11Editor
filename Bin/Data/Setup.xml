@@ -9,11 +9,11 @@
 		</general>
 		<processing>
 			<ai>0</ai>						<!-- 0: Sequential  1: Thread Pool  2: GPU with OpenCL  3: Distributed(not functional) -->
-			<grass>1</grass>				<!-- 0: Sequential  1: Thread Pool  2: GPU with OpenCL  3: Distributed(not functional) -->
+			<grass>0</grass>				<!-- 0: Sequential  1: Thread Pool  2: GPU with OpenCL  3: Distributed(not functional) -->
 		</processing>
 		<grass>
-			<dimensions>100</dimensions>	<!-- Dimensions of the grass plane -->
-			<state>2</STATE>				<!-- 0: OFF  1: Draw Only  2: Draw with Collisions -->
+			<dimensions>50</dimensions>	<!-- Dimensions of the grass plane -->
+			<state>1</STATE>				<!-- 0: OFF  1: Draw Only  2: Draw with Collisions -->
 		</grass>
 		<ai>
 			<number>10</number>				<!-- Number of AI to spawn at the start-->

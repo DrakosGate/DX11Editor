@@ -21,14 +21,14 @@
 // Implementation
 /**
 *
-* CPrefab class constructor
+* Prefab class constructor
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
 *
 */
-CPrefab::CPrefab()
-: m_pModel(0)
+Prefab::Prefab()
+: m_pModel( nullptr )
 , m_eTileType(TILE_INVALID)
 , m_fBoundingBoxPercentage(0.0f)
 , m_bIsCollidable(false)
@@ -38,7 +38,7 @@ CPrefab::CPrefab()
 	m_vecScale.z = 1.0f;
 }
 
-CPrefab::~CPrefab()
+Prefab::~Prefab()
 {
 	if (m_pBoundingBox)
 	{
@@ -47,7 +47,7 @@ CPrefab::~CPrefab()
 	}
 }
 bool 
-CPrefab::Initialise(ID3D11Device* _pDevice, float _fScale)
+Prefab::Initialise(ID3D11Device* _pDevice, float _fScale)
 {
 	m_vecScale.x = _fScale;
 	m_vecScale.y = _fScale;
@@ -62,7 +62,7 @@ CPrefab::Initialise(ID3D11Device* _pDevice, float _fScale)
 }
 /**
 *
-* CPrefab class Draw
+* Prefab class Draw
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -70,12 +70,12 @@ CPrefab::Initialise(ID3D11Device* _pDevice, float _fScale)
 *
 */
 void 
-CPrefab::Draw(ID3D11DeviceContext* _pDevice)
+Prefab::Draw(ID3D11DeviceContext* _pDevice)
 {
 	m_pModel->Draw(_pDevice);
 }
 void 
-CPrefab::SetModel(Model* _pModel)
+Prefab::SetModel(Model* _pModel)
 {
 	m_pModel = _pModel;
 	
@@ -88,27 +88,27 @@ CPrefab::SetModel(Model* _pModel)
 	m_fRadius = m_pModel->GetBoundingBox()->GetRadius();
 }
 void 
-CPrefab::SetTileType(ETileType _eTileType)
+Prefab::SetTileType(ETileType _eTileType)
 {
 	m_eTileType = _eTileType;
 }
 ETileType 
-CPrefab::GetTileType() const
+Prefab::GetTileType() const
 {
 	return m_eTileType;
 }
 bool 
-CPrefab::IsCollidable() const
+Prefab::IsCollidable() const
 {
 	return m_bIsCollidable;
 }
 void 
-CPrefab::ToggleIsCollidable(bool _bIsCollidable)
+Prefab::ToggleIsCollidable(bool _bIsCollidable)
 {
 	m_bIsCollidable = _bIsCollidable;
 }
 bool 
-CPrefab::CheckPointCollision(Math::Vector3& _rPoint)
+Prefab::CheckPointCollision(Math::Vector3& _rPoint)
 {
 	TBoundingBox* pBox = m_pBoundingBox->GetRect();
 	return (	pBox->fLeft + m_vecPosition.x < _rPoint.x &&
@@ -117,7 +117,7 @@ CPrefab::CheckPointCollision(Math::Vector3& _rPoint)
 				pBox->fTop + m_vecPosition.y > _rPoint.y);
 }
 void 
-CPrefab::SetScale(Math::Vector3& _rVecScale)
+Prefab::SetScale(Math::Vector3& _rVecScale)
 {
 	m_vecScale = _rVecScale;
 

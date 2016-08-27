@@ -1,6 +1,6 @@
 //
 //  File Name   :   AIHiveMind.h
-//  Description :   Class of CAIHiveMind
+//  Description :   Class of AIHiveMind
 //  Author      :   Christopher Howlett
 //  Mail        :   drakos_gate@yahoo.com
 //
@@ -14,9 +14,9 @@
 #include <vector>
 
 // Local Includes
-#include "defines.h"
+#include "mathlibrary.h"
 
-class CAIHiveMind;
+class AIHiveMind;
 // Types
 struct TAIDescription
 {
@@ -25,7 +25,7 @@ struct TAIDescription
 		fMovementSpeed = 0.0f;
 		fRotationSpeed = 0.0f;
 	}
-	TAIDescription(float _fMovement, float _fRotation)
+	TAIDescription( float _fMovement, float _fRotation )
 	{
 		fMovementSpeed = _fMovement;
 		fRotationSpeed = _fRotation;
@@ -35,13 +35,13 @@ struct TAIDescription
 };
 struct TAIThreadData
 {
-	TAIThreadData(CAIHiveMind* _pHivemind, int _iAIIndex, float _fDeltaTime)
+	TAIThreadData( AIHiveMind* _pHivemind, int _iAIIndex, float _fDeltaTime )
 	{
 		pThis = _pHivemind;
 		iAIIndex = _iAIIndex;
 		fDeltaTime = _fDeltaTime;
 	}
-	CAIHiveMind* pThis;
+	AIHiveMind* pThis;
 	int iAIIndex;
 	float fDeltaTime;
 };
@@ -61,7 +61,7 @@ struct TGridNode
 	TGridNode* pDown;
 	TGridNode* pLeft;
 	TGridNode* pRight;
-}; 
+};
 enum ENavigationMethod
 {
 	NAVIGATION_INVALID = -1,
@@ -75,52 +75,51 @@ enum ENavigationMethod
 // Prototypes
 struct ID3D11Device;
 
-class CShader;
+class Shader;
 class RenderEntity;
-class CAIController;
-class CPointSprite;
-class CEntityManager;
-class CThreadPool;
-class CAICLKernel;
-class COpenCLContext;
+class AIController;
+class PointSprite;
+class EntityManager;
+class ThreadPool;
+//class AICLKernel;
 
-class CAIHiveMind
+class AIHiveMind
 {
 public:
-	CAIHiveMind();
-	virtual ~CAIHiveMind();
+	AIHiveMind();
+	virtual ~AIHiveMind();
 
-	virtual bool Initialise(COpenCLContext* _pCLKernel, int _iAStarDepth);
-	void Process(COpenCLContext* _pCLKernel, CThreadPool* _pCThreadPool, float _fDeltaTime);
-	void ProcessIndividualAIMovement(int _iAIIndex, float _fDeltaTime);
-	void ProcessIndividualAIController(int _iAIIndex, float _fDeltaTime);
-	void ProcessOpenCLKernel(COpenCLContext* _pCLKernel, float _fDeltaTime);
-	void AddAI(RenderEntity* _pEntity, EAIType _eAIType);
-	void AddStaticObject(ID3D11Device* _pDevice, RenderEntity* _pObject);
+	virtual bool Initialise( int _iAStarDepth );
+	void Process( ThreadPool* _pCThreadPool, float _fDeltaTime );
+	void ProcessIndividualAIMovement( int _iAIIndex, float _fDeltaTime );
+	void ProcessIndividualAIController( int _iAIIndex, float _fDeltaTime );
+	//void ProcessOpenCLKernel( float _fDeltaTime );
+	void AddAI( RenderEntity* _pEntity, EAIType _eAIType );
+	void AddStaticObject( ID3D11Device* _pDevice, RenderEntity* _pObject );
 
-	void CreateNavigationGrid(ID3D11Device* _pDevice, CEntityManager* _pEntityManager, CShader* _pShader, float _fGridScale, int _iWidth, int _iHeight);
+	void CreateNavigationGrid( ID3D11Device* _pDevice, EntityManager* _pEntityManager, Shader* _pShader, float _fGridScale, int _iWidth, int _iHeight );
 	Math::Vector3& GetRandomWaypoint() const;
-	Math::Vector3* GetNextWaypoint(Math::Vector3& _rVecTarget, int& _iCurrentWaypoint);
-	float GetAStarNodeValue(TGridNode* _pCurrentNode, TGridNode* _pPreviousNode, Math::Vector3& _rVecTarget, int _iTreeDepth);
+	Math::Vector3* GetNextWaypoint( Math::Vector3& _rVecTarget, int& _iCurrentWaypoint );
+	float GetAStarNodeValue( TGridNode* _pCurrentNode, TGridNode* _pPreviousNode, Math::Vector3& _rVecTarget, int _iTreeDepth );
 	TGridNode* GetNavigationGrid();
-	CAIController* GetAI(int _iIndex) const;
+	AIController* GetAI( int _iIndex ) const;
 	int GetNavigationGridSize() const;
 	int GetAICount() const;
 
-	TAIDescription& GetAIDesc(EAIType _eAIType);
+	TAIDescription& GetAIDesc( EAIType _eAIType );
 	void ClearHivemind();
-	void ChangeProcessingMethod(EProcessingMethod _eProcessingMethod);
-	void RecalculateNavGrid(ID3D11Device* _pDevice);
+	void ChangeProcessingMethod( EProcessingMethod _eProcessingMethod );
+	void RecalculateNavGrid( ID3D11Device* _pDevice );
 
 private:
-	CAIHiveMind(const CAIHiveMind& _krInstanceToCopy);
-	const CAIHiveMind& operator =(const CAIHiveMind& _krInstanceToCopy);
+	AIHiveMind( const AIHiveMind& _krInstanceToCopy );
+	const AIHiveMind& operator =( const AIHiveMind& _krInstanceToCopy );
 
 private:
 	EProcessingMethod m_eProcessingMethod;
 
-	CAICLKernel* m_pCLKernel;
-	CAIController** m_pAI;
+	//AICLKernel* m_pCLKernel;
+	AIController** m_pAI;
 	std::vector<RenderEntity*> m_vecStaticObstacles;
 	int m_iNumAI;
 
@@ -128,12 +127,12 @@ private:
 	std::vector<TAIThreadData*> m_vecThreadData;
 
 	TGridNode* m_pNavigationGrid;
-	CPointSprite* m_pNavigationGridMesh;
+	PointSprite* m_pNavigationGridMesh;
 	int m_iGridSize;
 	int m_iWidth;
 	int m_iHeight;
 	int m_iAStarDepth;
-	
+
 };
 
 #endif // __AIHIVEMIND_H__

@@ -1,17 +1,22 @@
+//
+//  File Name   :   CDirectXRenderer.h
+//  Description :   Class of DirectXRenderer
+//  Author      :   Christopher Howlett
+//  Mail        :   drakos_gate@yahoo.com
+//
 
 #pragma once
 
-// Library Includes
-#include <d3d11.h>
+#ifndef __DIRECTXRENDERER_H__
+#define __DIRECTXRENDERER_H__
 
-#pragma comment(lib, "d3d11.lib")
-#pragma comment(lib, "dxgi.lib")
-#pragma comment(lib, "d3dcompiler.lib")
+// Library Includes
 
 // Local Includes
-#include "defines.h"
+#include "mathlibrary.h"
 #include "irenderer.h"
 
+// Types
 enum EBlendTypes
 {
 	BLEND_INVALID = -1,
@@ -20,6 +25,8 @@ enum EBlendTypes
 	BLEND_ALPHATOCOVERAGE,
 	BLEND_MAX
 };
+
+// Constants
 
 // Prototypes
 struct ID3D11Device;
@@ -33,25 +40,23 @@ struct ID3D11BlendState;
 struct IDXGISwapChain;
 struct TSetupStruct;
 
-class Clock;
+class CClock;
+class CLevel;
+class CModel;
+class CCamera;
 
-//
-class DX11Renderer : public IRenderer
+class CDirectXRenderer : public IRenderer
 {
 	//Member functions
 public:
-	DX11Renderer();
-	virtual ~DX11Renderer();
+	CDirectXRenderer();
+	virtual ~CDirectXRenderer();
 
-	virtual bool Initialise( HWND _hWnd, TSetupStruct* _pSetupData, int _iWindowWidth, int _iWindowHeight ) override;
-	virtual void SetupDirectX11( HWND _hWnd, int _iWindowWidth, int _iWindowHeight );
+	virtual bool Initialise( HWND _hWnd, TSetupStruct* _pSetupData, int _iWindowWidth, int _iWindowHeight );
+	virtual void SetupDirectX11( HWND _hWnd );
 	virtual void CleanUp();
 
-	ID3D11Device* GetDevice() const { return m_pDevice; }
-	ID3D11DeviceContext* GetDeviceContext() const { return m_pDeviceContext; } 
-
-	virtual void ExecuteOneFrame( Clock* _pClock, float _fDeltaTick );
-	virtual void SetFPSCount( const int _fps ){}
+	virtual void ExecuteOneFrame( CClock* _pClock, float _fDeltaTick );
 	virtual void PrepareLastScene();
 
 	ID3D11RenderTargetView* GetRenderTargetView();
@@ -61,8 +66,8 @@ public:
 	void SetBlendState( EBlendTypes _eBlendType );
 
 private:
-	DX11Renderer( const DX11Renderer& _krInstanceToCopy );
-	const DX11Renderer& operator =( const DX11Renderer& _krInstanceToCopy );
+	CDirectXRenderer( const CDirectXRenderer& _krInstanceToCopy );
+	const CDirectXRenderer& operator =( const CDirectXRenderer& _krInstanceToCopy );
 
 	//Member variables
 private:
@@ -73,15 +78,6 @@ private:
 	ID3D11RenderTargetView* m_pRenderTargetView;
 	float m_pClearColour[ 4 ];
 	TSetupStruct* m_pSetupData;
-	HWND m_hWindow;
-
-	//Depth stencil
-	ID3D11Texture2D* m_pDepthStencilBuffer;
-	ID3D11DepthStencilState* m_pDepthStencilState;
-	ID3D11DepthStencilView* m_pDepthStencilView;
-	ID3D11ShaderResourceView* m_pDepthShaderResource;
-	ID3D11BlendState** m_pBlendStates;
-	ID3D11RasterizerState* m_pRasterState;
 
 	//Device Information
 	char m_videoCardDesc[ 128 ];
@@ -89,5 +85,14 @@ private:
 	bool m_bIsFullscreen;
 	bool m_bVSyncEnabled;
 
+	//Depth stencil
+	ID3D11Texture2D* m_pDepthStencilBuffer;
+	ID3D11DepthStencilState* m_pDepthStencilState;
+	ID3D11DepthStencilView* m_pDepthStencilView;
+	ID3D11ShaderResourceView* m_pDepthShaderResource;
+	ID3D11BlendState** m_pBlendStates;
+
+	CLevel* m_pLevel;
 };
 
+#endif //DIRECTXRENDERER

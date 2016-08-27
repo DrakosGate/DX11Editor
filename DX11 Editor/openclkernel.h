@@ -7,14 +7,14 @@
 
 #include <CL\opencl.h>
 
-class COpenCLContext;
+class OpenCLContext;
 
-class COpenCLKernel
+class OpenCLKernel
 {
 //Member functions
 public:
-	COpenCLKernel();
-	virtual ~COpenCLKernel();
+	OpenCLKernel();
+	virtual ~OpenCLKernel();
 
 	cl_kernel& GetCLKernel();
 	cl_program& GetCLProgram();

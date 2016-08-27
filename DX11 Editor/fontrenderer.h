@@ -1,6 +1,6 @@
 //
 //  File Name   :   fontrenderer.h
-//  Description :   Class of CFontRenderer
+//  Description :   Class of FontRenderer
 //  Author      :   Christopher Howlett
 //  Mail        :   drakos_gate@yahoo.com
 //
@@ -50,12 +50,12 @@ struct TLetter
 
 // Prototypes
 
-class CFontRenderer : public Model
+class FontRenderer : public Model
 {
 	//Member functions
 public:
-	CFontRenderer();
-	virtual ~CFontRenderer();
+	FontRenderer();
+	virtual ~FontRenderer();
 
 	virtual bool Initialise(char* _pcFontFilename, int _iFileWidth, int _iFileHeight, Math::Vector3& _rPosition, Math::Vector2& _rCharacterSize, Math::Colour& _rFontColour);
 	void Draw(ID3D11DeviceContext* _pDevice);
@@ -65,8 +65,8 @@ public:
 	void CreateVertexBuffer(ID3D11Device* _pDevice);
 
 private:
-	CFontRenderer(const CFontRenderer& _krInstanceToCopy);
-	const CFontRenderer& operator =(const CFontRenderer& _krInstanceToCopy);
+	FontRenderer(const FontRenderer& _krInstanceToCopy);
+	const FontRenderer& operator =(const FontRenderer& _krInstanceToCopy);
 
 	//Member variables
 protected:

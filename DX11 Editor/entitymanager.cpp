@@ -21,13 +21,13 @@
 
 /**
 *
-* CEntityManager class Constructor
+* EntityManager class Constructor
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
 *
 */
-CEntityManager::CEntityManager()
+EntityManager::EntityManager()
 	: m_pRenderEntities( 0 )
 	, m_pTransparentEntities( 0 )
 	, m_pCameraDepths( 0 )
@@ -36,13 +36,13 @@ CEntityManager::CEntityManager()
 }
 /**
 *
-* CEntityManager class Destructor
+* EntityManager class Destructor
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
 *
 */
-CEntityManager::~CEntityManager()
+EntityManager::~EntityManager()
 {
 	for( unsigned int iPrefab = 0; iPrefab < m_vecPrefabTypes.size(); ++iPrefab )
 	{
@@ -86,7 +86,7 @@ CEntityManager::~CEntityManager()
 }
 /**
 *
-* CEntityManager class Initialise
+* EntityManager class Initialise
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -94,7 +94,7 @@ CEntityManager::~CEntityManager()
 *
 */
 bool
-CEntityManager::Initialise( ID3D11Device* _pDevice )
+EntityManager::Initialise( ID3D11Device* _pDevice )
 {
 	//Set resources that will never change
 	m_pRenderEntities = new std::vector<RenderEntity*>[ SCENE_MAX ];
@@ -104,7 +104,7 @@ CEntityManager::Initialise( ID3D11Device* _pDevice )
 }
 /**
 *
-* CEntityManager class SetLevelInformation Passes necessary level information to the entity manager
+* EntityManager class SetLevelInformation Passes necessary level information to the entity manager
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -113,14 +113,14 @@ CEntityManager::Initialise( ID3D11Device* _pDevice )
 *
 */
 void
-CEntityManager::SetLevelInformation( CAIHiveMind* _pHivemind, CLightManager* _pLightManager )
+EntityManager::SetLevelInformation( AIHiveMind* _pHivemind, LightManager* _pLightManager )
 {
 	m_pAIHivemind = _pHivemind;
 	m_pLightManager = _pLightManager;
 }
 /**
 *
-* CEntityManager class Process
+* EntityManager class Process
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -128,7 +128,7 @@ CEntityManager::SetLevelInformation( CAIHiveMind* _pHivemind, CLightManager* _pL
 *
 */
 void
-CEntityManager::Process( float _fDeltaTime, EGameScene _eGameScene )
+EntityManager::Process( float _fDeltaTime, EGameScene _eGameScene )
 {
 	//_pRootNode->pEntity->Process(_fDeltaTime, NULL);
 	for( int iScene = 0; iScene < SCENE_MAX; ++iScene )
@@ -144,7 +144,7 @@ CEntityManager::Process( float _fDeltaTime, EGameScene _eGameScene )
 }
 /**
 *
-* CEntityManager class Draw
+* EntityManager class Draw
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -153,7 +153,7 @@ CEntityManager::Process( float _fDeltaTime, EGameScene _eGameScene )
 *
 */
 void
-CEntityManager::Draw( ID3D11DeviceContext* _pDevice, Camera* _pCurrentCamera, EGameScene _eScene )
+EntityManager::Draw( ID3D11DeviceContext* _pDevice, Camera* _pCurrentCamera, EGameScene _eScene )
 {
 	//Draw entities
 	RenderEntity* pCurrentEntity = 0;
@@ -198,7 +198,7 @@ CEntityManager::Draw( ID3D11DeviceContext* _pDevice, Camera* _pCurrentCamera, EG
 }
 /**
 *
-* CEntityManager class Draw
+* EntityManager class Draw
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -207,7 +207,7 @@ CEntityManager::Draw( ID3D11DeviceContext* _pDevice, Camera* _pCurrentCamera, EG
 *
 */
 void
-CEntityManager::DrawTransparentEntities( ID3D11DeviceContext* _pDevice, Camera* _pCurrentCamera, EGameScene _eScene )
+EntityManager::DrawTransparentEntities( ID3D11DeviceContext* _pDevice, Camera* _pCurrentCamera, EGameScene _eScene )
 {
 	if( m_pTransparentEntities[ _eScene ].size() > 0 )
 	{
@@ -249,7 +249,7 @@ CEntityManager::DrawTransparentEntities( ID3D11DeviceContext* _pDevice, Camera* 
 	}
 }
 void
-CEntityManager::SortTransparentEntities( Camera* _pCurrentCamera, EGameScene _eGameScene )
+EntityManager::SortTransparentEntities( Camera* _pCurrentCamera, EGameScene _eGameScene )
 {
 	//Calculate camera depths
 	for( unsigned int iEntity = 0; iEntity < m_pTransparentEntities[ _eGameScene ].size(); ++iEntity )
@@ -284,7 +284,7 @@ CEntityManager::SortTransparentEntities( Camera* _pCurrentCamera, EGameScene _eG
 }
 /**
 *
-* CEntityManager class DrawProjection
+* EntityManager class DrawProjection
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -295,7 +295,7 @@ CEntityManager::SortTransparentEntities( Camera* _pCurrentCamera, EGameScene _eG
 *
 */
 void
-CEntityManager::DrawProjection( ID3D11DeviceContext* _pDevice, Camera* _pCurrentCamera, Camera* _pProjectionCamera, ID3D10ShaderResourceView* _pProjectedMap, EGameScene _eScene )
+EntityManager::DrawProjection( ID3D11DeviceContext* _pDevice, Camera* _pCurrentCamera, Camera* _pProjectionCamera, ID3D11ShaderResourceView* _pProjectedMap, EGameScene _eScene )
 {
 	//m_pLightMatrix->SetMatrix((float*)(_pProjectionCamera->GetViewMatrix() * _pProjectionCamera->GetProjection()));
 	//RenderEntity* pCurrentEntity = 0;
@@ -325,7 +325,7 @@ CEntityManager::DrawProjection( ID3D11DeviceContext* _pDevice, Camera* _pCurrent
 	//			m_matWorldViewProjection = pCurrentEntity->GetWorld() * _pCurrentCamera->GetViewMatrix() * _pCurrentCamera->GetProjection();
 	//			m_fxWorldViewProjection->SetMatrix((float*)&m_matWorldViewProjection);
 	//			m_pObjectWorld->SetMatrix((float*)&pCurrentEntity->GetWorld());
-	//			m_pShadowTech->GetPassByIndex( p )->Apply(0);
+	//			m_pShadowTech->GetPassByIndex( p )->Apply( nullptr );
 	//			pCurrentEntity->Draw(_pDevice);
 	//		}
 	//	}
@@ -333,7 +333,7 @@ CEntityManager::DrawProjection( ID3D11DeviceContext* _pDevice, Camera* _pCurrent
 }
 /**
 *
-* CEntityManager class AddEntity
+* EntityManager class AddEntity
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -341,7 +341,7 @@ CEntityManager::DrawProjection( ID3D11DeviceContext* _pDevice, Camera* _pCurrent
 *
 */
 void
-CEntityManager::AddEntity( RenderEntity* _pNewEntity, EGameScene _eScene )
+EntityManager::AddEntity( RenderEntity* _pNewEntity, EGameScene _eScene )
 {
 	if( _pNewEntity->IsTransparent() )
 	{
@@ -354,7 +354,7 @@ CEntityManager::AddEntity( RenderEntity* _pNewEntity, EGameScene _eScene )
 }
 /**
 *
-* CEntityManager class Adds Prefab to the prefab container
+* EntityManager class Adds Prefab to the prefab container
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -362,14 +362,14 @@ CEntityManager::AddEntity( RenderEntity* _pNewEntity, EGameScene _eScene )
 *
 */
 void
-CEntityManager::AddPrefab( TPrefabOptions* _pPrefab )
+EntityManager::AddPrefab( TPrefabOptions* _pPrefab )
 {
 	m_mapPrefabIndex[ _pPrefab->pcPrefabName ] = m_vecPrefabTypes.size();
 	m_vecPrefabTypes.push_back( _pPrefab );
 }
 /**
 *
-* CEntityManager class Returns the prefab options
+* EntityManager class Returns the prefab options
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -378,14 +378,14 @@ CEntityManager::AddPrefab( TPrefabOptions* _pPrefab )
 *
 */
 TPrefabOptions*
-CEntityManager::GetPrefabOptions( std::string& _pcPrefabName )
+EntityManager::GetPrefabOptions( std::string& _pcPrefabName )
 {
 	int iPrefabIndex = m_mapPrefabIndex[ _pcPrefabName ];
 	return m_vecPrefabTypes[ iPrefabIndex ];
 }
 /**
 *
-* CEntityManager class Returns the prefab options
+* EntityManager class Returns the prefab options
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -394,13 +394,13 @@ CEntityManager::GetPrefabOptions( std::string& _pcPrefabName )
 *
 */
 TPrefabOptions*
-CEntityManager::GetPrefabOptions( int _iPrefabIndex )
+EntityManager::GetPrefabOptions( int _iPrefabIndex )
 {
 	return m_vecPrefabTypes[ _iPrefabIndex ];
 }
 /**
 *
-* CEntityManager class Returns the prefab options
+* EntityManager class Returns the prefab options
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -408,24 +408,24 @@ CEntityManager::GetPrefabOptions( int _iPrefabIndex )
 *
 */
 int
-CEntityManager::GetPrefabCount() const
+EntityManager::GetPrefabCount() const
 {
 	return m_vecPrefabTypes.size();
 }
 /**
 *
-* CEntityManager class Instantiates a prefab from the string specified
+* EntityManager class Instantiates a prefab from the string specified
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
 * @param _pcPrefabName Name of prefab to instantiate
 *
 */
-CPrefab*
-CEntityManager::InstantiatePrefab( ID3D11Device* _pDevice,
+Prefab*
+EntityManager::InstantiatePrefab( ID3D11Device* _pDevice,
 	TEntityNode* _pParentNode,
 	std::string& _pcPrefabName,
-	CShader* _pShader,
+	Shader* _pShader,
 	std::vector<RenderEntity*>& _rGrassColliders,
 	EGameScene _eScene,
 	Math::Vector3& _rPos,
@@ -433,7 +433,7 @@ CEntityManager::InstantiatePrefab( ID3D11Device* _pDevice,
 	Math::Vector3& _rRotation,
 	Math::Colour& _rColour )
 {
-	CPrefab* pNewEntity = new CPrefab();
+	Prefab* pNewEntity = new Prefab();
 	TPrefabOptions* pPrefabOptions = GetPrefabOptions( _pcPrefabName );
 	Math::Vector3 vecInstanceScale = Math::Vector3( _rScale.x * pPrefabOptions->vecScale.x, _rScale.y * pPrefabOptions->vecScale.y, _rScale.z * pPrefabOptions->vecScale.z );
 
@@ -473,7 +473,7 @@ CEntityManager::InstantiatePrefab( ID3D11Device* _pDevice,
 }
 /**
 *
-* CEntityManager class Checks if current entity is in camera frustum
+* EntityManager class Checks if current entity is in camera frustum
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -482,7 +482,7 @@ CEntityManager::InstantiatePrefab( ID3D11Device* _pDevice,
 *
 */
 bool
-CEntityManager::IsEntityInFrustum( Camera* _pCamera, CBoundingBox* _pBoundingBox )
+EntityManager::IsEntityInFrustum( Camera* _pCamera, CBoundingBox* _pBoundingBox )
 {
 	bool bIsInFrustum = true;
 
@@ -495,7 +495,7 @@ CEntityManager::IsEntityInFrustum( Camera* _pCamera, CBoundingBox* _pBoundingBox
 }
 /**
 *
-* CEntityManager class Clears and deletes all objects in the current scene
+* EntityManager class Clears and deletes all objects in the current scene
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -503,7 +503,7 @@ CEntityManager::IsEntityInFrustum( Camera* _pCamera, CBoundingBox* _pBoundingBox
 *
 */
 void
-CEntityManager::ClearScene( EGameScene _eScene )
+EntityManager::ClearScene( EGameScene _eScene )
 {
 	m_pRenderEntities[ _eScene ].clear();
 }

@@ -24,8 +24,8 @@ class CLight;
 struct TEntityNode
 {
 	TEntityNode()
-	: pEntity(0)
-	, pParent(0)
+	: pEntity( nullptr )
+	, pParent( nullptr )
 	{}
 	TEntityNode(RenderEntity* _pEntity, TEntityNode* _pParent)
 	{
@@ -59,7 +59,7 @@ struct ID3D11Buffer;
 
 class CBoundingBox;
 class Camera;
-class CShader;
+class Shader;
 
 class RenderEntity
 {
@@ -100,8 +100,8 @@ public:
 
 	virtual TVertex* GetVertexData(int _iVertex);
 	virtual int GetVertexCount() const;
-	virtual void SetObjectShader(CShader* _pObjectShader);
-	virtual CShader* GetObjectShader();
+	virtual void SetObjectShader(Shader* _pObjectShader);
+	virtual Shader* GetObjectShader();
 
 	virtual void ProcessBillboard(Camera* _pCurrentCamera, Math::Matrix& _rBillboardMat);
 	virtual bool IsBillboarded() const;
@@ -126,7 +126,7 @@ private:
 //Member variables
 protected:
 	TEntityNode* m_pNode;
-	CShader* m_pObjectShader;
+	Shader* m_pObjectShader;
 	CBoundingBox* m_pBoundingBox;
 	float m_fRadius;
 	float m_fBillboardFlip;

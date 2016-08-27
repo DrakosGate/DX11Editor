@@ -1,6 +1,6 @@
 //
 //  File Name   :   consolewindow.h
-//  Description :   Declaration of CConsoleWindow class
+//  Description :   Declaration of ConsoleWindow class
 //  Author      :   Christopher Howlett
 //  Mail        :   drakos_gate@yahoo.com
 //
@@ -20,19 +20,19 @@
 
 // Prototypes
 
-class CConsoleWindow
+class ConsoleWindow
 {
 //Member functions
 public:
-	CConsoleWindow();
-	~CConsoleWindow();
+	ConsoleWindow();
+	~ConsoleWindow();
 
 	void InitialiseConsole();
 	void ShutdownConsole();
 	
 private:
-	CConsoleWindow(const CConsoleWindow& _kr);
-	CConsoleWindow& operator= (const CConsoleWindow& _rhs);
+	ConsoleWindow(const ConsoleWindow& _kr);
+	ConsoleWindow& operator= (const ConsoleWindow& _rhs);
 
 //Member variables
 private:

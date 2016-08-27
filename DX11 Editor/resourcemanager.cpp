@@ -1,13 +1,15 @@
 
 // Library Includes
-//#include <D3DX11.h>
+#include <d3d11.h>
 #include <iostream>
+#include "lodepng.h"
 
 // Local Includes
 #include "model.h"
 #include "animatedmodel.h"
 #include "entitymanager.h"
 #include "scenehierarchy.h"
+#include "datastructures.h"
 
 // This Include
 #include "resourcemanager.h"
@@ -18,28 +20,13 @@
 
 // Implementation
 
-/**
-*
-* CResourceManager class Constructor
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-*
-*/
-CResourceManager::CResourceManager()
+ResourceManager::ResourceManager()
 	: m_pTextureArray( 0 )
 {
 
 }
-/**
-*
-* CResourceManager class Destructor
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-*
-*/
-CResourceManager::~CResourceManager()
+
+ResourceManager::~ResourceManager()
 {
 	for( unsigned int iTexture = 0; iTexture < m_TexturePool.size(); ++iTexture )
 	{
@@ -62,17 +49,9 @@ CResourceManager::~CResourceManager()
 	//	animIter->second = 0;
 	//}
 }
-/**
-*
-* CResourceManager class Initialise Loads resources from Scene Hierarchy
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-* @param _pcResourceFilename Filename containing level resources
-*
-*/
+
 void
-CResourceManager::Initialise( ID3D11Device* _pDevice, CEntityManager* _pEntityManager, CSceneHierarchy* _pSceneHierarchy )
+ResourceManager::Initialise( ID3D11Device* _pDevice, ID3D11DeviceContext* _pDeviceContext, EntityManager* _pEntityManager, SceneHierarchy* _pSceneHierarchy )
 {
 	int iMaxMessageSize = 128;
 	char pcBuffer[ 128 ];
@@ -98,29 +77,68 @@ CResourceManager::Initialise( ID3D11Device* _pDevice, CEntityManager* _pEntityMa
 	printf( "\n  == LOADING TEXTURES\n" );
 	for( unsigned int iTexture = 0; iTexture < _pSceneHierarchy->GetResourceCount( RESOURCE_TEXTURE ); ++iTexture )
 	{
-		std::string sTextureName = _pSceneHierarchy->GetResourceName( RESOURCE_TEXTURE, iTexture );
-		std::string sTextureFilename = _pSceneHierarchy->GetResourceFilename( RESOURCE_TEXTURE, sTextureName );
-		sprintf_s( pcBuffer, iMaxMessageSize, "%s", sTextureFilename.c_str() );
+		TTexturePoolData* pNewPoolEntry = new TTexturePoolData;
+		
+		D3D11_TEXTURE2D_DESC textureDesc;
+		D3D11_SHADER_RESOURCE_VIEW_DESC resourceViewDesc;
 
-		//Load new textures from file
-		ID3D11ShaderResourceView* pNewTexture;
-		HRESULT hTextureResult;// = D3DX11CreateShaderResourceViewFromFileA(	_pDevice,
-		//																	pcBuffer,
-		//																	NULL,
-		//																	NULL,
-		//																	&pNewTexture,
-		//																	NULL);
-		if( hTextureResult == S_OK )
+		pNewPoolEntry->sName = _pSceneHierarchy->GetResourceName( RESOURCE_TEXTURE, iTexture );
+		const std::string sTextureFilename = _pSceneHierarchy->GetResourceFilename( RESOURCE_TEXTURE, pNewPoolEntry->sName );
+
+		TTextureLoadData textureLoadData;
+
+		const auto fileExtension = sTextureFilename.substr( sTextureFilename.rfind( '.' ) + 1 );
+		assert( fileExtension.size() == 3 );
+
+		if( fileExtension.compare( "png" ) == 0 )
 		{
-			printf( "    = Texture successfully loaded from %s\n", pcBuffer );
+			if( !LoadTextureFromPNG( sTextureFilename, textureLoadData ) )
+				printf( "!!!  TEXTURE LOAD FAILED: %s  !!!\n", sTextureFilename.c_str() );
 		}
 		else
 		{
-			printf( "!!!  TEXTURE LOAD FAILED: %s  !!!\n", pcBuffer );
+			if( !LoadTextureFromTarga( sTextureFilename, textureLoadData ) )
+				printf( "!!!  TEXTURE LOAD FAILED: %s  !!!\n", sTextureFilename.c_str() );
 		}
-		TTexturePoolData* pNewPoolEntry = new TTexturePoolData;
-		pNewPoolEntry->pTexture = pNewTexture;
-		pNewPoolEntry->sName = sTextureName;
+
+		// Setup the description of the texture.
+		textureDesc.Height = textureLoadData.height;
+		textureDesc.Width = textureLoadData.width;
+		textureDesc.MipLevels = 0;
+		textureDesc.ArraySize = 1;
+		textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		textureDesc.SampleDesc.Count = 1;
+		textureDesc.SampleDesc.Quality = 0;
+		textureDesc.Usage = D3D11_USAGE_DEFAULT;
+		textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
+		textureDesc.CPUAccessFlags = 0;
+		textureDesc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS;
+
+		//Load new textures from file
+		HRESULT hTextureResult = _pDevice->CreateTexture2D( &textureDesc, NULL, &pNewPoolEntry->pTexture );
+		if( hTextureResult == S_OK )
+			printf( "    = Texture successfully loaded from %s\n", sTextureFilename.c_str() );
+		else
+			printf( "!!!  TEXTURE LOAD FAILED: %s  !!!\n", sTextureFilename.c_str() );
+
+		// Copy the targa image data into the texture.
+		const auto rowPitch = ( textureLoadData.width * 4 ) * sizeof( unsigned char );
+		_pDeviceContext->UpdateSubresource( pNewPoolEntry->pTexture, 0, NULL, textureLoadData.buffer, rowPitch, 0);
+
+		// Load resource view
+		resourceViewDesc.Format = textureDesc.Format;
+		resourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+		resourceViewDesc.Texture2D.MostDetailedMip = 0;
+		resourceViewDesc.Texture2D.MipLevels = -1;
+
+		hTextureResult = _pDevice->CreateShaderResourceView( pNewPoolEntry->pTexture, &resourceViewDesc, &pNewPoolEntry->pResourceView );
+		if( hTextureResult != S_OK )
+			printf( "!!!  RESOURCE VIEW LOAD FAILED: %s  !!!\n", sTextureFilename.c_str() );
+
+		_pDeviceContext->GenerateMips( pNewPoolEntry->pResourceView );
+
+		SAFEDELETEARRAY( textureLoadData.buffer );
+		
 		m_TexturePool.push_back( pNewPoolEntry );
 	}
 
@@ -129,22 +147,12 @@ CResourceManager::Initialise( ID3D11Device* _pDevice, CEntityManager* _pEntityMa
 	{
 		TPrefabDefinition* pPrefab = _pSceneHierarchy->GetPrefabDefinition( iPrefab );
 		if( pPrefab )
-		{
 			AddPrefabToEntityManager( _pEntityManager, pPrefab );
-		}
 	}
 }
-/**
-*
-* CResourceManager class Adds a prefab to the Entity managers prefabs
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-* @return Returns the new texture
-*
-*/
+
 void
-CResourceManager::AddPrefabToEntityManager( CEntityManager* _pEntityManager, TPrefabDefinition* _pPrefab )
+ResourceManager::AddPrefabToEntityManager( EntityManager* _pEntityManager, TPrefabDefinition* _pPrefab )
 {
 	EAIType eAIType = AI_INVALID;
 	if( _pPrefab->sAIType == "human" )
@@ -169,17 +177,9 @@ CResourceManager::AddPrefabToEntityManager( CEntityManager* _pEntityManager, TPr
 	}
 	_pEntityManager->AddPrefab( pNewPrefabOptions );
 }
-/**
-*
-* CResourceManager class Creates a texture file from an array of data
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-* @return Returns the new texture
-*
-*/
+
 ID3D11ShaderResourceView*
-CResourceManager::CreateTextureFromData( ID3D11Device* _pDevice, unsigned char* _pcData, std::string& _sTextureString, int _iWidth, int _iHeight )
+ResourceManager::CreateTextureFromData( ID3D11Device* _pDevice, unsigned char* _pcData, std::string& _sTextureString, int _iWidth, int _iHeight )
 {
 	ID3D11Texture2D* pNewTexture;
 	TTexturePoolData* pNewPoolData = new TTexturePoolData();
@@ -207,57 +207,30 @@ CResourceManager::CreateTextureFromData( ID3D11Device* _pDevice, unsigned char* 
 
 	HRESULT hResult = _pDevice->CreateTexture2D( &textureDesc, &resourceData, &pNewTexture );
 	HRCheck( hResult, L"Could not create texture from data" );
-	hResult = _pDevice->CreateShaderResourceView( pNewTexture, NULL, &pNewPoolData->pTexture );
+	hResult = _pDevice->CreateShaderResourceView( pNewTexture, NULL, &pNewPoolData->pResourceView );
 	HRCheck( hResult, L"Could not bind custom texture to shader resource view" );
 	pNewPoolData->sName = _sTextureString;
 	m_TexturePool.push_back( pNewPoolData );
 	pNewTexture->Release();
 
-	return pNewPoolData->pTexture;
+	return pNewPoolData->pResourceView;
 }
-/**
-*
-* CResourceManager class GetModel
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-* @param _pModelName Name of model
-* @return Returns Model specified
-*
-*/
+
 Model*
-CResourceManager::GetModel( std::string& _pModelName ) const
+ResourceManager::GetModel( std::string& _pModelName ) const
 {
 	return ( m_mapModels.find( _pModelName )->second );
 }
-/**
-*
-* CResourceManager class GetAnimatedModel
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-* @param _pcAnimatedModelName Name of model
-* @return Returns Model specified
-*
-*/
-CAnimatedModel*
-CResourceManager::GetAnimatedModel( std::string& _pcAnimatedModelName ) const
-{
-	std::string sKey = _pcAnimatedModelName;
-	return ( m_mapAnimations.find( sKey )->second );
-}
-/**
-*
-* CResourceManager class GetTexture
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-* @param _pcTextureName Name of texture
-* @return Returns Texture specified
-*
-*/
+
+//CAnimatedModel*
+//ResourceManager::GetAnimatedModel( std::string& _pcAnimatedModelName ) const
+//{
+//	std::string sKey = _pcAnimatedModelName;
+//	return ( m_mapAnimations.find( sKey )->second );
+//}
+
 ID3D11ShaderResourceView*
-CResourceManager::GetTexture( std::string& _pcTextureName ) const
+ResourceManager::GetTexture( std::string& _pcTextureName ) const
 {
 	//Loop through texture vector and return texture matching this name
 	ID3D11ShaderResourceView* pTexture = 0;
@@ -265,28 +238,19 @@ CResourceManager::GetTexture( std::string& _pcTextureName ) const
 	{
 		if( strcmp( m_TexturePool[ iTexture ]->sName.c_str(), _pcTextureName.c_str() ) == 0 )
 		{
-			pTexture = m_TexturePool[ iTexture ]->pTexture;
+			pTexture = m_TexturePool[ iTexture ]->pResourceView;
 			break;
 		}
 	}
+
 	if( pTexture == 0 )
-	{
 		Error( L"Could not find texture in pool!!" );
-	}
+	
 	return ( pTexture );
 }
-/**
-*
-* CResourceManager class GetTexture
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-* @param _pcTextureName Name of texture
-* @return Returns Index of the texture specified
-*
-*/
+
 int
-CResourceManager::GetTextureID( std::string& _pcTextureName ) const
+ResourceManager::GetTextureID( std::string& _pcTextureName ) const
 {
 	//Loop through texture vector and return texture matching this name
 	int iTextureID = -1;
@@ -304,55 +268,147 @@ CResourceManager::GetTextureID( std::string& _pcTextureName ) const
 	}
 	return ( iTextureID );
 }
-/**
-*
-* CResourceManager class GetTextureID
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-* @param _pTexture Pointer to the texture
-* @return Returns Index of the texture specified
-*
-*/
+
 int
-CResourceManager::GetTextureID( ID3D11ShaderResourceView* _pTexture ) const
+ResourceManager::GetTextureID( ID3D11ShaderResourceView* _pTexture ) const
 {
 	//Loop through texture vector and return texture matching this name
 	int iTextureID = -1;
 	for( unsigned int iTexture = 0; iTexture < m_TexturePool.size(); ++iTexture )
 	{
-		if( m_TexturePool[ iTexture ]->pTexture == _pTexture )
+		if( m_TexturePool[ iTexture ]->pResourceView == _pTexture )
 		{
 			iTextureID = iTexture;
 			break;
 		}
 	}
+
 	if( iTextureID == -1 )
-	{
 		Error( L"Could not find texture in pool!!" );
-	}
+	
 	return ( iTextureID );
 }
-/**
-*
-* CResourceManager class Compacts texture data into buffer and sends the data to the shader
-* (Task ID: n/a)
-*
-* @author Christopher Howlett
-* @param _pDevContext Pointer to the device context
-*
-*/
+
 void
-CResourceManager::SendTextureDataToShader( ID3D11DeviceContext* _pDevContext )
+ResourceManager::SendTextureDataToShader( ID3D11DeviceContext* _pDevContext )
 {
 	int iTextureCount = m_TexturePool.size();
 	m_pTextureArray = new ID3D11ShaderResourceView*[ iTextureCount ];
 	for( int iTexture = 0; iTexture < iTextureCount; ++iTexture )
 	{
-		m_pTextureArray[ iTextureCount - 1 - iTexture ] = m_TexturePool[ iTextureCount - iTexture - 1 ]->pTexture;
+		m_pTextureArray[ iTextureCount - 1 - iTexture ] = m_TexturePool[ iTextureCount - iTexture - 1 ]->pResourceView;
 	}
 	_pDevContext->PSSetShaderResources( 0, iTextureCount, m_pTextureArray );
 
 	delete[] m_pTextureArray;
 	m_pTextureArray = 0;
+}
+
+bool
+ResourceManager::LoadTextureFromTarga( const std::string& _textureName, TTextureLoadData& out_data )
+{
+	struct TargaHeader
+	{
+		unsigned char data1[ 12 ];
+		unsigned short width;
+		unsigned short height;
+		unsigned char bpp;
+		unsigned char data2;
+	};
+
+	TargaHeader targaFileHeader;
+	FILE* filePtr;
+	int error = 0;
+	unsigned int count;
+	unsigned char* targaImage;
+
+	error = fopen_s( &filePtr, _textureName.c_str(), "rb" );
+	if( error != 0 )
+		return false;
+
+	count = (unsigned int)fread( &targaFileHeader, sizeof( TargaHeader ), 1, filePtr );
+	if( count != 1 )
+		return false;
+
+	// Get the important information from the header.
+	out_data.height = (int)targaFileHeader.height;
+	out_data.width = (int)targaFileHeader.width;
+
+	if( targaFileHeader.bpp != 32 )
+		return false;
+
+	const auto imageSize = out_data.width * out_data.height * 4;
+	targaImage = new unsigned char[ imageSize ];
+	if( !targaImage )
+	{
+		return false;
+	}
+
+	// Read in the targa image data.
+	count = (unsigned int)fread( targaImage, 1, imageSize, filePtr );
+	if( count != imageSize )
+	{
+		return false;
+	}
+
+	// Close the file.
+	error = fclose( filePtr );
+	if( error != 0 )
+	{
+		return false;
+	}
+
+	// Allocate memory for the targa destination data.
+	out_data.buffer = new unsigned char[ imageSize ];
+
+	int index = 0;
+	int k = ( out_data.width * out_data.height * 4 ) - ( out_data.width * 4 );
+	for( unsigned j = 0; j < out_data.height; j++ )
+	{
+		for( unsigned i = 0; i < out_data.width; i++ )
+		{
+			out_data.buffer[ index + 0 ] = targaImage[ k + 2 ];  // Red.
+			out_data.buffer[ index + 1 ] = targaImage[ k + 1 ];  // Green.
+			out_data.buffer[ index + 2 ] = targaImage[ k + 0 ];  // Blue
+			out_data.buffer[ index + 3 ] = targaImage[ k + 3 ];  // Alpha
+
+			// Increment the indexes into the targa data.
+			k += 4;
+			index += 4;
+		}
+
+		// Set the targa image data index back to the preceding row at the beginning of the column since its reading it in upside down.
+		k -= ( out_data.width * 8 );
+	}
+
+	// Release the targa image data now that it was copied into the destination array.
+	delete[] targaImage;
+	targaImage = 0;
+
+	return true;
+}
+
+bool 
+ResourceManager::LoadTextureFromPNG( const std::string& _textureName, TTextureLoadData& out_data )
+{
+	std::vector<unsigned char> image; 
+	unsigned width;
+	unsigned height;
+
+	unsigned error = lodepng::decode( image, width, height, _textureName.c_str() );
+	if(error)
+	{
+		std::cout << "decoder error " << error << ": " << lodepng_error_text(error) << std::endl;
+		return false;
+	}
+
+	out_data.width = width;
+	out_data.height = height;
+	
+	assert( image.size() > 0 );
+	out_data.buffer = new unsigned char[ image.size() ];
+	for( unsigned index = 0; index < image.size(); ++index )
+		out_data.buffer[ index ] = image[ index ];
+
+	return true;
 }

@@ -1,6 +1,6 @@
 //
 //  File Name   :   tile.h
-//  Description :   Class of CPrefab
+//  Description :   Class of Prefab
 //  Author      :   Christopher Howlett
 //  Mail        :   drakos_gate@yahoo.com
 //
@@ -22,11 +22,11 @@
 // Prototypes
 class Model;
 
-class CPrefab : public RenderEntity
+class Prefab : public RenderEntity
 {
 public:
-	CPrefab();
-	~CPrefab();
+	Prefab();
+	~Prefab();
 	
 	virtual bool Initialise(ID3D11Device* _pDevice, float _fScale);
 	virtual void Draw(ID3D11DeviceContext* _pDevice);

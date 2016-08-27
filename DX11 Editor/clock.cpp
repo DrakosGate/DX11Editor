@@ -45,8 +45,8 @@ Clock::Clock()
 ,	m_fTotalAverageTimeElapsed(0.0f)
 ,	m_fFramesPerSecondLimit(0.0f)
 ,	m_bIsLimittingFPS(false)
-,	m_iFramesPerSecond(0)
-,	m_iFrameCount(0)
+,	m_iFramesPerSecond( 0 )
+,	m_iFrameCount( 0 )
 {
 
 }

@@ -1,5 +1,5 @@
-//  File Name   :   CSceneHierarchy.h
-//  Description :   Class of CSceneHierarchy
+//  File Name   :   SceneHierarchy.h
+//  Description :   Class of SceneHierarchy
 //  Author      :   Christopher Howlett
 //  Mail        :   drakos_gate@yahoo.com
 //
@@ -86,7 +86,7 @@ struct TPrefabDefinition
 struct TSceneNode
 {
 	TSceneNode()
-	: pParent(0)
+	: pParent( nullptr )
 	{
 	}
 	void Clear()
@@ -116,12 +116,12 @@ struct TSceneNode
 
 // Prototypes
 
-class CSceneHierarchy
+class SceneHierarchy
 {
 	//Member functions
 public:
-	CSceneHierarchy();
-	virtual ~CSceneHierarchy();
+	SceneHierarchy();
+	virtual ~SceneHierarchy();
 
 	bool Initialise(char* _pcResourceFilename);
 	//Load from file

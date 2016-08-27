@@ -2,7 +2,7 @@
 #ifndef __NETDEFINES_H__
 #define __NETDEFINES_H__
 
-#include "defines.h"
+#include "mathlibrary.h"
 
 // Types
 #define SERVER_PORT 56000

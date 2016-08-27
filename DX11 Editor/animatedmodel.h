@@ -32,7 +32,7 @@
 //// Constants
 //
 //// Prototypes
-//class CShader;
+//class Shader;
 //
 //class CAnimatedModel : public Model
 //{
@@ -41,7 +41,7 @@
 //	CAnimatedModel();
 //	virtual ~CAnimatedModel();
 //	virtual void Process(float _fDeltaTime);
-//	virtual void SendShaderData(CShader* _pShader);
+//	virtual void SendShaderData(Shader* _pShader);
 //
 //	virtual void LoadAIMesh(ID3D11Device* _pDevice, float _fScale, char* _pcFilename);
 //	virtual void LoadAIScene(const aiScene* _pScene, char* _pcFilename);

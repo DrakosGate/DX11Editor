@@ -1,6 +1,6 @@
 //
 //  File Name   :   level.h
-//  Description :   Class of CLevel
+//  Description :   Class of Level
 //  Author      :   Christopher Howlett
 //  Mail        :   drakos_gate@yahoo.com
 //
@@ -11,10 +11,11 @@
 #define __LEVEL_H__
 
 // Library Includes
+#include <d3d11.h>
 #include <rapidxml_utils.hpp>
 
 // Local Includes
-#include "defines.h"
+#include "datastructures.h"
 
 // Types
 enum EFontType
@@ -37,46 +38,46 @@ struct TSceneNode;
 class Clock;
 class Model;
 class CAnimatedModel;
-class CGrass;
+class Grass;
 class CScene;
-class CPrefab;
-class CAIHiveMind;
-class CLightManager;
+class Prefab;
+class AIHiveMind;
+class LightManager;
 class CPlayer;
 class RenderEntity;
-class CRenderToTexture;
-class CEntityManager;
-class CShader;
+class RenderToTexture;
+class EntityManager;
+class Shader;
 class Camera;
 class DX11Renderer;
-class CResourceManager;
-class CEditorInterface;
-class CThreadPool;
-class COpenCLContext;
-class CFontRenderer;
-class CNetwork;
-class CPerformanceGraph;
-class CSceneHierarchy;
+class ResourceManager;
+class EditorInterface;
+class ThreadPool;
+//class OpenCLContext;
+class FontRenderer;
+class Network;
+class PerformanceGraph;
+class SceneHierarchy;
 
-class CLevel
+class Level
 {
 public:
-	CLevel();
-	virtual ~CLevel();
+	Level();
+	virtual ~Level();
 
-	virtual bool Initialise( ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext, DX11Renderer* _pRenderer, TSetupStruct* _pSetupData, HWND _hWindow, int _iScreenWidth, int _iScreenHeight );
+	virtual bool Initialise( DX11Renderer* _pRenderer, TSetupStruct* _pSetupData, HWND _hWindow, int _iScreenWidth, int _iScreenHeight );
 	virtual void CreateEntities( ID3D11Device* _pDevice, ID3D11DeviceContext* _pDevContext, HWND _hWindow );
 	virtual void Process( ID3D11Device* _pDevice, ID3D11DeviceContext* _pDeviceContext, Clock* _pClock, float _fDeltaTime );
 	virtual void ProcessEntitySelection( ID3D11Device* _pDevice, float _fDeltaTime );
 	virtual void Draw( ID3D11DeviceContext* _pDevice );
-	virtual void DrawScene( ID3D11DeviceContext* _pDevice, CShader* _pSceneShader, Camera* _pCurrentCamera, EGameScene _EGameScene );
+	virtual void DrawScene( ID3D11DeviceContext* _pDevice, Shader* _pSceneShader, Camera* _pCurrentCamera, EGameScene _EGameScene );
 
 	virtual void AddTextToSceneGraph( TEntityNode* _pEntityNode, int& _iTextOffset, int _iTabCount );
 	virtual void CreateRenderTargets( ID3D11Device* _pDevice );
 
 	void OnResize( int _iWidth, int _iHeight );
-	CPrefab* CreateObject( ID3D11Device* _pDevice, rapidxml::xml_node<>* _pNode, TEntityNode* _pParentNode );
-	CPrefab* CreateObject( ID3D11Device* _pDevice, TSceneNode* _pNode, TEntityNode* _pParentNode );
+	Prefab* CreateObject( ID3D11Device* _pDevice, rapidxml::xml_node<>* _pNode, TEntityNode* _pParentNode );
+	Prefab* CreateObject( ID3D11Device* _pDevice, TSceneNode* _pNode, TEntityNode* _pParentNode );
 	void LoadLevel( ID3D11Device* _pDevice, char* _pcLevelFilename );
 	void SaveLevel( ID3D11Device* _pDevice, char* _pcLevelFilename );
 	void AddChildToXMLNode( rapidxml::xml_document<>* _pDocument, rapidxml::xml_node<>* _pParentNode, TEntityNode* _pChildNode );
@@ -97,33 +98,33 @@ private:
 	TSetupStruct* m_pSetupData;
 
 	DX11Renderer* m_pRenderer;
-	CResourceManager* m_pResourceManager;
-	CSceneHierarchy* m_pSceneHierarchy;
-	COpenCLContext* m_pCLKernel;
-	CThreadPool* m_pThreadPool;
+	ResourceManager* m_pResourceManager;
+	SceneHierarchy* m_pSceneHierarchy;
+	//OpenCLContext* m_pCLKernel;
+	ThreadPool* m_pThreadPool;
 	int m_iThreadCount;
 	TGrassThread* m_pGrassJobs;
 
-	CFontRenderer* m_pFont;
-	CNetwork* m_pNetwork;
-	CPerformanceGraph* m_pGraph;
+	FontRenderer* m_pFont;
+	Network* m_pNetwork;
+	PerformanceGraph* m_pGraph;
 	int m_iGraphDelay;
 	float m_fLogCount;
 
-	CEntityManager* m_pEntityManager;
+	EntityManager* m_pEntityManager;
 	TEntityNode* m_pRootNode;
 	bool m_bInputIsEnabled;
 	float m_fGameTimeElapsed;
 
 	//Game entities
 	//CPlayer* m_pPlayer;
-	CPrefab* m_pCursor;
+	Prefab* m_pCursor;
 	Model* m_pTerrain;
 	Model* m_pSelectionCursor;
 
 	//Editor
-	CEditorInterface* m_pEditor;
-	std::vector<CPrefab*> m_pLevelEntities;
+	EditorInterface* m_pEditor;
+	std::vector<Prefab*> m_pLevelEntities;
 	std::string m_sSelectedPrefab;
 	bool m_bCreateObject;
 
@@ -132,25 +133,25 @@ private:
 	float m_fSelectedObjectScale;
 	bool m_bHasSelectedObject;
 
-	CGrass* m_pGrass;
+	Grass* m_pGrass;
 	std::vector<RenderEntity*> m_vecGrassEntities;
 	EGrassState m_eGrassState;
 	float m_fGrassScale;
 
-	CAIHiveMind* m_pHivemind;
+	AIHiveMind* m_pHivemind;
 
 	Camera* m_pCamera;
 	Camera* m_pOrthoCamera;
 
 	//Lighting
-	CLightManager* m_pLightManager;
+	LightManager* m_pLightManager;
 
 	//Render targets
-	CRenderToTexture* m_pRenderTargets;
-	CRenderToTexture* m_pDiffuseMRT;
-	CRenderToTexture* m_pNormalsMRT;
-	CRenderToTexture* m_pPositionMRT;
-	CRenderToTexture* m_pDepthMRT;
+	RenderToTexture* m_pRenderTargets;
+	RenderToTexture* m_pDiffuseMRT;
+	RenderToTexture* m_pNormalsMRT;
+	RenderToTexture* m_pPositionMRT;
+	RenderToTexture* m_pDepthMRT;
 	ID3D11RenderTargetView** m_pMRT;
 
 	bool bLastMouseState;
@@ -158,7 +159,7 @@ private:
 	Model* m_pRenderTarget;	//Main screen render target
 	Model* m_pRenderMonitor;	//Smaller monitors to render to
 
-	CShader* m_pShaderCollection;
+	Shader* m_pShaderCollection;
 
 	//Temp Matrices
 	Math::Matrix m_matWorld;

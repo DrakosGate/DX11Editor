@@ -4,10 +4,16 @@
 #include <rapidxml_utils.hpp>
 
 // Local Includes
-#include "clock.h"
-#include "openglrenderer.h"
-#include "dx11renderer.h"
+#include "defines.h"
+#ifdef PLANET_DX11
+#	include "dx11renderer.h"
+#else
+#	include "openglrenderer.h"
+#endif
+
 #include "consolewindow.h"
+#include "clock.h"
+#include "datastructures.h"
 
 // This Include
 #include "window.h"
@@ -28,7 +34,7 @@
 LRESULT CALLBACK
 WindowProc( HWND _hWnd, UINT _uiMsg, WPARAM _wParam, LPARAM _lParam )
 {
-	static CWindow* pThisWindow = 0;
+	static Window* pThisWindow = 0;
 
 	switch( _uiMsg )
 	{
@@ -39,7 +45,7 @@ WindowProc( HWND _hWnd, UINT _uiMsg, WPARAM _wParam, LPARAM _lParam )
 	break;
 	case WM_WINDOW_CREATION:
 	{
-		pThisWindow = (CWindow*)_wParam;
+		pThisWindow = (Window*)_wParam;
 	}
 	break;
 	case WM_KEYDOWN:
@@ -77,12 +83,12 @@ WindowProc( HWND _hWnd, UINT _uiMsg, WPARAM _wParam, LPARAM _lParam )
 }
 /**
 *
-* CWindow Constructor
+* Window Constructor
 *
 * @author Christopher Howlett
 *
 */
-CWindow::CWindow()
+Window::Window()
 	: m_pRenderer( 0 )
 	, m_hMainWnd( 0 )
 	, mMinimized( false )
@@ -95,12 +101,12 @@ CWindow::CWindow()
 }
 /**
 *
-* CWindow Destructor
+* Window Destructor
 *
 * @author Christopher Howlett
 *
 */
-CWindow::~CWindow()
+Window::~Window()
 {
 	if( m_pConsoleWindow )
 	{
@@ -122,33 +128,33 @@ CWindow::~CWindow()
 }
 /**
 *
-* CWindow GetInstance
+* Window GetInstance
 *
 * @author Christopher Howlett
 * @return Returns this window instance
 *
 */
 HINSTANCE
-CWindow::GetInstance()
+Window::GetInstance()
 {
 	return m_hInstance;
 }
 /**
 *
-* CWindow GetWindowHandle
+* Window GetWindowHandle
 *
 * @author Christopher Howlett
 * @return Returns this window handle
 *
 */
 HWND
-CWindow::GetWindowHandle()
+Window::GetWindowHandle()
 {
 	return m_hMainWnd;
 }
 /**
 *
-* CWindow initialisation
+* Window initialisation
 *
 * @author Christopher Howlett
 * @param _hInstance Handle to this instance
@@ -157,14 +163,14 @@ CWindow::GetWindowHandle()
 *
 */
 bool
-CWindow::Initialise( HINSTANCE _hInstance, ERendererType _eRenderer )
+Window::Initialise( HINSTANCE _hInstance, ERendererType _eRenderer )
 {
 	//Setup game clock
 	m_pClock = new Clock();
 	m_pClock->Initialise();
 	m_pClock->LimitFramesPerSecond( 60.0f );
 
-	m_pConsoleWindow = new CConsoleWindow();
+	m_pConsoleWindow = new ConsoleWindow();
 	m_pConsoleWindow->InitialiseConsole();
 
 	ReadProgramSetupFile( "Data/Setup.xml" );
@@ -196,13 +202,13 @@ CWindow::Initialise( HINSTANCE _hInstance, ERendererType _eRenderer )
 }
 /**
 *
-* CWindow Run - Runs infinite loop for program
+* Window Run - Runs infinite loop for program
 *
 * @author Christopher Howlett
 *
 */
 void
-CWindow::Run()
+Window::Run()
 {
 	MSG msg;
 	ZeroMemory( &msg, sizeof( MSG ) );
@@ -224,13 +230,13 @@ CWindow::Run()
 }
 /**
 *
-* CWindow Executes one frame of program
+* Window Executes one frame of program
 *
 * @author Christopher Howlett
 *
 */
 void
-CWindow::ReadProgramSetupFile( char* _pcFilename )
+Window::ReadProgramSetupFile( char* _pcFilename )
 {
 	m_pSetupData = new TSetupStruct();
 
@@ -308,13 +314,13 @@ CWindow::ReadProgramSetupFile( char* _pcFilename )
 }
 /**
 *
-* CWindow Executes one frame of program
+* Window Executes one frame of program
 *
 * @author Christopher Howlett
 *
 */
 void
-CWindow::ExecuteOneFrame()
+Window::ExecuteOneFrame()
 {
 	m_pClock->Process();
 	float fTimeElapsed = m_pClock->GetDeltaTick();
@@ -323,25 +329,25 @@ CWindow::ExecuteOneFrame()
 }
 /**
 *
-* CWindow Class Message proc, receives messages from window proc
+* Window Class Message proc, receives messages from window proc
 *
 * @author Christopher Howlett
 *
 */
 LRESULT
-CWindow::msgProc( UINT msg, WPARAM wParam, LPARAM lParam )
+Window::msgProc( UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	return DefWindowProc( m_hMainWnd, msg, wParam, lParam );
 }
 /**
 *
-* CWindow Initialises Main Window
+* Window Initialises Main Window
 *
 * @author Christopher Howlett
 *
 */
 void
-CWindow::InitialiseMainWindow()
+Window::InitialiseMainWindow()
 {
 	printf( "Setting up window at %i x %i\n", WINDOW_WIDTH, WINDOW_HEIGHT );
 

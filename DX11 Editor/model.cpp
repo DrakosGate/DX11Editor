@@ -302,12 +302,12 @@ Model::LoadFromOBJ( ID3D11Device* _pDevice, float _fScale, char* _pcFilename, Ma
 		for( int iIndex = 0; iIndex < m_iIndexCount; ++iIndex )
 		{
 			m_pIndices[ iIndex ] = static_cast<int>( pFaces[ iIndex ].x ) - 1;
-			m_pVertices[ iIndex ].pos = pPositions[ m_pIndices[ iIndex ] ] * m_fModelScale;
-			m_pVertices[ iIndex ].texC = pTexCoords[ static_cast<int>( pFaces[ iIndex ].y ) - 1 ];
-			m_pVertices[ iIndex ].normal = pNormals[ static_cast<int>( pFaces[ iIndex ].z ) - 1 ];
-			m_pVertices[ iIndex ].normal = Math::Normalise( m_pVertices[ iIndex ].normal );
+			m_pVertices[ iIndex ].pos     = pPositions[ m_pIndices[ iIndex ] ] * m_fModelScale;
+			m_pVertices[ iIndex ].texC    = pTexCoords[ static_cast<int>( pFaces[ iIndex ].y ) - 1 ];
+			m_pVertices[ iIndex ].normal  = pNormals[ static_cast<int>( pFaces[ iIndex ].z ) - 1 ];
+			m_pVertices[ iIndex ].normal  = Math::Normalise( m_pVertices[ iIndex ].normal );
 			m_pVertices[ iIndex ].tangent = Math::Cross( m_pVertices[ iIndex ].normal, Math::Vector3( 0.0f, 1.0f, 0.0f ) );
-			m_pVertices[ iIndex ].colour = _rColour;
+			m_pVertices[ iIndex ].colour  = _rColour;
 		}
 		//Draw vertices in ascending order
 		for( int iIndex = 0; iIndex < m_iIndexCount; ++iIndex )
@@ -494,9 +494,9 @@ Model::CalculateBillboardMatrix( Math::Matrix& _rmatView )
 {
 	m_matWorld = Math::MatrixInverse( nullptr, _rmatView );
 
-	m_matWorld._41 = m_vecPosition.x;
-	m_matWorld._42 = m_vecPosition.y;
-	m_matWorld._43 = m_vecPosition.z;
+	m_matWorld.data._41 = m_vecPosition.x;
+	m_matWorld.data._42 = m_vecPosition.y;
+	m_matWorld.data._43 = m_vecPosition.z;
 }
 /**
 *

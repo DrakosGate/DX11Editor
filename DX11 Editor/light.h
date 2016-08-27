@@ -35,11 +35,11 @@ struct TLightInfo
 		range = _fRange;
 		iLightType = _iLightType;
 	}
-	Math::Vector3 pos;	//12
-	float pad;			//4
+	Math::Vector3 pos;	//24
+	float pad[2];			//4
 
 	Math::Vector3 dir;	//12
-	float pad2;			//4
+	float pad2[2];			//4
 
 	Math::Colour ambient;	//16
 
@@ -48,7 +48,7 @@ struct TLightInfo
 	Math::Colour specular;	//16
 
 	Math::Vector3 att;	//12
-	float pad3;			//4
+	float pad3[2];			//4
 
 	float spotPow;		//4
 	float range;		//4

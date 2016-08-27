@@ -15,35 +15,35 @@
 // Implementation
 /**
 *
-* CConsoleWindow Constructor
+* ConsoleWindow Constructor
 *
 * @author Christopher Howlett
 *
 */
-CConsoleWindow::CConsoleWindow()
+ConsoleWindow::ConsoleWindow()
 {
 
 }
 /**
 *
-* CConsoleWindow Destructor
+* ConsoleWindow Destructor
 *
 * @author Christopher Howlett
 *
 */
-CConsoleWindow::~CConsoleWindow()
+ConsoleWindow::~ConsoleWindow()
 {
 
 }
 /**
 *
-* CConsoleWindow Start up
+* ConsoleWindow Start up
 *
 * @author Christopher Howlett
 *
 */
 void
-CConsoleWindow::InitialiseConsole()
+ConsoleWindow::InitialiseConsole()
 {
 	//Initialise a seperate console window for debug output
 	AllocConsole();
@@ -56,13 +56,13 @@ CConsoleWindow::InitialiseConsole()
 }
 /**
 *
-* CConsoleWindow Shutdown
+* ConsoleWindow Shutdown
 *
 * @author Christopher Howlett
 *
 */
 void
-CConsoleWindow::ShutdownConsole()
+ConsoleWindow::ShutdownConsole()
 {
 	FreeConsole();
 }

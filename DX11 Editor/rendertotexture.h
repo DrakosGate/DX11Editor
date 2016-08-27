@@ -1,14 +1,14 @@
 //
-//  File Name   :   rendertotexture.h
-//  Description :   Class of CRenderToTexture
+//  File Name   :   RenderToTexture.h
+//  Description :   Class of RenderToTexture
 //  Author      :   Christopher Howlett
 //  Mail        :   drakos_gate@yahoo.com
 //
 
 #pragma once
 
-#ifndef __RENDERTOTEXTURE_H__
-#define __RENDERTOTEXTURE_H__
+#ifndef __RenderToTexture_H__
+#define __RenderToTexture_H__
 
 // Library Includes
 
@@ -28,11 +28,11 @@ struct ID3D11ShaderResourceView;
 struct ID3D11DepthStencilState;
 
 
-class CRenderToTexture
+class RenderToTexture
 {
 public:
-	CRenderToTexture();
-	~CRenderToTexture();
+	RenderToTexture();
+	~RenderToTexture();
 
 	bool Initialise(ID3D11Device* _pDevice, bool _bHasRenderTarget, bool _bHasDepthStencil, int _iWidth, int _iHeight);
 	void Draw();
@@ -51,8 +51,8 @@ public:
 	ID3D11DepthStencilState* GetSubDepthState();
 
 private:
-	CRenderToTexture(const CRenderToTexture& _krInstanceToCopy);
-	const CRenderToTexture& operator =(const CRenderToTexture& _krInstanceToCopy);
+	RenderToTexture(const RenderToTexture& _krInstanceToCopy);
+	const RenderToTexture& operator =(const RenderToTexture& _krInstanceToCopy);
 
 private:
 	bool m_bHasRenderTarget;
@@ -72,4 +72,4 @@ private:
 
 };
 
-#endif // __RENDERTOTEXTURE_H__
+#endif // __RenderToTexture_H__

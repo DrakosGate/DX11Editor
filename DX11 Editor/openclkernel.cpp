@@ -4,24 +4,24 @@
 
 #include "openclkernel.h"
 
-COpenCLKernel::COpenCLKernel()
+OpenCLKernel::OpenCLKernel()
 : m_pWorkGroup(0)
 , m_pGlobalGroup(0)
 {
 
 }
-COpenCLKernel::~COpenCLKernel()
+OpenCLKernel::~OpenCLKernel()
 {
 	SAFEDELETEARRAY(m_pWorkGroup);
 	SAFEDELETEARRAY(m_pGlobalGroup);
 }
 cl_kernel&
-COpenCLKernel::GetCLKernel()
+OpenCLKernel::GetCLKernel()
 {
 	return m_clKernel;
 }
 cl_program&
-COpenCLKernel::GetCLProgram()
+OpenCLKernel::GetCLProgram()
 {
 	return m_clProgram;
 }

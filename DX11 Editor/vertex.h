@@ -23,6 +23,16 @@
 
 struct TVertex
 {
+	struct SourceType
+	{
+		DirectX::XMFLOAT3 pos;
+		DirectX::XMFLOAT4 colour;
+		DirectX::XMFLOAT3 normal;
+		DirectX::XMFLOAT3 tangent;
+		DirectX::XMFLOAT3 binormal;
+		DirectX::XMFLOAT2 texC;
+	};
+
 	TVertex()
 	{
 		pos *= 0.0f;
@@ -41,6 +51,20 @@ struct TVertex
 		binormal = _rBiNormal;
 		texC = _rTexC;
 	}
+
+	SourceType GetSourceType()
+	{
+		SourceType source;
+		ZeroMemory( &source, sizeof( SourceType ) );
+		source.pos = pos.data;
+		source.colour = colour.data;
+		source.normal = normal.data;
+		source.tangent = tangent.data;
+		source.binormal = binormal.data;
+		source.texC = texC.data;
+		return source;
+	}
+
 	Math::Vector3 pos;
 	Math::Colour colour;
 	Math::Vector3 normal;
@@ -50,6 +74,16 @@ struct TVertex
 };
 struct TPointSpriteVertex
 {
+	struct SourceType
+	{
+		DirectX::XMFLOAT3 pos;
+		DirectX::XMFLOAT3 dir;
+		DirectX::XMFLOAT2 scale;
+		DirectX::XMFLOAT4 colour;
+		float rotation;
+		int iTextureID;
+	};
+
 	TPointSpriteVertex()
 	{
 		pos *= 0.0f;
@@ -68,6 +102,20 @@ struct TPointSpriteVertex
 		rotation = _fRotation;
 		iTextureID = _iTextureID;
 	}
+	
+	SourceType GetSourceType()
+	{
+		SourceType source;
+		ZeroMemory( &source, sizeof( SourceType ) );
+		source.pos = pos.data;
+		source.dir = dir.data;
+		source.scale = scale.data;
+		source.colour = colour.data;
+		source.rotation = rotation;
+		source.iTextureID = iTextureID;
+		return source;
+	}
+	
 	Math::Vector3 pos;
 	Math::Vector3 dir;
 	Math::Vector2 scale;
@@ -77,6 +125,15 @@ struct TPointSpriteVertex
 };
 struct TFontVertex
 {
+	struct SourceType
+	{
+		DirectX::XMFLOAT3 pos;
+		DirectX::XMFLOAT2 scale;
+		DirectX::XMFLOAT4 colour;
+		DirectX::XMFLOAT2 uvTopLeft;
+		DirectX::XMFLOAT2 uvBottomRight;
+	};
+
 	TFontVertex()
 	{
 		pos *= 0.0f;
@@ -93,6 +150,19 @@ struct TFontVertex
 		uvTopLeft = _uvTopLeft;
 		uvBottomRight = _uvBottomRight;
 	}
+
+	SourceType GetSourceType()
+	{
+		SourceType source;
+		ZeroMemory( &source, sizeof( SourceType ) );
+		source.pos = pos.data;
+		source.scale = scale.data;
+		source.colour = colour.data;
+		source.uvTopLeft = uvTopLeft.data;
+		source.uvBottomRight = uvBottomRight.data;
+		return source;
+	}
+
 	Math::Vector3 pos;
 	Math::Vector2 scale;
 	Math::Colour colour;
@@ -101,6 +171,17 @@ struct TFontVertex
 };
 struct TAnimatedVertex
 {
+	struct SourceType
+	{
+		DirectX::XMFLOAT3 pos;
+		DirectX::XMFLOAT3 normal;
+		DirectX::XMFLOAT3 tangent;
+		DirectX::XMFLOAT3 binormal;
+		DirectX::XMFLOAT2 texC;
+		DirectX::XMFLOAT4 vecIDs;
+		DirectX::XMFLOAT4 vecWeights;
+	};
+
 	TAnimatedVertex()
 	{
 		pos *= 0.0f;
@@ -127,6 +208,21 @@ struct TAnimatedVertex
 		vecIDs = _rIDs;
 		vecWeights = _rWeights;
 	}
+
+	SourceType GetSourceType()
+	{
+		SourceType source;
+		ZeroMemory( &source, sizeof( SourceType ) );
+		source.pos = pos.data;
+		source.normal = normal.data;
+		source.tangent = tangent.data;
+		source.binormal = binormal.data;
+		source.texC = texC.data;
+		source.vecIDs = vecIDs.data;
+		source.vecWeights = vecWeights.data;
+		return source;
+	}
+	
 	Math::Vector3 pos;
 	Math::Vector3 normal;
 	Math::Vector3 tangent;

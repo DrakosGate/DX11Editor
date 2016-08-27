@@ -16,41 +16,41 @@
 // Implementation
 /**
 *
-* CLightManager constructor
+* LightManager constructor
 *
 * @author Christopher Howlett
 *
 */
-CLightManager::CLightManager()
+LightManager::LightManager()
 {
 }
 
 /**
 *
-* CLightManager destructor
+* LightManager destructor
 *
 * @author Christopher Howlett
 *
 */
-CLightManager::~CLightManager()
+LightManager::~LightManager()
 {
 	DestroyLights();
 }
 
 /**
 *
-* CLightManager Initialise function
+* LightManager Initialise function
 *
 * @author Christopher Howlett
 *
 */
 bool
-CLightManager::Initialise()
+LightManager::Initialise()
 {
 	return true;
 }
 void
-CLightManager::DestroyLights()
+LightManager::DestroyLights()
 {
 	for( unsigned int iLight = 0; iLight < m_vSpotLights.size(); ++iLight )
 	{
@@ -69,7 +69,7 @@ CLightManager::DestroyLights()
 	m_vDirectionalLights.clear();
 }
 CSpotLight*
-CLightManager::AddSpot( Math::Vector3& _rVecPosition, Math::Vector3& _rVecDirection, Math::Colour& _rVecColour, Math::Vector3& _rAttenuation, float _fCutOff, float _fSpecularPower )
+LightManager::AddSpot( Math::Vector3& _rVecPosition, Math::Vector3& _rVecDirection, Math::Colour& _rVecColour, Math::Vector3& _rAttenuation, float _fCutOff, float _fSpecularPower )
 {
 	CSpotLight* pNewSpot = new CSpotLight;
 	pNewSpot->Initialise( _rVecPosition, _rVecDirection, _rVecColour, _rAttenuation, _fCutOff, _fSpecularPower, LIGHT_SPOT );
@@ -77,7 +77,7 @@ CLightManager::AddSpot( Math::Vector3& _rVecPosition, Math::Vector3& _rVecDirect
 	return pNewSpot;
 }
 CPointLight*
-CLightManager::AddPoint( Math::Vector3& _rVecPosition, Math::Colour& _rVecColour, Math::Vector3& _rAttenuation, float _fSpecularPower )
+LightManager::AddPoint( Math::Vector3& _rVecPosition, Math::Colour& _rVecColour, Math::Vector3& _rAttenuation, float _fSpecularPower )
 {
 	CPointLight* pNewPoint = new CPointLight;
 	pNewPoint->Initialise( _rVecPosition, _rVecColour, _rAttenuation, _fSpecularPower, LIGHT_POINT );
@@ -85,7 +85,7 @@ CLightManager::AddPoint( Math::Vector3& _rVecPosition, Math::Colour& _rVecColour
 	return pNewPoint;
 }
 CDirectionalLight*
-CLightManager::AddDirectional( Math::Vector3& _rVecDir, Math::Colour& _rVecColour, float _fSpecularPower )
+LightManager::AddDirectional( Math::Vector3& _rVecDir, Math::Colour& _rVecColour, float _fSpecularPower )
 {
 	CDirectionalLight* pNewDirectional = new CDirectionalLight;
 	pNewDirectional->Initialise( _rVecDir, _rVecColour, _fSpecularPower, LIGHT_DIRECTIONAL );
@@ -93,7 +93,7 @@ CLightManager::AddDirectional( Math::Vector3& _rVecDir, Math::Colour& _rVecColou
 	return pNewDirectional;
 }
 int
-CLightManager::GetLightCount( ELightType _eLightType ) const
+LightManager::GetLightCount( ELightType _eLightType ) const
 {
 	int iLightCount = 0;
 	switch( _eLightType )
@@ -119,27 +119,27 @@ CLightManager::GetLightCount( ELightType _eLightType ) const
 	return iLightCount;
 }
 TLightInfo*
-CLightManager::GetLightInfo( ELightType _eLightType )
+LightManager::GetLightInfo( ELightType _eLightType )
 {
 	return 0;
 }
 CSpotLight*
-CLightManager::GetSpot( int _iIndex )
+LightManager::GetSpot( int _iIndex )
 {
 	return m_vSpotLights[ _iIndex ];
 }
 CPointLight*
-CLightManager::GetPoint( int _iIndex )
+LightManager::GetPoint( int _iIndex )
 {
 	return m_vPointLights[ _iIndex ];
 }
 CDirectionalLight*
-CLightManager::GetDirectional( int _iIndex )
+LightManager::GetDirectional( int _iIndex )
 {
 	return m_vDirectionalLights[ _iIndex ];
 }
 int
-CLightManager::GetLightCount() const
+LightManager::GetLightCount() const
 {
 	return ( m_vPointLights.size() + m_vSpotLights.size() + m_vDirectionalLights.size() );
 }

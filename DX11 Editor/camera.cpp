@@ -158,7 +158,7 @@ void
 Camera::CreateProjectionMatrix( float _fAspect )
 {
 	if( m_bUsesPerspective )
-		m_matProj = Math::MatrixPerspectiveFovLH( 0.3f * PI, _fAspect, 0.1f, 100.0f );
+		m_matProj = Math::MatrixPerspectiveFovLH( 0.3f * PI, _fAspect, 0.1f, 1000.0f );
 	else
 		m_matProj = Math::MatrixOrthoLH( static_cast<float>( m_iWindowWidth ), static_cast<float>( m_iWindowHeight ), 1.0f, 1000.0f );
 }
@@ -188,42 +188,42 @@ Camera::CalculateViewFrustum()
 	Math::Matrix matViewProjection;
 	matViewProjection = m_matView * m_matProj;
 
-	const auto matrixData = matViewProjection.Store();
+	const auto matrixData = matViewProjection.data;
 
 	m_pViewFrustum[ 0 ].normal.X() = matrixData._14 + matrixData._11;
 	m_pViewFrustum[ 0 ].normal.Y() = matrixData._24 + matrixData._21;
 	m_pViewFrustum[ 0 ].normal.Z() = matrixData._34 + matrixData._31;
-	m_pViewFrustum[ 0 ].distance = matrixData._44 + matrixData._41;
+	m_pViewFrustum[ 0 ].distance   = matrixData._44 + matrixData._41;
 
 	// Right plane
 	m_pViewFrustum[ 1 ].normal.X() = matrixData._14 - matrixData._11;
 	m_pViewFrustum[ 1 ].normal.Y() = matrixData._24 - matrixData._21;
 	m_pViewFrustum[ 1 ].normal.Z() = matrixData._34 - matrixData._31;
-	m_pViewFrustum[ 1 ].distance = matrixData._44 - matrixData._41;
+	m_pViewFrustum[ 1 ].distance   = matrixData._44 - matrixData._41;
 
 	// Top plane
 	m_pViewFrustum[ 2 ].normal.X() = matrixData._14 - matrixData._12;
 	m_pViewFrustum[ 2 ].normal.Y() = matrixData._24 - matrixData._22;
 	m_pViewFrustum[ 2 ].normal.Z() = matrixData._34 - matrixData._32;
-	m_pViewFrustum[ 2 ].distance = matrixData._44 - matrixData._42;
+	m_pViewFrustum[ 2 ].distance   = matrixData._44 - matrixData._42;
 
 	// Bottom plane
 	m_pViewFrustum[ 3 ].normal.X() = matrixData._14 + matrixData._12;
 	m_pViewFrustum[ 3 ].normal.Y() = matrixData._24 + matrixData._22;
 	m_pViewFrustum[ 3 ].normal.Z() = matrixData._34 + matrixData._32;
-	m_pViewFrustum[ 3 ].distance = matrixData._44 + matrixData._42;
+	m_pViewFrustum[ 3 ].distance   = matrixData._44 + matrixData._42;
 
 	// Near plane
 	m_pViewFrustum[ 4 ].normal.X() = matrixData._13;
 	m_pViewFrustum[ 4 ].normal.Y() = matrixData._23;
 	m_pViewFrustum[ 4 ].normal.Z() = matrixData._33;
-	m_pViewFrustum[ 4 ].distance = matrixData._43;
+	m_pViewFrustum[ 4 ].distance   = matrixData._43;
 
 	// Far plane
 	m_pViewFrustum[ 5 ].normal.X() = matrixData._14 - matrixData._13;
 	m_pViewFrustum[ 5 ].normal.Y() = matrixData._24 - matrixData._23;
 	m_pViewFrustum[ 5 ].normal.Z() = matrixData._34 - matrixData._33;
-	m_pViewFrustum[ 5 ].distance = matrixData._44 - matrixData._43;
+	m_pViewFrustum[ 5 ].distance   = matrixData._44 - matrixData._43;
 
 	// Normalize planes
 	for( int i = 0; i < 6; i++ )

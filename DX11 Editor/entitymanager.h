@@ -15,7 +15,7 @@
 #include <map>
 
 // Local Includes
-#include "defines.h"
+#include "datastructures.h"
 
 // Types
 
@@ -26,14 +26,14 @@ struct ID3D11Device;
 struct ID3D11DeviceContext;
 struct TEntityNode;
 
-class CGrass;
+class Grass;
 class Camera;
-class CShader;
-class CPrefab;
+class Shader;
+class Prefab;
 class CBoundingBox;
-class CAIHiveMind;
+class AIHiveMind;
 class RenderEntity;
-class CLightManager;
+class LightManager;
 
 //Structure defined here due to forward declaration
 struct TTemporaryEntity
@@ -42,20 +42,20 @@ struct TTemporaryEntity
 	EGameScene eScene;
 };
 
-class CEntityManager
+class EntityManager
 {
 //Member functions
 public:
-	CEntityManager();
-	virtual ~CEntityManager();
+	EntityManager();
+	virtual ~EntityManager();
 
 	virtual bool Initialise(ID3D11Device* _pDevice);
-	virtual void SetLevelInformation(CAIHiveMind* _pHivemind, CLightManager* _pLightManager);
+	virtual void SetLevelInformation(AIHiveMind* _pHivemind, LightManager* _pLightManager);
 
 	virtual void Process(float _fDeltaTime, EGameScene _eGameScene);
 	virtual void Draw(ID3D11DeviceContext* _pDevice, Camera* _pCurrentCamera, EGameScene _eScene);
 	virtual void DrawTransparentEntities(ID3D11DeviceContext* _pDevice, Camera* _pCurrentCamera, EGameScene _eScene);
-	virtual void DrawProjection(ID3D11DeviceContext* _pDevice, Camera* _pCurrentCamera, Camera* _pProjectionCamera, ID3D10ShaderResourceView* _pProjectedMap, EGameScene _eScene);
+	virtual void DrawProjection(ID3D11DeviceContext* _pDevice, Camera* _pCurrentCamera, Camera* _pProjectionCamera, ID3D11ShaderResourceView* _pProjectedMap, EGameScene _eScene);
 	void SortTransparentEntities(Camera* _pCurrentCamera, EGameScene _eGameScene);
 
 	void AddEntity(RenderEntity* _pNewEntity, EGameScene _eScene);
@@ -64,10 +64,10 @@ public:
 	TPrefabOptions* GetPrefabOptions(int _iPrefabIndex);
 	int GetPrefabCount() const;
 
-	CPrefab* InstantiatePrefab(	ID3D11Device* _pDevice, 
+	Prefab* InstantiatePrefab(	ID3D11Device* _pDevice, 
 								TEntityNode* _pParentNode, 
 								std::string& _pcPrefabName, 
-								CShader* _pShader, 
+								Shader* _pShader, 
 								std::vector<RenderEntity*>& _rGrassColliders,
 								EGameScene _eScene, 
 								Math::Vector3& _rPos, 
@@ -79,8 +79,8 @@ public:
 	void ClearScene(EGameScene _eScene);
 
 private:
-	CEntityManager(const CEntityManager& _krInstanceToCopy);
-	const CEntityManager& operator =(const CEntityManager& _krInstanceToCopy);
+	EntityManager(const EntityManager& _krInstanceToCopy);
+	const EntityManager& operator =(const EntityManager& _krInstanceToCopy);
 
 //Member variables
 protected:
@@ -90,8 +90,8 @@ protected:
 
 	std::map<std::string, unsigned int> m_mapPrefabIndex;
 
-	CAIHiveMind* m_pAIHivemind;
-	CLightManager* m_pLightManager;
+	AIHiveMind* m_pAIHivemind;
+	LightManager* m_pLightManager;
 
 	float* m_pCameraDepths;
 	int m_iTotalTransparentCount;

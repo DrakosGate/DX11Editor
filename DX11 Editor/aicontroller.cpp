@@ -15,13 +15,13 @@
 
 /**
 *
-* CAIController class constructor
+* AIController class constructor
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
 *
 */
-CAIController::CAIController()
+AIController::AIController()
 	: m_fMovementSpeed( 0.0f )
 	, m_fRotationSpeed( 0.0f )
 	, m_eAIType( AI_INVALID )
@@ -33,19 +33,19 @@ CAIController::CAIController()
 }
 /**
 *
-* CAIController class destructor
+* AIController class destructor
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
 *
 */
-CAIController::~CAIController()
+AIController::~AIController()
 {
 
 }
 /**
 *
-* CAIController class Initialise
+* AIController class Initialise
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -53,7 +53,7 @@ CAIController::~CAIController()
 *
 */
 bool
-CAIController::Initialise( CAIHiveMind* _pHivemind, RenderEntity* _pEntity, float _fMovementSpeed, float _fRotationSpeed )
+AIController::Initialise( AIHiveMind* _pHivemind, RenderEntity* _pEntity, float _fMovementSpeed, float _fRotationSpeed )
 {
 	bool bResult = false;
 
@@ -74,7 +74,7 @@ CAIController::Initialise( CAIHiveMind* _pHivemind, RenderEntity* _pEntity, floa
 }
 /**
 *
-* CAIController class Process
+* AIController class Process
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -82,7 +82,7 @@ CAIController::Initialise( CAIHiveMind* _pHivemind, RenderEntity* _pEntity, floa
 *
 */
 void
-CAIController::Process( float _fDeltaTime, Math::Vector3& _rAvoidance )
+AIController::Process( float _fDeltaTime, Math::Vector3& _rAvoidance )
 {
 	//Check if thought process is delayed
 	if( m_fThoughtDelay > 0.0f )
@@ -98,7 +98,7 @@ CAIController::Process( float _fDeltaTime, Math::Vector3& _rAvoidance )
 }
 /**
 *
-* CAIController class ProcessWaypointMovement Moves AI towards its current waypoint
+* AIController class ProcessWaypointMovement Moves AI towards its current waypoint
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -106,7 +106,7 @@ CAIController::Process( float _fDeltaTime, Math::Vector3& _rAvoidance )
 *
 */
 void
-CAIController::ProcessWaypointMovement( float _fDeltaTime )
+AIController::ProcessWaypointMovement( float _fDeltaTime )
 {
 	if( m_fThoughtDelay <= 0.0f )
 	{
@@ -124,7 +124,7 @@ CAIController::ProcessWaypointMovement( float _fDeltaTime )
 }
 /**
 *
-* CAIController class ProcessAStarMovement Moves AI towards its current waypoint using the A* algorithm
+* AIController class ProcessAStarMovement Moves AI towards its current waypoint using the A* algorithm
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
@@ -133,7 +133,7 @@ CAIController::ProcessWaypointMovement( float _fDeltaTime )
 *
 */
 void
-CAIController::ProcessAStarMovement( int _iPathLength, float _fDeltaTime )
+AIController::ProcessAStarMovement( int _iPathLength, float _fDeltaTime )
 {
 	if( m_fThoughtDelay <= 0.0f )
 	{
@@ -150,20 +150,20 @@ CAIController::ProcessAStarMovement( int _iPathLength, float _fDeltaTime )
 	}
 }
 void
-CAIController::SetAStarTarget( Math::Vector3& _rVecTarget )
+AIController::SetAStarTarget( Math::Vector3& _rVecTarget )
 {
 	m_vecWaypoint = _rVecTarget;
 }
 /**
 *
-* CAIController class Checks if this controller has reached its waypoint. If so, get a new one
+* AIController class Checks if this controller has reached its waypoint. If so, get a new one
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
 *
 */
 void
-CAIController::CheckWaypointReached()
+AIController::CheckWaypointReached()
 {
 	//Check target waypoint
 	Math::Vector3 vecCurrentPos = m_pEntity->GetPosition();
@@ -200,53 +200,53 @@ CAIController::CheckWaypointReached()
 }
 /**
 *
-* CAIController class GetCurrentWaypoint Returns the current waypoint for this controller
+* AIController class GetCurrentWaypoint Returns the current waypoint for this controller
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
 *
 */
 Math::Vector3&
-CAIController::GetCurrentWaypoint()
+AIController::GetCurrentWaypoint()
 {
 	return m_vecWaypoint;
 }
 /**
 *
-* CAIController class SetAIType Specifies the type of AI used
+* AIController class SetAIType Specifies the type of AI used
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
 *
 */
 void
-CAIController::SetAIType( EAIType _eAIType )
+AIController::SetAIType( EAIType _eAIType )
 {
 	m_eAIType = _eAIType;
 }
 /**
 *
-* CAIController class GetEntity Returns the entity of the AI
+* AIController class GetEntity Returns the entity of the AI
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
 *
 */
 RenderEntity*
-CAIController::GetEntity() const
+AIController::GetEntity() const
 {
 	return m_pEntity;
 }
 /**
 *
-* CAIController class GetAIType Returns the type of AI used
+* AIController class GetAIType Returns the type of AI used
 * (Task ID: n/a)
 *
 * @author Christopher Howlett
 *
 */
 EAIType
-CAIController::GetAIType() const
+AIController::GetAIType() const
 {
 	return m_eAIType;
 }

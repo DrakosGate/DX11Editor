@@ -81,7 +81,7 @@
 //	}
 //}
 //void
-//CAnimatedModel::SendShaderData( CShader* _pShader )
+//CAnimatedModel::SendShaderData( Shader* _pShader )
 //{
 //	//for(unsigned int iBone = 0; iBone < vecTransforms.size(); ++iBone)
 //	//{
